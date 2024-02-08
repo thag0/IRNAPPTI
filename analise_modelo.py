@@ -40,4 +40,4 @@ if __name__ == '__main__':
 
    amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
    conv1.call(amostra)
-   # plotar_ativacoes(conv1, amostra)
+   plotar_ativacoes(conv1, amostra)

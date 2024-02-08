@@ -21,7 +21,7 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      var modelo = new Serializador().lerSequencial("./modelos/modelo-convolucional.txt");
+      var modelo = new Serializador().lerSequencial(caminhoModelo);
       modelo.info();
 
       // exportarAtivacoes(modelo, 0);
@@ -48,7 +48,7 @@ public class AnaliseModelo{
 
       final int digitos = 10;
       for(int i = 0; i < digitos; i++){
-         String caminhoAmostra = caminhoImagem + i + "/img_3.jpg";
+         String caminhoAmostra = caminhoImagem + i + "/img_10.jpg";
          var imagem = imagemParaMatriz(caminhoAmostra);
          var amostra = new double[][][]{imagem};
          modelo.calcularSaida(amostra);// ver as saídas calculadas
