@@ -21,7 +21,7 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      var modelo = new Serializador().lerSequencial("./modelos/conv-teste.txt");
+      var modelo = new Serializador().lerSequencial("./modelos/modelo-convolucional.txt");
       modelo.info();
 
       // exportarAtivacoes(modelo, 0);
