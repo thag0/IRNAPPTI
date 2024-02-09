@@ -11,12 +11,12 @@ def criar_modelo() -> Sequential:
    seq = Sequential([
       InputLayer((28, 28, 1)),
       Conv2D(filters=32, kernel_size=(3, 3), activation="relu"),
-      MaxPool2D((2,2)),
+      MaxPool2D((2, 2)),
       Conv2D(filters=64, kernel_size=(3, 3), activation="relu"),
-      MaxPool2D((2,2)),
+      MaxPool2D((2, 2)),
       Flatten(),
       Dense(128, activation="relu"),
-      Dropout(0.2),
+      Dropout(0.4),
       Dense(10, activation="softmax")
    ])
 
@@ -60,22 +60,19 @@ def carregar_dados(n_treino: int=100, n_teste: int=100):
 
    return treino_x, treino_y, teste_x, teste_y
 
-def treinar_modelo(modelo: Sequential, treino_x, treino_y, teste_x, teste_y):
+def treinar_modelo(modelo: Sequential, treino_x, treino_y, epocas: int):
    modelo.fit(treino_x, treino_y, epochs=50, verbose=0)
-   perda, precisao = modelo.evaluate(teste_x, teste_y)
-   print("Perda: ", perda)
-   print("Precisão: ", precisao)
 
 if __name__ == '__main__':
    os.system('cls')
 
    modelo = criar_modelo()
-   treino_x, treino_y, teste_x, teste_y = carregar_dados(500, 500)
-   treinar_modelo(modelo, treino_x, treino_y, teste_x, teste_y)
+   treino_x, treino_y, teste_x, teste_y = carregar_dados(1_000, 1_000)
+   treinar_modelo(modelo, treino_x, treino_y, 50)
 
    # modelo.save("modelo-teste.keras")
 
-   perda, precisao = modelo.evaluate(treino_x, treino_y)
-   print("treino -> perda: ", perda, " precisão: ", precisao)
-   perda, precisao = modelo.evaluate(teste_x, teste_y)
-   print("teste -> perda: ", perda, " precisão: ", precisao)
+   perda_treino, precisao_treino = modelo.evaluate(treino_x, treino_y)
+   perda_teste,  precisao_teste  = modelo.evaluate(teste_x, teste_y)
+   print("treino -> perda: ", perda_treino, " precisão: ", precisao_treino)
+   print("teste -> perda: ", perda_teste, " precisão: ", precisao_teste)
