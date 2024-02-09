@@ -15,17 +15,17 @@ public class AnaliseModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
-   static final String caminhoModelo = "./modelos/conv-mnist-89.txt";
-   static final String caminhoImagem = "/mnist/teste/";
+   static final String CAMINHO_MODELO = "./modelos/conv-mnist-89.txt";
+   static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
       ged.limparConsole();
 
-      var modelo = new Serializador().lerSequencial(caminhoModelo);
+      var modelo = new Serializador().lerSequencial("./modelos/modelo-convolucional.txt");
       modelo.info();
 
-      // exportarAtivacoes(modelo, 0);
-      // exportarAtivacoes(modelo, 2);
+      exportarAtivacoes(modelo, 0);
+      exportarAtivacoes(modelo, 2);
    }
 
    /**
@@ -48,7 +48,7 @@ public class AnaliseModelo{
 
       final int digitos = 10;
       for(int i = 0; i < digitos; i++){
-         String caminhoAmostra = caminhoImagem + i + "/img_10.jpg";
+         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_10.jpg";
          var imagem = imagemParaMatriz(caminhoAmostra);
          var amostra = new double[][][]{imagem};
          modelo.calcularSaida(amostra);// ver as saídas calculadas

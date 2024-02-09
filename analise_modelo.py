@@ -1,6 +1,7 @@
 import os
 from keras.models import Sequential, load_model
 from keras.preprocessing import image
+from keras.activations import relu
 from keras.layers import Conv2D
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,9 +36,7 @@ if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/modelo-teste.keras')
-   modelo.summary()
    conv1 = modelo.layers[0]
 
-   amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-   conv1.call(amostra)
+   amostra = carregar_imagem('./mnist/teste/8/img_0.jpg')
    plotar_ativacoes(conv1, amostra)
