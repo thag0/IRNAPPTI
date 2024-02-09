@@ -61,7 +61,7 @@ def carregar_dados(n_treino: int=100, n_teste: int=100):
    return treino_x, treino_y, teste_x, teste_y
 
 def treinar_modelo(modelo: Sequential, treino_x, treino_y, epocas: int):
-   modelo.fit(treino_x, treino_y, epochs=50, verbose=0)
+   modelo.fit(treino_x, treino_y, epocas, verbose=0)
 
 if __name__ == '__main__':
    os.system('cls')

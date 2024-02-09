@@ -24,8 +24,81 @@ public class AnaliseModelo{
       var modelo = new Serializador().lerSequencial("./modelos/modelo-convolucional.txt");
       modelo.info();
 
-      exportarAtivacoes(modelo, 0);
-      exportarAtivacoes(modelo, 2);
+      // exportarAtivacoes(modelo, 0);
+      // exportarAtivacoes(modelo, 2);
+      
+      // var amostra = new Mat[]{new Mat(imagemParaMatriz("/mnist/teste/3/img_11.jpg"))};
+      // modelo.calcularSaida(amostra);
+      // Convolucional conv = (Convolucional) modelo.camada(0);
+
+      // desenharMatrizes(conv.saida, 20);
+
+      // testarTodosDados(modelo);
+   }
+
+
+   static void testarTodosDados(Sequencial modelo){
+      for(int i = 0; i < 10; i++){
+         for(int j = 0; j < 10; j++){
+            testarPrevisao(modelo, (i + "/img_" + j), false);
+         }
+         System.out.println();
+      }
+   }
+
+   static void testarPrevisao(Sequencial modelo, String imagemTeste, boolean prob){
+      double[][][] entrada = new double[1][][];
+      String extensao = ".jpg";
+      entrada[0] = imagemParaMatriz("/mnist/teste/" + imagemTeste + extensao);
+      modelo.calcularSaida(entrada);
+      double[] previsao = modelo.saidaParaArray();
+      
+      System.out.print("\nTestando: " + imagemTeste + extensao);
+      if(prob){
+         System.out.println();
+         for(int i = 0; i < previsao.length; i++){
+            System.out.println("Prob: " + i + ": " + (int)(previsao[i]*100) + "%");
+         }
+      }else{
+         System.out.print(" -> Prev: " + maiorIndice(previsao));
+      }
+
+   }
+
+   static void testarAcertosMNIST(Sequencial modelo){
+      String caminho = "/mnist/teste/";
+      
+      int digitos = 10;
+      int amostras = 100;
+      for(int digito = 0; digito < digitos; digito++){
+         double acertos = 0;
+         for(int amostra = 0; amostra < amostras; amostra++){
+            String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
+            Mat img = new Mat(imagemParaMatriz(caminhoImagem));
+            
+            modelo.calcularSaida(new Mat[]{img});
+            double[] previsoes = modelo.saidaParaArray();
+            if(maiorIndice(previsoes) == digito){
+               acertos++;
+            }
+         }
+         double porcentagem = acertos / (double)amostras;
+         System.out.println("Acertos " + digito + " -> " + porcentagem);
+      }
+   }
+
+   static int maiorIndice(double[] arr){
+      int id = 0;
+      double maior = arr[0];
+
+      for(int i = 1; i < arr.length; i++){
+         if(arr[i] > maior){
+            id = i;
+            maior = arr[i];
+         }
+      }
+
+      return id;
    }
 
    /**
