@@ -15,27 +15,25 @@ public class AnaliseModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
-   static final String CAMINHO_MODELO = "./modelos/conv-mnist-89.txt";
+   static final String CAMINHO_MODELO = "./modelos/conv-mnist-91.txt";
+   // static final String CAMINHO_MODELO = "./modelos/modelo-convolucional.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
       ged.limparConsole();
 
-      var modelo = new Serializador().lerSequencial("./modelos/modelo-convolucional.txt");
+      var modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
       modelo.info();
+
+      // modelo.calcularSaida(new Mat[]{new Mat(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_0.jpg"))});
+      // Convolucional conv = (Convolucional) modelo.camada(0);
+      // desenharMatrizes(conv.saida, 20, true);
+
+      // testarAcertosMNIST(modelo);
 
       // exportarAtivacoes(modelo, 0);
       // exportarAtivacoes(modelo, 2);
-      
-      // var amostra = new Mat[]{new Mat(imagemParaMatriz("/mnist/teste/3/img_11.jpg"))};
-      // modelo.calcularSaida(amostra);
-      // Convolucional conv = (Convolucional) modelo.camada(0);
-
-      // desenharMatrizes(conv.saida, 20);
-
-      // testarTodosDados(modelo);
    }
-
 
    static void testarTodosDados(Sequencial modelo){
       for(int i = 0; i < 10; i++){
@@ -186,9 +184,10 @@ public class AnaliseModelo{
     * 
     * @param mat
     * @param escala
+    * @param normalizar
     */
-   static void desenharMatriz(Mat mat, int escala){
-      normalizar(mat);
+   static void desenharMatriz(Mat mat, int escala, boolean normalizar){
+      if(normalizar) normalizar(mat);
       Janela janela = new Janela(mat.lin(), mat.col(), escala);
       janela.desenharMat(mat);
    }
@@ -197,16 +196,19 @@ public class AnaliseModelo{
     * Desenha matriz por matriz dentro do array.
     * @param arr array de matrizes.
     * @param escala escala de ampliação da janela.
+    * @param normalizar normalizar os valores entre 0 e 1.
     */
-   static void desenharMatrizes(Mat[] arr, int escala){
+   static void desenharMatrizes(Mat[] arr, int escala, boolean normalizar){
       int[] dim = {
          arr[0].lin(), 
          arr[0].col()
       };
       Janela janela = new Janela(dim[0], dim[1], escala);
 
-      for(Mat m : arr){
-         normalizar(m);
+      if(normalizar){
+         for(Mat m : arr){
+            normalizar(m);
+         }
       }
 
       janela.desenharArray(arr);

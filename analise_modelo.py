@@ -19,15 +19,15 @@ def carregar_imagem(caminho: str):
 
 def plotar_ativacoes(conv_layer: Conv2D, amostra):
    modelo = Sequential([conv_layer])
-   activations = modelo.predict(amostra, verbose=0)
+   predicoes = modelo.predict(amostra, verbose=0)
 
-   num_filters = activations.shape[-1]
-   rows = int(np.ceil(num_filters / 8))
-   _, axes = plt.subplots(rows, 8, figsize=(14, 2 * rows))
+   num_filtros = predicoes.shape[-1]
+   linhas = int(np.ceil(num_filtros / 8))
+   _, axes = plt.subplots(linhas, 8, figsize=(14, 2 * linhas))
    for i, ax_row in enumerate(axes):
       for j, ax in enumerate(ax_row):
-         if i * 8 + j < num_filters:
-            ax.imshow(activations[0, :, :, i * 8 + j], cmap='viridis')
+         if i * 8 + j < num_filtros:
+            ax.imshow(predicoes[0, :, :, i * 8 + j], cmap='viridis')
          ax.axis('off')
 
    plt.show()
@@ -39,4 +39,5 @@ if __name__ == '__main__':
    conv1 = modelo.layers[0]
 
    amostra = carregar_imagem('./mnist/teste/8/img_0.jpg')
-   plotar_ativacoes(conv1, amostra)
+   conv1.call(amostra)
+   # plotar_ativacoes(conv1, amostra)
