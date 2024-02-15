@@ -3,20 +3,21 @@ from keras.layers import (InputLayer, Dense, Conv2D, MaxPool2D, Dropout, Flatten
 from keras.optimizers import SGD
 from keras.datasets import mnist
 from keras.utils import to_categorical
+from keras.activations import leaky_relu
 import numpy as np
+import matplotlib.pyplot as plt
 import os
 import time
 
 def criar_modelo() -> Sequential:
    seq = Sequential([
       InputLayer((28, 28, 1)),
-      Conv2D(filters=32, kernel_size=(3, 3), activation="relu"),
+      Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
       MaxPool2D((2, 2)),
-      Conv2D(filters=64, kernel_size=(3, 3), activation="relu"),
+      Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
       MaxPool2D((2, 2)),
       Flatten(),
-      Dense(128, activation="relu"),
-      Dropout(0.4),
+      Dense(128, activation='relu'),
       Dense(10, activation="softmax")
    ])
 
@@ -61,16 +62,17 @@ def carregar_dados(n_treino: int=100, n_teste: int=100):
    return treino_x, treino_y, teste_x, teste_y
 
 def treinar_modelo(modelo: Sequential, treino_x, treino_y, epocas: int):
-   modelo.fit(treino_x, treino_y, epocas, verbose=0)
+   historico = modelo.fit(treino_x, treino_y, epocas, verbose=0)
+   return historico
 
 if __name__ == '__main__':
    os.system('cls')
 
    modelo = criar_modelo()
-   treino_x, treino_y, teste_x, teste_y = carregar_dados(1_000, 1_000)
-   treinar_modelo(modelo, treino_x, treino_y, 50)
+   treino_x, treino_y, teste_x, teste_y = carregar_dados(500, 500)
+   historico = treinar_modelo(modelo, treino_x, treino_y, 50)
 
-   # modelo.save("modelo-teste.keras")
+   # modelo.save("modelos/keras/modelo-teste1.keras")
 
    perda_treino, precisao_treino = modelo.evaluate(treino_x, treino_y)
    perda_teste,  precisao_teste  = modelo.evaluate(teste_x, teste_y)

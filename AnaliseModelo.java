@@ -16,7 +16,8 @@ public class AnaliseModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
-   static final String CAMINHO_MODELO = "./modelos/conv-mnist-85.txt";
+   // static final String CAMINHO_MODELO = "./modelos/conv-mnist-91.txt";
+   static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
@@ -31,8 +32,13 @@ public class AnaliseModelo{
 
       // testarAcertosMNIST(modelo);
 
-      exportarAtivacoes(modelo, 0);
-      exportarAtivacoes(modelo, 2);
+      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "3/img_0.jpg"));
+      modelo.calcularSaida(entrada);
+
+      Densa d2 = (Densa) modelo.camada(5);
+      d2.somatorio.print();
+      d2.saida.print();
+      System.out.println("Previsto: " + maiorIndice(d2.saidaParaArray()));
    }
 
    static void testarTodosDados(Sequencial modelo){
@@ -143,6 +149,19 @@ public class AnaliseModelo{
       }
 
       System.out.println("Ativações exportadas para a camada " + idConv);
+   }
+
+   static void exportarFiltros(Convolucional camada){
+      String caminho = "./resultados/filtros/conv1/";
+      Tensor4D filtros = camada.filtros;
+
+      limparDiretorio(caminho);
+
+      int numFiltros = filtros.dim1();
+      for(int i = 0; i < numFiltros; i++){
+         Mat filtro = new Mat(filtros.array2D(i, 0));
+         exportarImagem(filtro, (caminho + "amostra-" + i), 20);
+      }
    }
 
    /**

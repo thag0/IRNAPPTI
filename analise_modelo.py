@@ -35,9 +35,9 @@ def plotar_ativacoes(conv_layer: Conv2D, amostra):
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = carregar_modelo('./modelos/modelo-teste.keras')
+   modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
    conv1 = modelo.layers[0]
 
-   amostra = carregar_imagem('./mnist/teste/8/img_0.jpg')
+   amostra = carregar_imagem('./mnist/teste/6/img_0.jpg')
    conv1.call(amostra)
-   # plotar_ativacoes(conv1, amostra)
+   plotar_ativacoes(conv1, amostra)
