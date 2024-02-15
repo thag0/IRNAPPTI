@@ -8,6 +8,7 @@ import render.Janela;
 import rna.camadas.*;
 import rna.core.Mat;
 import rna.core.OpMatriz;
+import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
 import rna.serializacao.Serializador;
 
@@ -15,8 +16,7 @@ public class AnaliseModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
-   static final String CAMINHO_MODELO = "./modelos/conv-mnist-91.txt";
-   // static final String CAMINHO_MODELO = "./modelos/modelo-convolucional.txt";
+   static final String CAMINHO_MODELO = "./modelos/conv-mnist-85.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
@@ -31,8 +31,8 @@ public class AnaliseModelo{
 
       // testarAcertosMNIST(modelo);
 
-      // exportarAtivacoes(modelo, 0);
-      // exportarAtivacoes(modelo, 2);
+      exportarAtivacoes(modelo, 0);
+      exportarAtivacoes(modelo, 2);
    }
 
    static void testarTodosDados(Sequencial modelo){
@@ -72,9 +72,9 @@ public class AnaliseModelo{
          double acertos = 0;
          for(int amostra = 0; amostra < amostras; amostra++){
             String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
-            Mat img = new Mat(imagemParaMatriz(caminhoImagem));
+            Tensor4D img = new Tensor4D(imagemParaMatriz(caminhoImagem));
             
-            modelo.calcularSaida(new Mat[]{img});
+            modelo.calcularSaida(img);
             double[] previsoes = modelo.saidaParaArray();
             if(maiorIndice(previsoes) == digito){
                acertos++;
@@ -109,10 +109,10 @@ public class AnaliseModelo{
       try{
          camada = (Convolucional) modelo.camada(idConv);
       }catch(Exception e){
-         System.out.println(
-            "Ocorreu um erro ao tentar converter a camada com id recebido (" + idConv + ")."
+         throw new IllegalArgumentException(
+            "\nCamada com id " + idConv + " não é do tipo Convolucional e sim " + 
+            modelo.camada(idConv).getClass().getSimpleName() + ", escolha um id válido."
          );
-         throw new RuntimeException(e);
       }
 
       String diretorioCamada = "conv" + ((idConv == 0) ? "1" : "2");
@@ -124,11 +124,11 @@ public class AnaliseModelo{
          var amostra = new double[][][]{imagem};
          modelo.calcularSaida(amostra);// ver as saídas calculadas
 
-         Mat[] somatorios = new Mat[camada.somatorio.length];
-         Mat[] saidas = new Mat[camada.saida.length];
+         Mat[] somatorios = new Mat[camada.somatorio.dim2()];
+         Mat[] saidas = new Mat[camada.saida.dim2()];
          for(int j = 0; j < saidas.length; j++){
-            saidas[j] = camada.saida[j];
-            somatorios[j] = camada.somatorio[j];
+            saidas[j] = new Mat(camada.saida.array2D(0, j));
+            somatorios[j] = new Mat(camada.somatorio.array2D(0, j));
          }
    
          int escala = 20;
