@@ -17,7 +17,7 @@ public class TreinoModelo{
 
    static final int NUM_DIGITOS_TREINO = 10;
    static final int NUM_DIGITOS_TESTE  = 10;
-   static final int NUM_AMOSTRAS_TREINO = 200;
+   static final int NUM_AMOSTRAS_TREINO = 100;
    static final int NUM_AMOSTRAS_TESTE  = 100;
 
    static final String caminhoTreino = "/mnist/treino/";
@@ -79,9 +79,9 @@ public class TreinoModelo{
       int[] formEntrada = {1, 28, 28};
 
       Sequencial modelo = new Sequencial(new Camada[]{
-         new Convolucional(formEntrada, new int[]{5, 5}, 16, "leaky-relu"),
+         new Convolucional(formEntrada, new int[]{5, 5}, 20, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
-         new Convolucional(formEntrada, new int[]{3, 3}, 16, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 20, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(128, "sigmoid"),

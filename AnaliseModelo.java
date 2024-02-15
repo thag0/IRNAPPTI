@@ -32,13 +32,20 @@ public class AnaliseModelo{
 
       // testarAcertosMNIST(modelo);
 
-      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "3/img_0.jpg"));
-      modelo.calcularSaida(entrada);
+      Tensor4D entrada = new Tensor4D(new double[][]{
+         {1, 2, 3},
+         {4, 5, 6},
+         {7, 8, 9},
+      });
 
-      Densa d2 = (Densa) modelo.camada(5);
-      d2.somatorio.print();
-      d2.saida.print();
-      System.out.println("Previsto: " + maiorIndice(d2.saidaParaArray()));
+      Dropout dropout = new Dropout(0.25);
+      dropout.construir(new int[]{3, 3});
+      dropout.configurarTreino(true);
+
+      dropout.calcularSaida(entrada);
+      dropout.entrada.print();
+      dropout.mascara.print();
+      dropout.saida.print();
    }
 
    static void testarTodosDados(Sequencial modelo){
