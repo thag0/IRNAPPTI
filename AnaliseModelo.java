@@ -17,7 +17,7 @@ public class AnaliseModelo{
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
    // static final String CAMINHO_MODELO = "./modelos/conv-mnist-91.txt";
-   static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
+   static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-94.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
@@ -26,26 +26,9 @@ public class AnaliseModelo{
       var modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
       modelo.info();
 
-      // modelo.calcularSaida(new Mat[]{new Mat(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_0.jpg"))});
-      // Convolucional conv = (Convolucional) modelo.camada(0);
-      // desenharMatrizes(conv.saida, 20, true);
-
-      // testarAcertosMNIST(modelo);
-
-      Tensor4D entrada = new Tensor4D(new double[][]{
-         {1, 2, 3},
-         {4, 5, 6},
-         {7, 8, 9},
-      });
-
-      Dropout dropout = new Dropout(0.25);
-      dropout.construir(new int[]{3, 3});
-      dropout.configurarTreino(true);
-
-      dropout.calcularSaida(entrada);
-      dropout.entrada.print();
-      dropout.mascara.print();
-      dropout.saida.print();
+      exportarAtivacoes(modelo, 0);
+      exportarFiltros(modelo, 0);
+      testarAcertosMNIST(modelo);
    }
 
    static void testarTodosDados(Sequencial modelo){
@@ -158,10 +141,25 @@ public class AnaliseModelo{
       System.out.println("Ativações exportadas para a camada " + idConv);
    }
 
-   static void exportarFiltros(Convolucional camada){
-      String caminho = "./resultados/filtros/conv1/";
-      Tensor4D filtros = camada.filtros;
+   /**
+    * Exporta os filtros da camada convolucional
+    * @param camada camada desejada.
+    */
+   static void exportarFiltros(Sequencial modelo, int idConv){
+      Convolucional camada;
+      try{
+         camada = (Convolucional) modelo.camada(idConv);
+      }catch(Exception e){
+         throw new IllegalArgumentException(
+            "\nCamada com id " + idConv + " não é do tipo Convolucional e sim " + 
+            modelo.camada(idConv).getClass().getSimpleName() + ", escolha um id válido."
+         );
+      }
 
+      String diretorioCamada = "conv" + ((idConv == 0) ? "1" : "2");
+      String caminho = "./resultados/filtros/" + diretorioCamada;
+
+      Tensor4D filtros = camada.filtros;
       limparDiretorio(caminho);
 
       int numFiltros = filtros.dim1();
@@ -169,6 +167,8 @@ public class AnaliseModelo{
          Mat filtro = new Mat(filtros.array2D(i, 0));
          exportarImagem(filtro, (caminho + "amostra-" + i), 20);
       }
+
+      System.out.println("Filtros exportados para a camada " + idConv);
    }
 
    /**
