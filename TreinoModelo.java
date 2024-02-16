@@ -17,7 +17,7 @@ public class TreinoModelo{
 
    static final int NUM_DIGITOS_TREINO = 10;
    static final int NUM_DIGITOS_TESTE  = 10;
-   static final int NUM_AMOSTRAS_TREINO = 100;
+   static final int NUM_AMOSTRAS_TREINO = 200;
    static final int NUM_AMOSTRAS_TESTE  = 100;
 
    static final String caminhoTreino = "/mnist/treino/";
@@ -45,7 +45,7 @@ public class TreinoModelo{
 
       System.out.println("Treinando.");
       t1 = System.nanoTime();
-      modelo.treinar(treinoX, treinoY, 20, true);
+      modelo.treinar(treinoX, treinoY, 25, true);
       t2 = System.nanoTime();
 
       long tempoDecorrido = t2 - t1;
@@ -79,12 +79,12 @@ public class TreinoModelo{
       int[] formEntrada = {1, 28, 28};
 
       Sequencial modelo = new Sequencial(new Camada[]{
-         new Convolucional(formEntrada, new int[]{4, 4}, 26, "leaky-relu"),
+         new Convolucional(formEntrada, new int[]{3, 3}, 32, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Convolucional(new int[]{3, 3}, 32, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(128, "sigmoid"),
+         new Densa(136, "sigmoid"),
          new Dropout(0.25),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
