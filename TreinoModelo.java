@@ -79,12 +79,10 @@ public class TreinoModelo{
       int[] formEntrada = {1, 28, 28};
 
       Sequencial modelo = new Sequencial(new Camada[]{
-         new Convolucional(formEntrada, new int[]{3, 3}, 32, "leaky-relu"),
-         new MaxPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{3, 3}, 32, "leaky-relu"),
+         new Convolucional(formEntrada, new int[]{5, 5}, 20, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(136, "sigmoid"),
+         new Densa(128, "sigmoid"),
          new Dropout(0.25),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });

@@ -16,8 +16,8 @@ public class AnaliseModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
-   // static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-94.txt";
-   static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
+
+   static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-94.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
@@ -26,20 +26,9 @@ public class AnaliseModelo{
       var modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
       modelo.info();
 
-      // Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "4/img_0.jpg"));
-      // modelo.calcularSaida(amostra);
-
-      // Convolucional conv = (Convolucional) modelo.camada(0);
-      // Tensor4D saida = conv.saida;
-      // Mat[] arr = new Mat[saida.dim2()];
-      // for(int i = 0; i < arr.length; i++){
-      //    arr[i] = new Mat(saida.array2D(0, i));
-      // }
-      // desenharMatrizes(arr, 20, true);
-
-      // exportarAtivacoes(modelo, 0);
+      exportarAtivacoes(modelo, 0);
       exportarFiltros(modelo, 0);
-      // testarAcertosMNIST(modelo);
+      exportarFiltros(modelo, 2);
    }
 
    static void testarTodosDados(Sequencial modelo){
