@@ -17,7 +17,8 @@ public class AnaliseModelo{
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
 
-   static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-94.txt";
+   // static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-94.txt";
+   static final String CAMINHO_MODELO = "./modelos/rna/lenet-exemplo.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
