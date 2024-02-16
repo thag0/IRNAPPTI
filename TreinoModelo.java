@@ -85,7 +85,7 @@ public class TreinoModelo{
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(128, "sigmoid"),
-         new Dropout(0.25),
+         new Dropout(0.3),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
