@@ -79,17 +79,17 @@ public class TreinoModelo{
       int[] formEntrada = {1, 28, 28};
 
       Sequencial modelo = new Sequencial(new Camada[]{
-         new Convolucional(formEntrada, new int[]{5, 5}, 6, "sigmoid"),
-         new MaxPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{5, 5}, 16, "sigmoid"),
-         new MaxPooling(new int[]{2, 2}),
+         new Convolucional(formEntrada, new int[]{5, 5}, 6, "tanh"),
+         new AvgPooling(new int[]{2, 2}),
+         new Convolucional(new int[]{5, 5}, 16, "tanh"),
+         new AvgPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(120, "sigmoid"),
-         new Densa(84, "sigmoid"),
+         new Densa(120, "tanh"),
+         new Densa(84, "tanh"),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
-      modelo.compilar(new SGD(0.001, 0.99), "entropia-cruzada");
+      modelo.compilar(new SGD(0.0001, 0.995), "entropia-cruzada");
 
       return modelo;
    }
