@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import (InputLayer, Dense, Conv2D, MaxPool2D, Dropout, Flatten)
+from keras.layers import (InputLayer, Dense, Conv2D, ConvLSTM2D,MaxPool2D, TimeDistributed, Dropout, Flatten)
 from keras.optimizers import SGD
 from keras.datasets import mnist
 from keras.utils import to_categorical
@@ -9,7 +9,11 @@ import matplotlib.pyplot as plt
 import os
 import time
 
-def criar_modelo() -> Sequential:
+def criar_modelo_convolucional() -> Sequential:
+   """
+      Modelos com camadas convolucionais
+   """
+
    seq = Sequential([
       InputLayer((28, 28, 1)),
       Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
@@ -29,16 +33,50 @@ def criar_modelo() -> Sequential:
 
    return seq
 
-def calcular_tempos_camadas(modelo: Sequential, amostra):
-   input_shape = modelo.input_shape[1:]  # Excluindo o batch_size
-   input_amostra = np.random.rand(1, *input_shape)
-   
-   inicio = time.time()
-   modelo.call(input_amostra)
-   fim = time.time()
-   t = (fim - inicio) * 1000
+def criar_modelo_convolucional_lstm() -> Sequential:
+   """
+      Modelos usando camadas convolucionais com memória
+   """
 
-   print(f'tempo {t:.4f} ms')
+   seq = Sequential([
+      InputLayer((None, 28, 28, 1)),
+      ConvLSTM2D(filters=32, kernel_size=(3, 3), activation='relu', return_sequences=True),
+      TimeDistributed(MaxPool2D((2, 2))),
+      ConvLSTM2D(filters=64, kernel_size=(3, 3), activation='relu'),
+      MaxPool2D((2, 2)),
+      Flatten(),
+      Dense(128, activation='relu'),
+      Dense(10, activation="softmax")
+   ])
+
+   seq.compile(
+      SGD(0.01, 0.9),
+      "categorical_crossentropy",
+      metrics=['accuracy']
+   )
+
+   return seq
+
+def criar_modelo_mlp() -> Sequential:
+   """
+      Modelos com apenas camadas densas
+   """
+
+   seq = Sequential([
+      InputLayer((28, 28, 1)),
+      Flatten(),
+      Dense(28, activation='sigmoid'),
+      Dense(28, activation='sigmoid'),
+      Dense(10, activation="softmax")
+   ])
+
+   seq.compile(
+      "adam",
+      "categorical_crossentropy",
+      metrics=['accuracy']
+   )
+
+   return seq
 
 def carregar_dados(n_treino: int=100, n_teste: int=100):
    (treino_x, treino_y), (teste_x, teste_y) = mnist.load_data()
@@ -62,19 +100,35 @@ def carregar_dados(n_treino: int=100, n_teste: int=100):
    return treino_x, treino_y, teste_x, teste_y
 
 def treinar_modelo(modelo: Sequential, treino_x, treino_y, epocas: int):
-   historico = modelo.fit(treino_x, treino_y, epocas, verbose=0)
+   historico = modelo.fit(treino_x, treino_y, epochs=epocas, verbose=0)
    return historico
 
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = criar_modelo()
+
+   epochs = 50
+
    treino_x, treino_y, teste_x, teste_y = carregar_dados(500, 500)
-   historico = treinar_modelo(modelo, treino_x, treino_y, 50)
 
-   # modelo.save("modelos/keras/modelo-teste1.keras")
-
-   perda_treino, precisao_treino = modelo.evaluate(treino_x, treino_y)
-   perda_teste,  precisao_teste  = modelo.evaluate(teste_x, teste_y)
-   print("treino -> perda: ", perda_treino, " precisão: ", precisao_treino)
-   print("teste -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   # mlp
+   modelo_mlp = criar_modelo_mlp()
+   historico_mlp = treinar_modelo(modelo_mlp,  treino_x, treino_y, epochs)
+   perda_teste, precisao_teste = modelo_mlp.evaluate(teste_x, teste_y)
+   print("Mlp -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   
+   # conv
+   modelo_conv = criar_modelo_convolucional()
+   historico_conv = treinar_modelo(modelo_conv, treino_x, treino_y, epochs)
+   perda_teste,  precisao_teste  = modelo_conv.evaluate(teste_x, teste_y)
+   print("Conv -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   
+   # lstm
+   modelo_lstm = criar_modelo_convolucional_lstm()
+   treino_x_lstm = np.expand_dims(treino_x, axis=-1)  # Adiciona a dimensão do canal
+   treino_x_lstm = np.expand_dims(treino_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
+   teste_x_lstm = np.expand_dims(teste_x, axis=-1)  # Adiciona a dimensão do canal
+   teste_x_lstm = np.expand_dims(teste_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
+   historico_lstm = treinar_modelo(modelo_lstm, treino_x_lstm, treino_y, epochs)
+   perda_teste,  precisao_teste  = modelo_lstm.evaluate(teste_x_lstm, teste_y)
+   print("Lstm -> perda: ", perda_teste, " precisão: ", precisao_teste)

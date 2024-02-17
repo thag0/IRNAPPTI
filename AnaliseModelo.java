@@ -28,7 +28,7 @@ public class AnaliseModelo{
       var modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
       // modelo.info();
 
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "4/img_0.jpg"));
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "8/img_20.jpg"));
       modelo.calcularSaida(amostra);
 
       Convolucional conv = (Convolucional) modelo.camada(0);

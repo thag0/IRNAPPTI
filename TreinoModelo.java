@@ -78,17 +78,16 @@ public class TreinoModelo{
       int[] formEntrada = {1, 28, 28};
 
       Sequencial modelo = new Sequencial(new Camada[]{
-         new Convolucional(formEntrada, new int[]{5, 5}, 6, "leaky-relu"),
+         new Convolucional(formEntrada, new int[]{3, 3}, 32, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{5, 5}, 16, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 32, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(120, "tanh"),
-         new Densa(84, "tanh"),
+         new Densa(128, "leaky-relu"),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
-      modelo.compilar("adam", "entropia-cruzada");
+      modelo.compilar("sgd", "entropia-cruzada");
 
       return modelo;
    }
