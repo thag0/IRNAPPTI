@@ -8,7 +8,6 @@ import geim.Geim;
 import rna.camadas.*;
 import rna.modelos.Modelo;
 import rna.modelos.Sequencial;
-import rna.otimizadores.SGD;
 import rna.serializacao.Serializador;
 
 public class TreinoModelo{
@@ -79,17 +78,17 @@ public class TreinoModelo{
       int[] formEntrada = {1, 28, 28};
 
       Sequencial modelo = new Sequencial(new Camada[]{
-         new Convolucional(formEntrada, new int[]{5, 5}, 6, "tanh"),
-         new AvgPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{5, 5}, 16, "tanh"),
-         new AvgPooling(new int[]{2, 2}),
+         new Convolucional(formEntrada, new int[]{5, 5}, 6, "leaky-relu"),
+         new MaxPooling(new int[]{2, 2}),
+         new Convolucional(new int[]{5, 5}, 16, "leaky-relu"),
+         new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(120, "tanh"),
          new Densa(84, "tanh"),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
-      modelo.compilar(new SGD(0.0001, 0.995), "entropia-cruzada");
+      modelo.compilar("adam", "entropia-cruzada");
 
       return modelo;
    }
