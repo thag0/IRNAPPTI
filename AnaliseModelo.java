@@ -31,7 +31,7 @@ public class AnaliseModelo{
       // testarAcertosMNIST(modelo);
       // testarTodosDados(modelo);
 
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "5/img_2.jpg"));
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "3/img_2.jpg"));
       modelo.calcularSaida(amostra);
 
       Convolucional camada = (Convolucional) modelo.camada(0);    
@@ -217,11 +217,13 @@ public class AnaliseModelo{
       limparDiretorio(caminho);
 
       int numFiltros = filtros.dim1();
+      Mat[] arrFiltros = new Mat[numFiltros];
       for(int i = 0; i < numFiltros; i++){
-         Mat filtro = new Mat(filtros.array2D(i, 0));
-         normalizar(filtro);
-         exportarImagem(filtro, (caminho + "amostra-" + i), 20);
+         arrFiltros[i] = new Mat(filtros.array2D(i, 0));
+         normalizar(arrFiltros[i]);
       }
+
+      exportarMatrizes(arrFiltros, 20, caminho);
 
       System.out.println("Filtros exportados para a camada " + idConv);
    }
