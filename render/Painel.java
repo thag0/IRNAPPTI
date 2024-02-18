@@ -17,6 +17,12 @@ public class Painel extends JPanel{
 
    Mat mat;
 
+   /**
+    * Cria um novo painel com base nos valores dados.
+    * @param altura altura do painel.
+    * @param largura largura do painel.
+    * @param escala escala de ampliação (altura e largura).
+    */
    public Painel(int altura, int largura, int escala){
       this.escala = escala;
       this.altura =  escala * altura;
@@ -26,6 +32,10 @@ public class Painel extends JPanel{
       setBackground(Color.black);
    }
    
+   /**
+    * Desenha o conteúdo da matriz em escala de cinza.
+    * @param m matriz.
+    */
    public void desenharMat(Mat m){
       mat = m;
       repaint();
@@ -50,7 +60,10 @@ public class Painel extends JPanel{
             if(cinza > 255) cinza = 255;
             if(cinza < 0) cinza = 0;
 
-            g2.setColor(new Color(cinza, cinza, cinza));
+            int verm = cinza;
+            int verd = cinza;
+            int azul = cinza;
+            g2.setColor(new Color(verm, verd, azul));
 
             int x = j * larguraPixel;
             int y = i * alturaPixel;

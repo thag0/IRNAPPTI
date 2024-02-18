@@ -17,9 +17,9 @@ public class AnaliseModelo{
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
 
-   static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-95.txt";
+   // static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-95.txt";
    // static final String CAMINHO_MODELO = "./modelos/rna/modelo-lenet.txt";
-   // static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
+   static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
@@ -28,21 +28,20 @@ public class AnaliseModelo{
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
       modelo.info();
 
+      // testarAcertosMNIST(modelo);
+      // testarTodosDados(modelo);
+
       Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "5/img_2.jpg"));
       modelo.calcularSaida(amostra);
 
-      new Thread(() -> {
-         desenharSaidas((Convolucional) modelo.camada(0), 20);
-      }).start();
+      Convolucional camada = (Convolucional) modelo.camada(0);    
       
-      testarAcertosMNIST(modelo);
+      exportarAtivacoes(modelo, 0);
+      exportarFiltros(modelo, 0);
+      exportarAtivacoes(modelo, 2);
+      exportarFiltros(modelo, 2);
 
-      // testarTodosDados(modelo);
-
-      // exportarAtivacoes(modelo, 0);
-      // exportarFiltros(modelo, 0);
-      // exportarAtivacoes(modelo, 2);
-      // exportarFiltros(modelo, 2);
+      desenharSaidas(camada, 20);
    }
 
    /**
