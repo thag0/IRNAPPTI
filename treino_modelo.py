@@ -5,9 +5,7 @@ from keras.datasets import mnist
 from keras.utils import to_categorical
 from keras.activations import leaky_relu
 import numpy as np
-import matplotlib.pyplot as plt
 import os
-import time
 
 def criar_modelo_convolucional() -> Sequential:
    """
@@ -109,7 +107,7 @@ if __name__ == '__main__':
 
    epochs = 50
 
-   treino_x, treino_y, teste_x, teste_y = carregar_dados(500, 500)
+   treino_x, treino_y, teste_x, teste_y = carregar_dados(1_000, 1_000)
 
    # mlp
    modelo_mlp = criar_modelo_mlp()

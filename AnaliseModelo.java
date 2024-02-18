@@ -17,51 +17,79 @@ public class AnaliseModelo{
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
 
-   // static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-95.txt";
+   static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-95.txt";
    // static final String CAMINHO_MODELO = "./modelos/rna/modelo-lenet.txt";
-   static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
+   // static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
       ged.limparConsole();
 
-      var modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
-      // modelo.info();
+      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
+      modelo.info();
 
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "8/img_20.jpg"));
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "5/img_2.jpg"));
       modelo.calcularSaida(amostra);
 
-      Convolucional conv = (Convolucional) modelo.camada(0);
+      new Thread(() -> {
+         desenharSaidas((Convolucional) modelo.camada(0), 20);
+      }).start();
+      
+      testarAcertosMNIST(modelo);
+
+      // testarTodosDados(modelo);
+
+      // exportarAtivacoes(modelo, 0);
+      // exportarFiltros(modelo, 0);
+      // exportarAtivacoes(modelo, 2);
+      // exportarFiltros(modelo, 2);
+   }
+
+   /**
+    * Abre uma janela gráfica contendo a saída (normalizada) da camada
+    * fornecida.
+    * @param conv camada convolucional.
+    * @param escala escala de ampliação da imagem original.
+    */
+   static void desenharSaidas(Convolucional conv, int escala){
       Mat[] arr = new Mat[conv.numFiltros()];
       for(int i = 0; i < arr.length; i++){
          arr[i] = new Mat(conv.saida.array2D(0, i));
       }
       
-      desenharMatrizes(arr, 15, true);
-
-      // exportarAtivacoes(modelo, 0);
-      // exportarAtivacoes(modelo, 2);
-      // exportarFiltros(modelo, 0);
-      // exportarFiltros(modelo, 2);
+      desenharMatrizes(arr, escala, true);
    }
 
+   /**
+    * Usa o modelo para prever todos os dados de teste.
+    * @param modelo modelo treinado.
+    */
    static void testarTodosDados(Sequencial modelo){
-      for(int i = 0; i < 10; i++){
-         for(int j = 0; j < 10; j++){
+      final int digitos = 10;
+      final int amostras = 100;
+      for(int i = 0; i < digitos; i++){
+         for(int j = 0; j < amostras; j++){
             testarPrevisao(modelo, (i + "/img_" + j), false);
          }
          System.out.println();
       }
    }
 
-   static void testarPrevisao(Sequencial modelo, String imagemTeste, boolean prob){
+   /**
+    * Testa a previsão do modelo usando uma imagem fornecida.
+    * @param modelo modelo treinado
+    * @param caminhoImagem caminho da imagem de teste, com extensão. 
+    * @param prob se verdadeiro, é mostrada a probabilidade prevista de cada dígito
+    * pelo modelo. Se falsa, mostra apenas o dígito previsto.
+    */
+   static void testarPrevisao(Sequencial modelo, String caminhoImagem, boolean prob){
       double[][][] entrada = new double[1][][];
       String extensao = ".jpg";
-      entrada[0] = imagemParaMatriz("/mnist/teste/" + imagemTeste + extensao);
+      entrada[0] = imagemParaMatriz("/mnist/teste/" + caminhoImagem + extensao);
       modelo.calcularSaida(entrada);
       double[] previsao = modelo.saidaParaArray();
       
-      System.out.print("\nTestando: " + imagemTeste + extensao);
+      System.out.print("\nTestando: " + caminhoImagem + extensao);
       if(prob){
          System.out.println();
          for(int i = 0; i < previsao.length; i++){
@@ -73,11 +101,16 @@ public class AnaliseModelo{
 
    }
 
+   /**
+    * Testa os acertos do modelo usando os dados de teste do MNIST.
+    * @param modelo modelo treinado.
+    */
    static void testarAcertosMNIST(Sequencial modelo){
       String caminho = "/mnist/teste/";
       
       int digitos = 10;
       int amostras = 100;
+      double media = 0;
       for(int digito = 0; digito < digitos; digito++){
          double acertos = 0;
          for(int amostra = 0; amostra < amostras; amostra++){
@@ -91,10 +124,17 @@ public class AnaliseModelo{
             }
          }
          double porcentagem = acertos / (double)amostras;
+         media += porcentagem;
          System.out.println("Acertos " + digito + " -> " + porcentagem);
       }
+      System.out.println("média acertos: " + String.format("%.2f", (media/digitos)*100) + "%");
    }
 
+   /**
+    * Calcula o índice que contém o maior valor no array.
+    * @param arr array base.
+    * @return índice com o maior valor.
+    */
    static int maiorIndice(double[] arr){
       int id = 0;
       double maior = arr[0];
@@ -289,14 +329,14 @@ public class AnaliseModelo{
          for(int j = 0; j < colunas; j++){
             double valor = mat.elemento(i, j);
             if(valor < min) min = valor;
-            else if(valor > max) max = valor;
+            if(valor > max) max = valor;
          }
       }
 
       final double minimo = min, maximo = max;
 
       mat.map((x) -> {
-         return x = (x - minimo) / (maximo - minimo);
+         return (x - minimo) / (maximo - minimo);
       });
    }
 
