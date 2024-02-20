@@ -19,7 +19,7 @@ public class AnaliseModelo{
 
    // static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-95.txt";
    // static final String CAMINHO_MODELO = "./modelos/rna/modelo-lenet.txt";
-   static final String CAMINHO_MODELO = "./modelos/rna/modelo-convolucional.txt";
+   static final String CAMINHO_MODELO = "./modelos/rna/mlp-mnist-89.txt";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
@@ -31,17 +31,6 @@ public class AnaliseModelo{
       // testarAcertosMNIST(modelo);
       // testarTodosDados(modelo);
 
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "3/img_2.jpg"));
-      modelo.calcularSaida(amostra);
-
-      Convolucional camada = (Convolucional) modelo.camada(0);    
-      
-      exportarAtivacoes(modelo, 0);
-      exportarFiltros(modelo, 0);
-      exportarAtivacoes(modelo, 2);
-      exportarFiltros(modelo, 2);
-
-      desenharSaidas(camada, 20);
    }
 
    /**
