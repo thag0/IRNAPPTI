@@ -34,6 +34,13 @@ def plotar_ativacoes(conv_layer: Conv2D, amostra):
    plt.show()
 
 def entropia_condicional(previsoes) -> float:
+   """
+      Calcula o valor de incerteza do modelo em relação as sua previsões.
+      
+      Valores mais baixos indicam menor incerteza do modelo, que significa
+      que o modelo tem bastante "confiança" na previsão feita.
+   """
+
    ec = -tf.reduce_sum(previsoes * tf.math.log(previsoes + 1e-10), axis=-1)
    return float(ec)
 
@@ -41,7 +48,7 @@ if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
-   amostra = carregar_imagem('./mnist/teste/6/img_0.jpg')
+   amostra = carregar_imagem('./mnist/teste/5/img_0.jpg')
 
    saida = modelo.call(amostra)
    entropia = entropia_condicional(saida)

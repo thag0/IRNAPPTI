@@ -25,9 +25,9 @@ public class AnaliseModelo{
 
       // Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "mlp-mnist-89.txt");
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "conv-mnist-95.txt");
-      modelo.info();
+      // modelo.info();
 
-      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "6/img_0.jpg"));
+      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "5/img_0.jpg"));
       modelo.calcularSaida(entrada);
 
       System.out.println("Valor previsto: " + maiorIndice(modelo.saidaParaArray()));
