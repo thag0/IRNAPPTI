@@ -17,20 +17,40 @@ public class AnaliseModelo{
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
 
-   // static final String CAMINHO_MODELO = "./modelos/rna/conv-mnist-95.txt";
-   // static final String CAMINHO_MODELO = "./modelos/rna/modelo-lenet.txt";
-   static final String CAMINHO_MODELO = "./modelos/rna/mlp-mnist-89.txt";
+   static final String CAMINHO_MODELO = "./modelos/rna/";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
    
    public static void main(String[] args){
       ged.limparConsole();
 
-      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO);
+      // Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "mlp-mnist-89.txt");
+      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "conv-mnist-95.txt");
       modelo.info();
 
-      // testarAcertosMNIST(modelo);
-      // testarTodosDados(modelo);
+      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "6/img_0.jpg"));
+      modelo.calcularSaida(entrada);
 
+      System.out.println("Valor previsto: " + maiorIndice(modelo.saidaParaArray()));
+
+      double entropia = entropiaCondicional(modelo.saidaParaArray());
+      System.out.println("Entropia condicional: " + (1 - entropia));
+   }
+
+   /**
+    * Calcula o valor de incerteza do modelo em relação as sua previsões.
+    * <p>
+    *    Valores mais baixos indicam menor incerteza do modelo, que significa
+    *    que o modelo tem bastante "confiança" na previsão feita.
+    * </p>
+    * @param previsoes previsões do modelo.
+    * @return valor de entropia condicional com base nas previsões.
+    */
+   static double entropiaCondicional(double[] previsoes){
+      double ec = 0;
+      for(double prev : previsoes){
+         ec += prev * Math.log(prev);
+      }
+      return -ec;
    }
 
    /**

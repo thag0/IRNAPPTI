@@ -5,6 +5,7 @@ from keras.activations import relu
 from keras.layers import Conv2D
 import matplotlib.pyplot as plt
 import numpy as np
+import tensorflow as tf
 
 def carregar_modelo(caminho: str) -> Sequential:
    return load_model(caminho)
@@ -32,12 +33,21 @@ def plotar_ativacoes(conv_layer: Conv2D, amostra):
 
    plt.show()
 
+def entropia_condicional(previsoes) -> float:
+   ec = -tf.reduce_sum(previsoes * tf.math.log(previsoes + 1e-10), axis=-1)
+   return float(ec)
+
 if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
-   conv1 = modelo.layers[0]
-
    amostra = carregar_imagem('./mnist/teste/6/img_0.jpg')
-   conv1.call(amostra)
-   plotar_ativacoes(conv1, amostra)
+
+   saida = modelo.call(amostra)
+   entropia = entropia_condicional(saida)
+   print('entropia condicional: ', (1 - entropia))
+
+   # conv1 = modelo.layers[0]
+
+   # conv1.call(amostra)
+   # plotar_ativacoes(conv1, amostra)
