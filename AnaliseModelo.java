@@ -24,16 +24,13 @@ public class AnaliseModelo{
       ged.limparConsole();
 
       // Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "mlp-mnist-89.txt");
-      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "conv-mnist-95.txt");
-      // modelo.info();
+      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "modelo-convolucional.txt");
+      modelo.info();
 
-      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "5/img_0.jpg"));
-      modelo.calcularSaida(entrada);
-
-      System.out.println("Valor previsto: " + maiorIndice(modelo.saidaParaArray()));
-
-      double entropia = entropiaCondicional(modelo.saidaParaArray());
-      System.out.println("Entropia condicional: " + (1 - entropia));
+      exportarAtivacoes(modelo, 0);
+      exportarAtivacoes(modelo, 2);
+      exportarFiltros(modelo, 0);
+      exportarFiltros(modelo, 2);
    }
 
    /**
