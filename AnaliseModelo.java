@@ -8,6 +8,7 @@ import render.Janela;
 import rna.camadas.*;
 import rna.core.Mat;
 import rna.core.OpMatriz;
+import rna.core.OpTensor4D;
 import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
 import rna.serializacao.Serializador;
@@ -16,6 +17,7 @@ public class AnaliseModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
    static OpMatriz opmat = new OpMatriz();
+   static OpTensor4D optensor = new OpTensor4D();
 
    static final String CAMINHO_MODELO = "./modelos/rna/";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
@@ -27,10 +29,14 @@ public class AnaliseModelo{
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "modelo-convolucional.txt");
       modelo.info();
 
-      exportarAtivacoes(modelo, 0);
-      exportarAtivacoes(modelo, 2);
-      exportarFiltros(modelo, 0);
-      exportarFiltros(modelo, 2);
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "4/img_1.jpg"));
+      modelo.calcularSaida(amostra);
+      desenharSaidas((Convolucional) modelo.camada(0), 10, true);
+
+      // exportarAtivacoes(modelo, 0);
+      // exportarAtivacoes(modelo, 2);
+      // exportarFiltros(modelo, 0);
+      // exportarFiltros(modelo, 2);
    }
 
    /**
@@ -51,18 +57,23 @@ public class AnaliseModelo{
    }
 
    /**
-    * Abre uma janela gráfica contendo a saída (normalizada) da camada
-    * fornecida.
+    * Abre uma janela gráfica contendo a saída da camada fornecida.
+    * <p>
+    *    É necessário que a camada tenha pré calculado algum resultado para
+    *    que ele poda ser visualizado.
+    * </p>
     * @param conv camada convolucional.
     * @param escala escala de ampliação da imagem original.
+    * @param normalizar normaliza os valores entre 0 e 1 para evitar artefatos
+    * na janela gráfica.
     */
-   static void desenharSaidas(Convolucional conv, int escala){
+   static void desenharSaidas(Convolucional conv, int escala, boolean normalizar){
       Mat[] arr = new Mat[conv.numFiltros()];
       for(int i = 0; i < arr.length; i++){
          arr[i] = new Mat(conv.saida.array2D(0, i));
       }
       
-      desenharMatrizes(arr, escala, true);
+      desenharMatrizes(arr, escala, normalizar);
    }
 
    /**
