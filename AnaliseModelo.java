@@ -25,18 +25,12 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      // Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "mlp-mnist-89.txt");
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "modelo-convolucional.txt");
-      modelo.info();
 
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "4/img_1.jpg"));
-      modelo.calcularSaida(amostra);
-      desenharSaidas((Convolucional) modelo.camada(0), 10, true);
-
-      // exportarAtivacoes(modelo, 0);
-      // exportarAtivacoes(modelo, 2);
-      // exportarFiltros(modelo, 0);
-      // exportarFiltros(modelo, 2);
+      exportarAtivacoes(modelo, 0);
+      exportarAtivacoes(modelo, 2);
+      exportarFiltros(modelo, 0);
+      exportarFiltros(modelo, 2);
    }
 
    /**
