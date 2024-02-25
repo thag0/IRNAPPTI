@@ -27,10 +27,13 @@ public class AnaliseModelo{
 
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "modelo-convolucional.txt");
 
-      exportarAtivacoes(modelo, 0);
-      exportarAtivacoes(modelo, 2);
-      exportarFiltros(modelo, 0);
-      exportarFiltros(modelo, 2);
+      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_1.jpg"));
+      modelo.calcularSaida(entrada);
+
+      exportarAtivacoes(modelo, 0, true);
+      exportarAtivacoes(modelo, 2, true);
+      exportarFiltros(modelo, 0, true);
+      exportarFiltros(modelo, 2, true);
    }
 
    /**
@@ -162,9 +165,11 @@ public class AnaliseModelo{
    /**
     * Salva os resultados das ativações e pré ativações de uma camada 
     * convolucional do modelo
-    * @param modelo modelo para análise.
+    * @param modelo modelo desejado.
+    * @param idConv índice da camada convolucional do modelo.
+    * @param normalizar normaliza os valores entre 0 e 1.
     */
-   static void exportarAtivacoes(Sequencial modelo, int idConv){
+   static void exportarAtivacoes(Sequencial modelo, int idConv, boolean normalizar){
       Convolucional camada;
       try{
          camada = (Convolucional) modelo.camada(idConv);
@@ -179,7 +184,7 @@ public class AnaliseModelo{
 
       final int digitos = 10;
       for(int i = 0; i < digitos; i++){
-         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_10.jpg";
+         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_11.jpg";
          var imagem = imagemParaMatriz(caminhoAmostra);
          var amostra = new double[][][]{imagem};
 
@@ -190,6 +195,11 @@ public class AnaliseModelo{
          for(int j = 0; j < saidas.length; j++){
             saidas[j] = new Mat(camada.saida.array2D(0, j));
             somatorios[j] = new Mat(camada.somatorio.array2D(0, j));
+
+            if(normalizar){
+               normalizar(saidas[j]);
+               normalizar(somatorios[j]);
+            }
          }
    
          int escala = 20;
@@ -208,9 +218,11 @@ public class AnaliseModelo{
 
    /**
     * Exporta os filtros da camada convolucional
-    * @param camada camada desejada.
+    * @param modelo modelo desejado.
+    * @param idConv índice da camada convolucional do modelo.
+    * @param normalizar normaliza os valores entre 0 e 1.
     */
-   static void exportarFiltros(Sequencial modelo, int idConv){
+   static void exportarFiltros(Sequencial modelo, int idConv, boolean normalizar){
       Convolucional camada;
       try{
          camada = (Convolucional) modelo.camada(idConv);
@@ -231,7 +243,7 @@ public class AnaliseModelo{
       Mat[] arrFiltros = new Mat[numFiltros];
       for(int i = 0; i < numFiltros; i++){
          arrFiltros[i] = new Mat(filtros.array2D(i, 0));
-         normalizar(arrFiltros[i]);
+         if(normalizar) normalizar(arrFiltros[i]);
       }
 
       exportarMatrizes(arrFiltros, 20, caminho);
