@@ -26,14 +26,15 @@ public class AnaliseModelo{
       ged.limparConsole();
 
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "modelo-convolucional.txt");
+      modelo.camadaSaida().bias().print(4);
 
-      Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_1.jpg"));
-      modelo.calcularSaida(entrada);
+      // Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_1.jpg"));
+      // modelo.calcularSaida(entrada);
 
-      exportarAtivacoes(modelo, 0, true);
-      exportarAtivacoes(modelo, 2, true);
-      exportarFiltros(modelo, 0, true);
-      exportarFiltros(modelo, 2, true);
+      // exportarAtivacoes(modelo, 0, true);
+      // exportarAtivacoes(modelo, 2, true);
+      // exportarFiltros(modelo, 0, true);
+      // exportarFiltros(modelo, 2, true);
    }
 
    /**
