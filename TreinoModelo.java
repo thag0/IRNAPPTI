@@ -17,8 +17,9 @@ public class TreinoModelo{
 
    static final int NUM_DIGITOS_TREINO = 10;
    static final int NUM_DIGITOS_TESTE  = 10;
-   static final int NUM_AMOSTRAS_TREINO = 200;
+   static final int NUM_AMOSTRAS_TREINO = 100;
    static final int NUM_AMOSTRAS_TESTE  = 100;
+   static final int EPOCAS_TREINO = 1;
 
    static final String caminhoTreino = "/mnist/treino/";
    static final String caminhoTeste = "/mnist/teste/";
@@ -45,7 +46,7 @@ public class TreinoModelo{
 
       System.out.println("Treinando.");
       t1 = System.nanoTime();
-      modelo.treinar(treinoX, treinoY, 30, true);
+      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, true);
       t2 = System.nanoTime();
 
       long tempoDecorrido = t2 - t1;
@@ -70,6 +71,11 @@ public class TreinoModelo{
       );
 
       salvarModelo(modelo, caminhoSaidaModelo);
+
+      Convolucional conv = (Convolucional) modelo.camada(2);
+      
+      int casas = 6;
+      conv.gradEntrada.print(casas);
    }
 
    /*
