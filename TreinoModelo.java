@@ -19,7 +19,7 @@ public class TreinoModelo{
    static final int NUM_DIGITOS_TESTE  = 10;
    static final int NUM_AMOSTRAS_TREINO = 100;
    static final int NUM_AMOSTRAS_TESTE  = 100;
-   static final int EPOCAS_TREINO = 1;
+   static final int EPOCAS_TREINO = 25;
 
    static final String caminhoTreino = "/mnist/treino/";
    static final String caminhoTeste = "/mnist/teste/";
@@ -71,11 +71,6 @@ public class TreinoModelo{
       );
 
       salvarModelo(modelo, caminhoSaidaModelo);
-
-      Convolucional conv = (Convolucional) modelo.camada(2);
-      
-      int casas = 6;
-      conv.gradEntrada.print(casas);
    }
 
    /*
@@ -89,11 +84,11 @@ public class TreinoModelo{
          new Convolucional(new int[]{4, 4}, 26, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(130, "sigmoid"),
+         new Densa(120, "sigmoid"),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
-      modelo.compilar(new SGD(0.001, 0.95), "entropia-cruzada");
+      modelo.compilar(new SGD(0.001, 0.99), "entropia-cruzada");
 
       return modelo;
    }

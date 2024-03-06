@@ -25,7 +25,7 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "conv-mnist-93-9.txt");
+      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "modelo-convolucional.txt");
       // testarAcertosMNIST(modelo);
 
       // Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_1.jpg"));
