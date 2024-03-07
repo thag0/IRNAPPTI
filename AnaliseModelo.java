@@ -25,7 +25,9 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + "modelo-convolucional.txt");
+      String nomeModelo = "conv-mnist-95-8";
+      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
+      modelo.info();
       // testarAcertosMNIST(modelo);
 
       // Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_1.jpg"));
@@ -185,7 +187,7 @@ public class AnaliseModelo{
 
       final int digitos = 10;
       for(int i = 0; i < digitos; i++){
-         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_11.jpg";
+         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_15.jpg";
          var imagem = imagemParaMatriz(caminhoAmostra);
          var amostra = new double[][][]{imagem};
 
