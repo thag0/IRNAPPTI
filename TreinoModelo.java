@@ -79,9 +79,9 @@ public class TreinoModelo{
    static Sequencial criarModelo(){
       Sequencial modelo = new Sequencial(new Camada[]{
          new Entrada(28, 28),
-         new Convolucional(new int[]{5, 5}, 18, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{4, 4}, 26, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(120, "sigmoid"),
