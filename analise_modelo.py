@@ -48,13 +48,13 @@ if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
-   amostra = carregar_imagem('./mnist/teste/5/img_0.jpg')
+   amostra = carregar_imagem('./mnist/teste/5/img_2.jpg')
 
    saida = modelo.call(amostra)
    entropia = entropia_condicional(saida)
    print('entropia condicional: ', (1 - entropia))
 
-   # conv1 = modelo.layers[0]
+   conv1 = modelo.layers[0]
 
-   # conv1.call(amostra)
-   # plotar_ativacoes(conv1, amostra)
+   conv1.call(amostra)
+   plotar_ativacoes(conv1, amostra)

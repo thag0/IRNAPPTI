@@ -28,6 +28,12 @@ public class TreinoModelo{
    public static void main(String[] args){
       ged.limparConsole();
       
+      // Tensor4D teste = new Tensor4D(2, 2, 2, 2);
+      // new GlorotUniforme().inicializar(teste, 0, 0);
+      // teste.print(3);
+      // System.exit(0);
+
+      
       final var treinoX = carregarDadosMNIST(caminhoTreino, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
       final var treinoY = criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
       System.out.println(
@@ -76,7 +82,7 @@ public class TreinoModelo{
    /*
     * Criação de modelos para testes.
     */
-   static Sequencial criarModelo(){
+    static Sequencial criarModelo(){
       Sequencial modelo = new Sequencial(new Camada[]{
          new Entrada(28, 28),
          new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
@@ -84,12 +90,12 @@ public class TreinoModelo{
          new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(120, "sigmoid"),
+         new Densa(126, "sigmoid"),
+         new Dropout(0.3),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
       modelo.compilar(new SGD(0.001, 0.99), "entropia-cruzada");
-
       return modelo;
    }
 

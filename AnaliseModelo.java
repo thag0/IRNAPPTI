@@ -25,18 +25,17 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-95-8";
+      // String nomeModelo = "conv-mnist-95-8";
+      String nomeModelo = "modelo-convolucional";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
       modelo.info();
       // testarAcertosMNIST(modelo);
 
-      // Tensor4D entrada = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "7/img_1.jpg"));
-      // modelo.calcularSaida(entrada);
-
-      exportarAtivacoes(modelo, 0, true);
-      exportarAtivacoes(modelo, 2, true);
-      exportarFiltros(modelo, 0, true);
-      exportarFiltros(modelo, 2, true);
+      boolean normalizar = false;
+      exportarAtivacoes(modelo, 0, normalizar);
+      exportarAtivacoes(modelo, 2, normalizar);
+      exportarFiltros(modelo, 0, normalizar);
+      exportarFiltros(modelo, 2, normalizar);
    }
 
    /**
@@ -187,7 +186,7 @@ public class AnaliseModelo{
 
       final int digitos = 10;
       for(int i = 0; i < digitos; i++){
-         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_15.jpg";
+         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_16.jpg";
          var imagem = imagemParaMatriz(caminhoAmostra);
          var amostra = new double[][][]{imagem};
 
