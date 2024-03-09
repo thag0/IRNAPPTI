@@ -48,7 +48,7 @@ if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
-   amostra = carregar_imagem('./mnist/teste/5/img_2.jpg')
+   amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
 
    saida = modelo.call(amostra)
    entropia = entropia_condicional(saida)

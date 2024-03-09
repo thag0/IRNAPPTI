@@ -6,6 +6,7 @@ import ged.Dados;
 import ged.Ged;
 import geim.Geim;
 import rna.camadas.*;
+import rna.core.Tensor4D;
 import rna.modelos.Modelo;
 import rna.modelos.Sequencial;
 import rna.otimizadores.SGD;
@@ -16,10 +17,10 @@ public class TreinoModelo{
    static Geim geim = new Geim();
 
    static final int NUM_DIGITOS_TREINO = 10;
-   static final int NUM_DIGITOS_TESTE  = 10;
-   static final int NUM_AMOSTRAS_TREINO = 100;
+   static final int NUM_DIGITOS_TESTE  = NUM_DIGITOS_TREINO;
+   static final int NUM_AMOSTRAS_TREINO = 200;
    static final int NUM_AMOSTRAS_TESTE  = 100;
-   static final int EPOCAS_TREINO = 25;
+   static final int EPOCAS_TREINO = 20;
 
    static final String caminhoTreino = "/mnist/treino/";
    static final String caminhoTeste = "/mnist/teste/";
@@ -28,19 +29,9 @@ public class TreinoModelo{
    public static void main(String[] args){
       ged.limparConsole();
       
-      // Tensor4D teste = new Tensor4D(2, 2, 2, 2);
-      // new GlorotUniforme().inicializar(teste, 0, 0);
-      // teste.print(3);
-      // System.exit(0);
-
-      
-      final var treinoX = carregarDadosMNIST(caminhoTreino, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
+      final var treinoX = new Tensor4D(carregarDadosMNIST(caminhoTreino, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
       final var treinoY = criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
-      System.out.println(
-         "Dados de treino (" + 
-         treinoX.length + ", " + treinoX[0].length + ", " + treinoX[0][0].length + ", " + treinoX[0][0][0].length + 
-         ")\n"
-      );
+      System.out.println("Dados de treino = " + treinoX.shapeStr());
 
       Sequencial modelo = criarModelo();
       modelo.configurarHistorico(true);
@@ -52,7 +43,7 @@ public class TreinoModelo{
 
       System.out.println("Treinando.");
       t1 = System.nanoTime();
-      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, true);
+      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, 16, true);
       t2 = System.nanoTime();
 
       long tempoDecorrido = t2 - t1;
@@ -90,7 +81,7 @@ public class TreinoModelo{
          new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(126, "sigmoid"),
+         new Densa(128, "sigmoid"),
          new Dropout(0.3),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
