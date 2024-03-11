@@ -1,10 +1,9 @@
 import os
 from keras.models import Sequential, load_model
 from keras.preprocessing import image
-from keras.activations import relu
-from keras.layers import Conv2D
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.core.multiarray import ndarray
 import tensorflow as tf
 
 def carregar_modelo(caminho: str) -> Sequential:
@@ -18,20 +17,16 @@ def carregar_imagem(caminho: str):
 
    return img_tensor
 
-def plotar_ativacoes(conv_layer: Conv2D, amostra):
-   modelo = Sequential([conv_layer])
-   predicoes = modelo.predict(amostra, verbose=0)
+def plotar_ativacoes(modelo: Sequential, amostra: ndarray, id_camada: int):
+   predicoes = amostra
+   for i in range(len(modelo.layers)):
+      camada = modelo.layers[i]
+      predicoes = camada.call(predicoes)
 
-   num_filtros = predicoes.shape[-1]
-   linhas = int(np.ceil(num_filtros / 8))
-   _, axes = plt.subplots(linhas, 8, figsize=(14, 2 * linhas))
-   for i, ax_row in enumerate(axes):
-      for j, ax in enumerate(ax_row):
-         if i * 8 + j < num_filtros:
-            ax.imshow(predicoes[0, :, :, i * 8 + j], cmap='viridis')
-         ax.axis('off')
+      if(i == id_camada):
+         break
 
-   plt.show()
+   print(predicoes.shape)
 
 def entropia_condicional(previsoes) -> float:
    """
@@ -49,12 +44,4 @@ if __name__ == '__main__':
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
    amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-
-   saida = modelo.call(amostra)
-   entropia = entropia_condicional(saida)
-   print('entropia condicional: ', (1 - entropia))
-
-   conv1 = modelo.layers[0]
-
-   conv1.call(amostra)
-   plotar_ativacoes(conv1, amostra)
+   plotar_ativacoes(modelo, amostra, 0)

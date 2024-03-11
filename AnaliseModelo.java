@@ -31,11 +31,11 @@ public class AnaliseModelo{
       modelo.info();
       // testarAcertosMNIST(modelo);
 
-      boolean normalizar = false;
-      exportarAtivacoes(modelo, 0, normalizar);
-      exportarAtivacoes(modelo, 2, normalizar);
-      exportarFiltros(modelo, 0, normalizar);
-      exportarFiltros(modelo, 2, normalizar);
+      // boolean normalizar = false;
+      // exportarAtivacoes(modelo, 0, normalizar);
+      // exportarAtivacoes(modelo, 2, normalizar);
+      // exportarFiltros(modelo, 0, normalizar);
+      // exportarFiltros(modelo, 2, normalizar);
    }
 
    /**
