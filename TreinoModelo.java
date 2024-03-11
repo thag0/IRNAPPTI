@@ -5,7 +5,13 @@ import java.util.concurrent.TimeUnit;
 import ged.Dados;
 import ged.Ged;
 import geim.Geim;
-import rna.camadas.*;
+import rna.camadas.Camada;
+import rna.camadas.Convolucional;
+import rna.camadas.Densa;
+import rna.camadas.Dropout;
+import rna.camadas.Entrada;
+import rna.camadas.Flatten;
+import rna.camadas.MaxPooling;
 import rna.core.Tensor4D;
 import rna.modelos.Modelo;
 import rna.modelos.Sequencial;
@@ -78,15 +84,15 @@ public class TreinoModelo{
          new Entrada(28, 28),
          new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 20, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(128, "sigmoid"),
-         new Dropout(0.3),
+         new Dropout(0.25),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
-      modelo.compilar(new SGD(0.001, 0.99), "entropia-cruzada");
+      modelo.compilar(new SGD(0.01, 0.9), "entropia-cruzada");
       return modelo;
    }
 
