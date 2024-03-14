@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.core.multiarray import ndarray
 import tensorflow as tf
+from keras.layers import (Conv2D, MaxPool2D)
 
 def carregar_modelo(caminho: str) -> Sequential:
    return load_model(caminho)
@@ -17,17 +18,6 @@ def carregar_imagem(caminho: str):
 
    return img_tensor
 
-def plotar_ativacoes(modelo: Sequential, amostra: ndarray, id_camada: int):
-   predicoes = amostra
-   for i in range(len(modelo.layers)):
-      camada = modelo.layers[i]
-      predicoes = camada.call(predicoes)
-
-      if(i == id_camada):
-         break
-
-   print(predicoes.shape)
-
 def entropia_condicional(previsoes) -> float:
    """
       Calcula o valor de incerteza do modelo em relação as sua previsões.
@@ -39,9 +29,44 @@ def entropia_condicional(previsoes) -> float:
    ec = -tf.reduce_sum(previsoes * tf.math.log(previsoes + 1e-10), axis=-1)
    return float(ec)
 
+def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
+   if not isinstance(modelo.layers[id_camada], (Conv2D, MaxPool2D)):
+      print("Id deve ser de uma camada convolucional ou maxpooling mas é de ", type(modelo.layers[id_camada]))
+      return
+   
+   # pegar saída
+   saida = entrada
+   for i in range(len(modelo.layers)):
+      saida = modelo.layers[i].call(saida)
+      if i == id_camada:
+         break
+
+   if len(saida.shape) == 4:
+      # o keras usa (batch, largura, altura, canais)
+      # só tirando o batch_size (largura, altura, canais)
+      saida = saida[0]
+
+   # poltar saidas
+   num_filtros = saida.shape[-1]
+   n_col = 8
+   n_lin = int(np.ceil(num_filtros / n_col))
+
+   _, axs = plt.subplots(n_lin, n_col, figsize=(10, 6))
+   for i in range(num_filtros):
+      ax = axs[i // n_col, i % n_col]
+      imagem = saida[..., i]
+      ax.imshow(imagem, cmap="gray")
+ 
+      # remover os eixos X e Y do plot
+      ax.set_xticks([])
+      ax.set_yticks([])
+
+   plt.tight_layout()
+   plt.show()
+
 if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
    amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-   plotar_ativacoes(modelo, amostra, 0)
+   plotar_ativacoes(modelo, amostra, 2)
