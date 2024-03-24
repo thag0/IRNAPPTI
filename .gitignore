@@ -1,6 +1,2 @@
-.vscode
-
 # não commitar as imagens geradas para analise
-resultados/ativacoes/*/*/*.png
-resultados/filtros/*/*.png
-resultados/pre-ativacoes/*/*/*.png
+resultados/*
