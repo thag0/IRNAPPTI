@@ -12,7 +12,7 @@ def criar_modelo_convolucional() -> Sequential:
       Modelos com camadas convolucionais
    """
 
-   seq = Sequential([
+   modelo = Sequential([
       InputLayer((28, 28, 1)),
       Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
       MaxPool2D((2, 2)),
@@ -23,13 +23,13 @@ def criar_modelo_convolucional() -> Sequential:
       Dense(10, activation="softmax")
    ])
 
-   seq.compile(
+   modelo.compile(
       SGD(0.01, 0.9),
       "categorical_crossentropy",
       metrics=['accuracy']
    )
 
-   return seq
+   return modelo
 
 def criar_modelo_convolucional_lstm() -> Sequential:
    """

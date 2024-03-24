@@ -25,17 +25,16 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      // String nomeModelo = "conv-mnist-95-8";
-      String nomeModelo = "modelo-convolucional";
+      String nomeModelo = "conv-mnist-95-8";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
-      modelo.info();
+      // modelo.info();
       // testarAcertosMNIST(modelo);
 
-      // boolean normalizar = false;
-      // exportarAtivacoes(modelo, 0, normalizar);
-      // exportarAtivacoes(modelo, 2, normalizar);
-      // exportarFiltros(modelo, 0, normalizar);
-      // exportarFiltros(modelo, 2, normalizar);
+      boolean normalizar = false;
+      exportarAtivacoes(modelo, 0, normalizar);
+      exportarAtivacoes(modelo, 2, normalizar);
+      exportarFiltros(modelo, 0, normalizar);
+      exportarFiltros(modelo, 2, normalizar);
    }
 
    /**

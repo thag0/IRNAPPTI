@@ -69,4 +69,4 @@ if __name__ == '__main__':
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
    amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-   plotar_ativacoes(modelo, amostra, 2)
+   plotar_ativacoes(modelo, amostra, 0)
