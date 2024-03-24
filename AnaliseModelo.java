@@ -30,11 +30,14 @@ public class AnaliseModelo{
       // modelo.info();
       // testarAcertosMNIST(modelo);
 
-      boolean normalizar = false;
-      exportarAtivacoes(modelo, 0, normalizar);
-      exportarAtivacoes(modelo, 2, normalizar);
-      exportarFiltros(modelo, 0, normalizar);
-      exportarFiltros(modelo, 2, normalizar);
+      Tensor4D tensor = modelo.camada(7).kernel();
+      tensor.print(4);
+
+      // boolean normalizar = false;
+      // exportarAtivacoes(modelo, 0, normalizar);
+      // exportarAtivacoes(modelo, 2, normalizar);
+      // exportarFiltros(modelo, 0, normalizar);
+      // exportarFiltros(modelo, 2, normalizar);
    }
 
    /**
