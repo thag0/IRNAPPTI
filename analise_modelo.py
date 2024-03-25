@@ -77,5 +77,5 @@ if __name__ == '__main__':
    saida: tf.Tensor = modelo.call(amostra)
    saida = tf.reshape(saida, (10, 1))
    print(saida)
+   #a
    print("Previsto: ", maior_indice(saida))
-   #asgagas
