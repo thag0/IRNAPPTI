@@ -64,9 +64,17 @@ def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
    plt.tight_layout()
    plt.show()
 
+def maior_indice(tensor) -> int:
+   return np.argmax(tensor)
+
 if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
    amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-   plotar_ativacoes(modelo, amostra, 0)
+   # plotar_ativacoes(modelo, amostra, 0)
+   
+   saida: tf.Tensor = modelo.call(amostra)
+   saida = tf.reshape(saida, (10, 1))
+   print(saida)
+   print("Previsto: ", maior_indice(saida))

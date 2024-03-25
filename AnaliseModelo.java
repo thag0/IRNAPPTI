@@ -28,9 +28,13 @@ public class AnaliseModelo{
       String nomeModelo = "modelo-convolucional";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      Tensor4D tensor = modelo.camada(0).kernel();
-      tensor.print(4);
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "8/img_0.jpg"));
+      modelo.calcularSaida(amostra);
 
+      Tensor4D saida = modelo.camadaSaida().saida();
+      saida.reformatar(1, 1, 10, 1);
+      saida.print(4);
+      System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
 
       // boolean normalizar = true;
       // exportarAtivacoes(modelo, 0, normalizar, 20);
