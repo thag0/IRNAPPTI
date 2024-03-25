@@ -25,17 +25,16 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-95-8";
+      String nomeModelo = "modelo-convolucional";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
-      // modelo.info();
-      // testarAcertosMNIST(modelo);
 
-      Tensor4D tensor = modelo.camada(7).kernel();
+      Tensor4D tensor = modelo.camada(0).kernel();
       tensor.print(4);
 
-      // boolean normalizar = false;
-      // exportarAtivacoes(modelo, 0, normalizar);
-      // exportarAtivacoes(modelo, 2, normalizar);
+
+      // boolean normalizar = true;
+      // exportarAtivacoes(modelo, 0, normalizar, 20);
+      // exportarAtivacoes(modelo, 2, normalizar, 20);
       // exportarFiltros(modelo, 0, normalizar);
       // exportarFiltros(modelo, 2, normalizar);
    }
@@ -173,7 +172,7 @@ public class AnaliseModelo{
     * @param idConv índice da camada convolucional do modelo.
     * @param normalizar normaliza os valores entre 0 e 1.
     */
-   static void exportarAtivacoes(Sequencial modelo, int idConv, boolean normalizar){
+   static void exportarAtivacoes(Sequencial modelo, int idConv, boolean normalizar, int escala){
       Convolucional camada;
       try{
          camada = (Convolucional) modelo.camada(idConv);
@@ -205,8 +204,7 @@ public class AnaliseModelo{
                normalizar(somatorios[j]);
             }
          }
-   
-         int escala = 20;
+
          String caminhoSomatorio = "./resultados/pre-ativacoes/" + diretorioCamada + "/" + i + "/";
          String caminhoSaida = "./resultados/ativacoes/" + diretorioCamada + "/" + i + "/";
 
