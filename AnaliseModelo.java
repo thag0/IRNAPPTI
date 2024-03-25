@@ -28,16 +28,20 @@ public class AnaliseModelo{
       String nomeModelo = "conv-mnist-93-6";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      int digito = 7;
+      int digito = 1;
       Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
       modelo.calcularSaida(amostra);
 
-      gradCAM(modelo, amostra, gerarRotuloMnist(digito));
+      // gradCAM(modelo, amostra, gerarRotuloMnist(digito));
 
-      // Tensor4D saida = modelo.camadaSaida().saida();
-      // saida.reformatar(10, 1);
-      // saida.print(4);
-      // System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
+      Tensor4D saida = modelo.camadaSaida().saida();
+      saida.reformatar(10, 1);
+      saida.print(4);
+      System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
+      System.out.println("Entropia condicional: " + (1- entropiaCondicional(modelo.saidaParaArray())));
+
+      Tensor4D filtro = modelo.camada(0).kernel();
+      desenharMatriz(new Mat(filtro.array2D(1, 0)), 40, true);
 
       // boolean normalizar = true;
       // exportarAtivacoes(modelo, 0, normalizar, 20);
@@ -46,6 +50,12 @@ public class AnaliseModelo{
       // exportarFiltros(modelo, 2, normalizar);
    }
 
+   /**
+    * Região mais significativa para a rede definir o dígito.
+    * @param modelo
+    * @param entrada
+    * @param rotulo
+    */
    static void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
       //passo de backpropagation
       modelo.calcularSaida(entrada);
@@ -73,7 +83,7 @@ public class AnaliseModelo{
             mapa.add(saidas.subTensor2D(0, j));
          }
       }
-
+      
       for(int i = 0; i < conv.entrada.dim2(); i++){
          mapa.add(conv.saida.subTensor2D(0, i));
       }
