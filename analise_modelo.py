@@ -78,3 +78,5 @@ if __name__ == '__main__':
    saida = tf.reshape(saida, (10, 1))
    print(saida)
    print("Previsto: ", maior_indice(saida))
+
+   # teste
