@@ -32,16 +32,13 @@ public class AnaliseModelo{
       Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
       modelo.calcularSaida(amostra);
 
-      // gradCAM(modelo, amostra, gerarRotuloMnist(digito));
+      gradCAM(modelo, amostra, gerarRotuloMnist(digito));
 
       Tensor4D saida = modelo.camadaSaida().saida();
       saida.reformatar(10, 1);
       saida.print(4);
       System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
       System.out.println("Entropia condicional: " + (1- entropiaCondicional(modelo.saidaParaArray())));
-
-      Tensor4D filtro = modelo.camada(0).kernel();
-      desenharMatriz(new Mat(filtro.array2D(1, 0)), 40, true);
 
       // boolean normalizar = true;
       // exportarAtivacoes(modelo, 0, normalizar, 20);
@@ -83,6 +80,8 @@ public class AnaliseModelo{
             mapa.add(saidas.subTensor2D(0, j));
          }
       }
+
+      desenharMatriz(new Mat(mapa.array2D(0, 0)), 20, true);
       
       for(int i = 0; i < conv.entrada.dim2(); i++){
          mapa.add(conv.saida.subTensor2D(0, i));

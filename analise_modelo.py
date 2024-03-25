@@ -1,7 +1,9 @@
 import os
 from keras.models import Sequential, load_model
 from keras.preprocessing import image
+from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import numpy as np
 from numpy.core.multiarray import ndarray
 import tensorflow as tf
@@ -51,11 +53,20 @@ def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
    n_col = 8
    n_lin = int(np.ceil(num_filtros / n_col))
 
+   arr = list()
+   val_max = 5
+   for i in range(0, val_max):
+      cor = i * (1 / val_max)
+      arr.append((0, cor, cor))
+      #gradiente roxo (cor, 0, cor)
+      #gradiente azul (0, cor, cor)
+   color_map = ListedColormap(arr)
+
    _, axs = plt.subplots(n_lin, n_col, figsize=(10, 6))
    for i in range(num_filtros):
       ax = axs[i // n_col, i % n_col]
       imagem = saida[..., i]
-      ax.imshow(imagem, cmap="gray")
+      ax.imshow(imagem, cmap=color_map)
  
       # remover os eixos X e Y do plot
       ax.set_xticks([])
@@ -71,12 +82,10 @@ if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
-   amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-   # plotar_ativacoes(modelo, amostra, 0)
+   amostra = carregar_imagem('./mnist/teste/8/img_0.jpg')
+   plotar_ativacoes(modelo, amostra, 0)
    
    saida: tf.Tensor = modelo.call(amostra)
    saida = tf.reshape(saida, (10, 1))
    print(saida)
-   #a
    print("Previsto: ", maior_indice(saida))
-   #tafarel
