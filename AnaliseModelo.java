@@ -25,22 +25,70 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "modelo-convolucional";
+      String nomeModelo = "conv-mnist-93-6";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM + "8/img_0.jpg"));
+      int digito = 7;
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
       modelo.calcularSaida(amostra);
 
-      Tensor4D saida = modelo.camadaSaida().saida();
-      saida.reformatar(1, 1, 10, 1);
-      saida.print(4);
-      System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
+      gradCAM(modelo, amostra, gerarRotuloMnist(digito));
+
+      // Tensor4D saida = modelo.camadaSaida().saida();
+      // saida.reformatar(10, 1);
+      // saida.print(4);
+      // System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
 
       // boolean normalizar = true;
       // exportarAtivacoes(modelo, 0, normalizar, 20);
       // exportarAtivacoes(modelo, 2, normalizar, 20);
       // exportarFiltros(modelo, 0, normalizar);
       // exportarFiltros(modelo, 2, normalizar);
+   }
+
+   static void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
+      //passo de backpropagation
+      modelo.calcularSaida(entrada);
+      double[] derivadas = modelo.perda().derivada(modelo.saidaParaArray(), rotulo);
+      int numCamadas = modelo.numCamadas();
+      modelo.camada(numCamadas-1).calcularGradiente(new Tensor4D(derivadas));
+      for(int i = numCamadas-2; i >= 0; i--){
+         modelo.camada(i).calcularGradiente(modelo.camada(i+1).gradEntrada());
+      }
+
+      //passo de análise
+      Convolucional conv = (Convolucional) modelo.camada(2);
+      Tensor4D gradiente = conv.gradSaida.clone();
+
+      Tensor4D mapa = new Tensor4D(gradiente.dim3(), gradiente.dim4());
+      mapa.nome("mapa");
+      for(int i = 0 ; i < gradiente.dim2(); i++){
+         Tensor4D temp = new Tensor4D(gradiente.array2D(0, i));
+         double media = temp.somar() / temp.tamanho();
+
+         Tensor4D saidas = conv.saida().clone();
+         saidas.map(x -> x*media);
+
+         for(int j = 0; j < saidas.dim2(); j++){
+            mapa.add(saidas.subTensor2D(0, j));
+         }
+      }
+
+      for(int i = 0; i < conv.entrada.dim2(); i++){
+         mapa.add(conv.saida.subTensor2D(0, i));
+      }
+      mapa.print(5);
+      desenharMatriz(new Mat(mapa.array2D(0, 0)), 20, true);
+   }
+
+   static double[] gerarRotuloMnist(int digito){
+      double[] arr = new double[10];
+      for(int i = 0; i < arr.length; i++){
+         arr[i] = 0;
+      }
+      arr[digito] = 1;
+
+      return arr;
    }
 
    /**

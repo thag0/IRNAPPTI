@@ -8,7 +8,6 @@ import geim.Geim;
 import rna.camadas.Camada;
 import rna.camadas.Convolucional;
 import rna.camadas.Densa;
-import rna.camadas.Dropout;
 import rna.camadas.Entrada;
 import rna.camadas.Flatten;
 import rna.camadas.MaxPooling;
@@ -49,7 +48,7 @@ public class TreinoModelo{
 
       System.out.println("Treinando.");
       t1 = System.nanoTime();
-      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, 16, true);
+      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, 32, true);
       t2 = System.nanoTime();
 
       long tempoDecorrido = t2 - t1;
@@ -88,7 +87,6 @@ public class TreinoModelo{
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(128, "sigmoid"),
-         new Dropout(0.25),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 
