@@ -25,19 +25,19 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-93";
+      String nomeModelo = "conv-mnist-94";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      int digito = 1;
-      // Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz("/mnist/3_deslocado.jpg"));
+      int digito = 4;
+      // Tensor4D amostra = new Tensor4D(imagemParaMatriz("/mnist/3_deslocado.jpg"));
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
       modelo.calcularSaida(amostra);
 
       gradCAM(modelo, amostra, gerarRotuloMnist(digito));
 
       Tensor4D saida = modelo.camadaSaida().saida();
       saida.reformatar(10, 1);
-      saida.print(4);
+      saida.print(8);
       System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
       System.out.println("Entropia condicional: " + (1- entropiaCondicional(modelo.saidaParaArray())));
 
@@ -65,7 +65,11 @@ public class AnaliseModelo{
       }
 
       //passo de análise
-      Convolucional conv = (Convolucional) modelo.camada(2);
+      int idUltimaConv = 0;
+      for(int i = 0; i < modelo.numCamadas(); i++){
+         if(modelo.camada(i) instanceof Convolucional) idUltimaConv = i;
+      }
+      Convolucional conv = (Convolucional) modelo.camada(idUltimaConv);
       Tensor4D gradiente = conv.gradSaida.clone();
 
       Tensor4D mapa = new Tensor4D(gradiente.dim3(), gradiente.dim4());
