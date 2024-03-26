@@ -1,11 +1,12 @@
 from keras.models import Sequential
 from keras.layers import (InputLayer, Dense, Conv2D, ConvLSTM2D,MaxPool2D, TimeDistributed, Dropout, Flatten)
 from keras.optimizers import SGD
-from keras.datasets import mnist
+from keras.datasets import (mnist, cifar10)
 from keras.utils import to_categorical
 from keras.activations import leaky_relu
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 def criar_modelo_convolucional() -> Sequential:
    """
@@ -13,18 +14,19 @@ def criar_modelo_convolucional() -> Sequential:
    """
 
    modelo = Sequential([
-      InputLayer((28, 28, 1)),
-      Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
-      MaxPool2D((2, 2)),
+      InputLayer((32, 32, 3)),
       Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
       MaxPool2D((2, 2)),
+      Conv2D(64, (3, 3), activation='relu'),
+      MaxPool2D((2, 2)),
+      Conv2D(64, (3, 3), activation='relu'),
       Flatten(),
       Dense(128, activation='relu'),
-      Dense(10, activation="softmax")
+      Dense(10, activation='softmax')
    ])
 
    modelo.compile(
-      SGD(0.01, 0.9),
+      "adam",
       "categorical_crossentropy",
       metrics=['accuracy']
    )
@@ -77,23 +79,22 @@ def criar_modelo_mlp() -> Sequential:
    return seq
 
 def carregar_dados(n_treino: int=100, n_teste: int=100):
-   (treino_x, treino_y), (teste_x, teste_y) = mnist.load_data()
+   (treino_x, treino_y), (teste_x, teste_y) = cifar10.load_data()
 
-   id_treino = np.random.choice(len(treino_x), n_treino, replace=False)
-   treino_x = treino_x[id_treino]
-   treino_y = treino_y[id_treino]
+   # Selecionar um subconjunto aleatório de dados
+   treino_x = treino_x[:n_treino]
+   treino_y = treino_y[:n_treino]
+   teste_x = teste_x[:n_teste]
+   teste_y = teste_y[:n_teste]
 
-   id_teste = np.random.choice(len(teste_x), n_teste, replace=False)
-   teste_x = teste_x[id_teste]
-   teste_y = teste_y[id_teste]
-
-   # normalizar os valores
+   # Normalizar os valores de pixel para o intervalo [0, 1]
    treino_x = treino_x.astype('float32') / 255.0
    teste_x = teste_x.astype('float32') / 255.0
 
-   # converter para rótulos
+   # Converter rótulos em formato one-hot
    treino_y = to_categorical(treino_y, num_classes=10)
    teste_y = to_categorical(teste_y, num_classes=10)
+   print(treino_x.shape)
 
    return treino_x, treino_y, teste_x, teste_y
 
@@ -101,32 +102,44 @@ def treinar_modelo(modelo: Sequential, treino_x, treino_y, epocas: int):
    historico = modelo.fit(treino_x, treino_y, epochs=epocas, verbose=0)
    return historico
 
+def plotar_historico(historico):
+   # Plotar a perda do modelo
+   plt.plot(historico.history['loss'], label='Perda de Treinamento')
+   plt.xlabel('Época')
+   plt.ylabel('Perda')
+   plt.title('Histórico de Perda do Modelo')
+   plt.legend()
+   plt.ylim(bottom=0)
+   plt.show()
+
 if __name__ == '__main__':
    os.system('cls')
 
+   epochs = 15
 
-   epochs = 50
-
-   treino_x, treino_y, teste_x, teste_y = carregar_dados(1_000, 1_000)
+   treino_x, treino_y, teste_x, teste_y = carregar_dados(25_000, 5_000)
 
    # mlp
-   modelo_mlp = criar_modelo_mlp()
-   historico_mlp = treinar_modelo(modelo_mlp,  treino_x, treino_y, epochs)
-   perda_teste, precisao_teste = modelo_mlp.evaluate(teste_x, teste_y)
-   print("Mlp -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   # modelo_mlp = criar_modelo_mlp()
+   # historico_mlp = treinar_modelo(modelo_mlp,  treino_x, treino_y, epochs)
+   # perda_teste, precisao_teste = modelo_mlp.evaluate(teste_x, teste_y)
+   # print("Mlp -> perda: ", perda_teste, " precisão: ", precisao_teste)
    
    # conv
    modelo_conv = criar_modelo_convolucional()
    historico_conv = treinar_modelo(modelo_conv, treino_x, treino_y, epochs)
    perda_teste,  precisao_teste  = modelo_conv.evaluate(teste_x, teste_y)
    print("Conv -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   plotar_historico(historico_conv)
+
+   modelo_conv.save('modelos/keras/modelo-cifar10.keras')
    
    # lstm
-   modelo_lstm = criar_modelo_convolucional_lstm()
-   treino_x_lstm = np.expand_dims(treino_x, axis=-1)  # Adiciona a dimensão do canal
-   treino_x_lstm = np.expand_dims(treino_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
-   teste_x_lstm = np.expand_dims(teste_x, axis=-1)  # Adiciona a dimensão do canal
-   teste_x_lstm = np.expand_dims(teste_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
-   historico_lstm = treinar_modelo(modelo_lstm, treino_x_lstm, treino_y, epochs)
-   perda_teste,  precisao_teste  = modelo_lstm.evaluate(teste_x_lstm, teste_y)
-   print("Lstm -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   # modelo_lstm = criar_modelo_convolucional_lstm()
+   # treino_x_lstm = np.expand_dims(treino_x, axis=-1)  # Adiciona a dimensão do canal
+   # treino_x_lstm = np.expand_dims(treino_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
+   # teste_x_lstm = np.expand_dims(teste_x, axis=-1)  # Adiciona a dimensão do canal
+   # teste_x_lstm = np.expand_dims(teste_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
+   # historico_lstm = treinar_modelo(modelo_lstm, treino_x_lstm, treino_y, epochs)
+   # perda_teste,  precisao_teste  = modelo_lstm.evaluate(teste_x_lstm, teste_y)
+   # print("Lstm -> perda: ", perda_teste, " precisão: ", precisao_teste)

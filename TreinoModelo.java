@@ -8,6 +8,7 @@ import geim.Geim;
 import rna.camadas.Camada;
 import rna.camadas.Convolucional;
 import rna.camadas.Densa;
+import rna.camadas.Dropout;
 import rna.camadas.Entrada;
 import rna.camadas.Flatten;
 import rna.camadas.MaxPooling;
@@ -48,7 +49,7 @@ public class TreinoModelo{
 
       System.out.println("Treinando.");
       t1 = System.nanoTime();
-      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, 32, true);
+      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, true);
       t2 = System.nanoTime();
 
       long tempoDecorrido = t2 - t1;
@@ -81,12 +82,14 @@ public class TreinoModelo{
     static Sequencial criarModelo(){
       Sequencial modelo = new Sequencial(new Camada[]{
          new Entrada(28, 28),
-         new Convolucional(new int[]{3, 3}, 16, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 22, "leaky-relu"),
+         new Dropout(0.25),
          new MaxPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{3, 3}, 20, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 22, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(128, "sigmoid"),
+         new Dropout(0.25),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       });
 

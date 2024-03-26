@@ -25,11 +25,12 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-93-6";
+      String nomeModelo = "conv-mnist-93";
       Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
       int digito = 1;
-      Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+      // Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+      Tensor4D amostra = new Tensor4D(imagemParaMatriz("/mnist/3_deslocado.jpg"));
       modelo.calcularSaida(amostra);
 
       gradCAM(modelo, amostra, gerarRotuloMnist(digito));
@@ -49,9 +50,9 @@ public class AnaliseModelo{
 
    /**
     * Região mais significativa para a rede definir o dígito.
-    * @param modelo
-    * @param entrada
-    * @param rotulo
+    * @param modelo modelo treinado.
+    * @param entrada amostra de entrada.
+    * @param rotulo rótulo correspondente à amostra.
     */
    static void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
       //passo de backpropagation
