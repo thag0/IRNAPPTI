@@ -39,12 +39,13 @@ public class Funcoes{
    }
 
    /**
-    * Região mais significativa para a rede definir o dígito.
+    * Região mais significativa para o modelo prever o dígito.
     * @param modelo modelo treinado.
     * @param entrada amostra de entrada.
     * @param rotulo rótulo correspondente à amostra.
+    * @param norm normalizar os valores desenhados na janela.
     */
-   public void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
+   public void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo, boolean norm){
       Tensor4D prev = modelo.calcularSaida(entrada);
       
       //passo de backpropagation para ter os gradientes calculados
@@ -85,9 +86,8 @@ public class Funcoes{
       }
 
       //desenhar os valores calculados
-      boolean norm = false;
       int escala = 25;
-      desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, true, "Mapa");
+      desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, norm, "Mapa");
       
       for(int i = 0; i < conv.entrada.dim2(); i++){
          mapa.add(conv.saida.subTensor2D(0, i));

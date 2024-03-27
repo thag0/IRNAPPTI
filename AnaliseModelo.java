@@ -15,24 +15,27 @@ public class AnaliseModelo{
    static OpMatriz opmat = new OpMatriz();
    static OpTensor4D optensor = new OpTensor4D();
    static Funcoes funcoes = new Funcoes(CAMINHO_IMAGEM);
+   static Serializador serializador = new Serializador();
    
    public static void main(String[] args){
       ged.limparConsole();
 
       String nomeModelo = "conv-mnist-94";
-      Sequencial modelo = new Serializador().lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
+      Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      int digito = 4;
-      // Tensor4D amostra = new Tensor4D(imagemParaMatriz("/mnist/3_deslocado.jpg"));
+      final int digito = 9;
       Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
       Tensor4D previsao = modelo.calcularSaida(amostra);
 
-      funcoes.gradCAM(modelo, amostra, funcoes.gerarRotuloMnist(digito));
+      funcoes.gradCAM(modelo, amostra, funcoes.gerarRotuloMnist(digito), true);
 
       previsao.reformatar(10, 1);
       previsao.print(8);
       System.out.println("Previsto: " + funcoes.maiorIndice(previsao.paraArray()));
-      System.out.println("Entropia condicional: " + (1- funcoes.entropiaCondicional(modelo.saidaParaArray())));
+
+      double ec = funcoes.entropiaCondicional(previsao.paraArray());
+      ec *= 100;//visualizar em %
+      System.out.println("Entropia condicional: " + String.format("%.2f", (100 - ec)));
 
       // boolean normalizar = true;
       // exportarAtivacoes(modelo, 0, normalizar, 20);
