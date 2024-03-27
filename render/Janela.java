@@ -44,11 +44,11 @@ public class Janela extends JFrame{
    }
 
    public Janela(int altura, int largura, int escala){
-      this(altura, largura, escala, null);
+      this(altura, largura, escala, "Janela");
    }
 
    public Janela(int altura, int largura){
-      this(altura, largura, 1, null);
+      this(altura, largura, 1, "Janela");
    }
 
    public void desenharMat(Mat mat, String titulo){

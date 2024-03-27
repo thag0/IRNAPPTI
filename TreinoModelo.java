@@ -40,7 +40,7 @@ public class TreinoModelo{
       System.out.println("Dados de treino = " + treinoX.shapeStr());
 
       Sequencial modelo = criarModelo();
-      modelo.configurarHistorico(true);
+      modelo.setHistorico(true);
       modelo.info();
 
       // treinar e marcar tempo

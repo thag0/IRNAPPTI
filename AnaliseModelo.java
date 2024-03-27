@@ -31,11 +31,10 @@ public class AnaliseModelo{
       int digito = 4;
       // Tensor4D amostra = new Tensor4D(imagemParaMatriz("/mnist/3_deslocado.jpg"));
       Tensor4D amostra = new Tensor4D(imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
-      modelo.calcularSaida(amostra);
+      Tensor4D saida = modelo.calcularSaida(amostra);
 
       gradCAM(modelo, amostra, gerarRotuloMnist(digito));
 
-      Tensor4D saida = modelo.camadaSaida().saida();
       saida.reformatar(10, 1);
       saida.print(8);
       System.out.println("Previsto: " + maiorIndice(saida.paraArray()));
@@ -86,13 +85,15 @@ public class AnaliseModelo{
          }
       }
 
-      desenharMatriz(new Mat(mapa.array2D(0, 0)), 20, true);
+      boolean normalizar = true;
+
+      desenharMatriz(new Mat(mapa.array2D(0, 0)), 25, normalizar, "Mapa");
       
       for(int i = 0; i < conv.entrada.dim2(); i++){
          mapa.add(conv.saida.subTensor2D(0, i));
       }
       mapa.print(5);
-      desenharMatriz(new Mat(mapa.array2D(0, 0)), 20, true);
+      desenharMatriz(new Mat(mapa.array2D(0, 0)), 25, normalizar, "Mapa+Saida");
    }
 
    static double[] gerarRotuloMnist(int digito){
@@ -139,7 +140,7 @@ public class AnaliseModelo{
          arr[i] = new Mat(conv.saida.array2D(0, i));
       }
       
-      desenharMatrizes(arr, escala, normalizar);
+      desenharMatrizes(arr, escala, normalizar, "Saidas Conv");
    }
 
    /**
@@ -360,9 +361,9 @@ public class AnaliseModelo{
     * @param escala
     * @param normalizar
     */
-   static void desenharMatriz(Mat mat, int escala, boolean normalizar){
+   static void desenharMatriz(Mat mat, int escala, boolean normalizar, String titulo){
       if(normalizar) normalizar(mat);
-      Janela janela = new Janela(mat.lin(), mat.col(), escala);
+      Janela janela = new Janela(mat.lin(), mat.col(), escala, titulo);
       janela.desenharMat(mat);
    }
 
@@ -372,12 +373,12 @@ public class AnaliseModelo{
     * @param escala escala de ampliação da janela.
     * @param normalizar normalizar os valores entre 0 e 1.
     */
-   static void desenharMatrizes(Mat[] arr, int escala, boolean normalizar){
+   static void desenharMatrizes(Mat[] arr, int escala, boolean normalizar, String titulo){
       int[] dim = {
          arr[0].lin(), 
          arr[0].col()
       };
-      Janela janela = new Janela(dim[0], dim[1], escala);
+      Janela janela = new Janela(dim[0], dim[1], escala, titulo);
 
       if(normalizar){
          for(Mat m : arr){
