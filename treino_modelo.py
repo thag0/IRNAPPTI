@@ -14,12 +14,10 @@ def criar_modelo_convolucional() -> Sequential:
    """
 
    modelo = Sequential([
-      InputLayer((32, 32, 3)),
-      Conv2D(filters=64, kernel_size=(3, 3), activation='relu'),
+      InputLayer((28, 28, 1)),
+      Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
       MaxPool2D((2, 2)),
-      Conv2D(64, (3, 3), activation='relu'),
-      MaxPool2D((2, 2)),
-      Conv2D(64, (3, 3), activation='relu'),
+      Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
       Flatten(),
       Dense(128, activation='relu'),
       Dense(10, activation='softmax')
@@ -79,7 +77,7 @@ def criar_modelo_mlp() -> Sequential:
    return seq
 
 def carregar_dados(n_treino: int=100, n_teste: int=100):
-   (treino_x, treino_y), (teste_x, teste_y) = cifar10.load_data()
+   (treino_x, treino_y), (teste_x, teste_y) = mnist.load_data()
 
    # Selecionar um subconjunto aleatório de dados
    treino_x = treino_x[:n_treino]
@@ -98,8 +96,8 @@ def carregar_dados(n_treino: int=100, n_teste: int=100):
 
    return treino_x, treino_y, teste_x, teste_y
 
-def treinar_modelo(modelo: Sequential, treino_x, treino_y, epocas: int):
-   historico = modelo.fit(treino_x, treino_y, epochs=epocas, verbose=0)
+def treinar_modelo(modelo: Sequential, treino_x, treino_y, epocas: int, verbose=0):
+   historico = modelo.fit(treino_x, treino_y, epochs=epocas, verbose=verbose)
    return historico
 
 def plotar_historico(historico):
@@ -115,31 +113,19 @@ def plotar_historico(historico):
 if __name__ == '__main__':
    os.system('cls')
 
-   epochs = 15
+   epochs = 5
 
-   treino_x, treino_y, teste_x, teste_y = carregar_dados(25_000, 5_000)
-
-   # mlp
-   # modelo_mlp = criar_modelo_mlp()
-   # historico_mlp = treinar_modelo(modelo_mlp,  treino_x, treino_y, epochs)
-   # perda_teste, precisao_teste = modelo_mlp.evaluate(teste_x, teste_y)
-   # print("Mlp -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   treino_x, treino_y, teste_x, teste_y = carregar_dados(50_000, 10_000)
    
    # conv
-   modelo_conv = criar_modelo_convolucional()
-   historico_conv = treinar_modelo(modelo_conv, treino_x, treino_y, epochs)
-   perda_teste,  precisao_teste  = modelo_conv.evaluate(teste_x, teste_y)
-   print("Conv -> perda: ", perda_teste, " precisão: ", precisao_teste)
-   plotar_historico(historico_conv)
-
-   modelo_conv.save('modelos/keras/modelo-cifar10.keras')
+   conv = criar_modelo_convolucional()
+   historico_conv = treinar_modelo(conv, treino_x, treino_y, epochs, 1)
    
-   # lstm
-   # modelo_lstm = criar_modelo_convolucional_lstm()
-   # treino_x_lstm = np.expand_dims(treino_x, axis=-1)  # Adiciona a dimensão do canal
-   # treino_x_lstm = np.expand_dims(treino_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
-   # teste_x_lstm = np.expand_dims(teste_x, axis=-1)  # Adiciona a dimensão do canal
-   # teste_x_lstm = np.expand_dims(teste_x_lstm, axis=1)  # Adiciona a dimensão da sequência de tempo
-   # historico_lstm = treinar_modelo(modelo_lstm, treino_x_lstm, treino_y, epochs)
-   # perda_teste,  precisao_teste  = modelo_lstm.evaluate(teste_x_lstm, teste_y)
-   # print("Lstm -> perda: ", perda_teste, " precisão: ", precisao_teste)
+   perda, precisao  = conv.evaluate(treino_x, treino_y)
+   print("(Treino) -> perda: ", perda, " precisão: ", precisao)
+   
+   perda, precisao  = conv.evaluate(teste_x, teste_y)
+   print("(Teste) -> perda: ", perda, " precisão: ", precisao)
+
+   plotar_historico(historico_conv)
+   conv.save('modelos/keras/modelo-mnist.keras')

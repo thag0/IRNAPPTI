@@ -8,6 +8,8 @@ import numpy as np
 from numpy.core.multiarray import ndarray
 import tensorflow as tf
 from keras.layers import (Conv2D, MaxPool2D)
+from keras.datasets import cifar10
+from keras.utils import to_categorical
 
 def carregar_modelo(caminho: str) -> Sequential:
    return load_model(caminho)
@@ -19,6 +21,25 @@ def carregar_imagem(caminho: str):
    img_tensor /= 255.
 
    return img_tensor
+
+def carregar_dados(n_treino: int=100, n_teste: int=100):
+   (treino_x, treino_y), (teste_x, teste_y) = cifar10.load_data()
+
+   # Selecionar um subconjunto aleatório de dados
+   treino_x = treino_x[:n_treino]
+   treino_y = treino_y[:n_treino]
+   teste_x = teste_x[:n_teste]
+   teste_y = teste_y[:n_teste]
+
+   # Normalizar os valores de pixel para o intervalo [0, 1]
+   treino_x = treino_x.astype('float32') / 255.0
+   teste_x = teste_x.astype('float32') / 255.0
+
+   # Converter rótulos em formato one-hot
+   treino_y = to_categorical(treino_y, num_classes=10)
+   teste_y = to_categorical(teste_y, num_classes=10)
+
+   return treino_x, treino_y, teste_x, teste_y
 
 def entropia_condicional(previsoes) -> float:
    """
@@ -66,7 +87,7 @@ def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
    for i in range(num_filtros):
       ax = axs[i // n_col, i % n_col]
       imagem = saida[..., i]
-      ax.imshow(imagem, cmap=color_map)
+      ax.imshow(imagem, cmap='viridis')
  
       # remover os eixos X e Y do plot
       ax.set_xticks([])
@@ -78,14 +99,26 @@ def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
 def maior_indice(tensor) -> int:
    return np.argmax(tensor)
 
-if __name__ == '__main__':
-   os.system('cls')
-
-   modelo = carregar_modelo('./modelos/keras/modelo-teste.keras')
-   amostra = carregar_imagem('./mnist/teste/8/img_0.jpg')
-   plotar_ativacoes(modelo, amostra, 0)
-   
+def testar_previsao(modelo: Sequential, amostra):
    saida: tf.Tensor = modelo.call(amostra)
    saida = tf.reshape(saida, (10, 1))
    print(saida)
    print("Previsto: ", maior_indice(saida))
+
+if __name__ == '__main__':
+   os.system('cls')
+
+   modelo = carregar_modelo('./modelos/keras/modelo-cifar10.keras')
+   _, _, teste_x, teste_y = carregar_dados(n_treino=2, n_teste=200)
+
+   print('teste_x = ', teste_x.shape) #teste_x =  (200, 32, 32, 3)
+   print('teste_y = ', teste_y.shape) #teste_y =  (200, 10)
+
+   id_amostra = 2
+   plt.imshow(teste_x[id_amostra])
+   amostra = np.expand_dims(teste_x[id_amostra], axis=0)
+
+   testar_previsao(modelo, amostra)
+
+   plotar_ativacoes(modelo, amostra, 0)
+   
