@@ -4,12 +4,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 class Conv_pytorch(nn.Module):
-   def __init__(self, entrada: tuple, device):
+   def __init__(self, entrada: tuple):
       super(Conv_pytorch, self).__init__()
       prof, alt, larg = entrada[0], entrada[1], entrada[0]
-
-      if device is not None:
-         self.to(device)
 
       self.conv1 = nn.Conv2d(in_channels=prof, out_channels=32, kernel_size=3)
       self.conv2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3)
@@ -27,15 +24,15 @@ class Conv_pytorch(nn.Module):
       x = self.fc2(x)
       return F.softmax(x, dim=1)
    
-   def train_model(self, train_loader, epochs=5):
+   def train_model(self, train_loader, epochs=5,device="cpu"):
       optimizer = optim.Adam(self.parameters(), lr=0.001)
       criterion = nn.CrossEntropyLoss()
-
+      self.to(device=device)
       for epoch in range(epochs):
          running_loss = 0.0
          for i, data in enumerate(train_loader, 0):
                inputs, labels = data
-
+               inputs, labels = inputs.to(device), labels.to(device)
                optimizer.zero_grad()
 
                outputs = self.forward(inputs)
