@@ -121,7 +121,8 @@ def plotar_historico(historico):
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = Conv_pytorch((1, 28, 28))
+   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+   modelo = Conv_pytorch((1, 28, 28), device)
    print(modelo)
 
    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])

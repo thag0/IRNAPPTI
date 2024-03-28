@@ -4,9 +4,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 class Conv_pytorch(nn.Module):
-   def __init__(self, entrada: tuple):
+   def __init__(self, entrada: tuple, device):
       super(Conv_pytorch, self).__init__()
       prof, alt, larg = entrada[0], entrada[1], entrada[0]
+
+      if device is not None:
+         self.to(device)
 
       self.conv1 = nn.Conv2d(in_channels=prof, out_channels=32, kernel_size=3)
       self.conv2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3)
