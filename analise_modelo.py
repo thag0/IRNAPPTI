@@ -9,7 +9,7 @@ from numpy.core.multiarray import ndarray
 import tensorflow as tf
 from keras.layers import (Conv2D, MaxPool2D)
 from keras.datasets import cifar10
-from keras.utils import to_categorical
+from keras.utils import to_categorical 
 
 def carregar_modelo(caminho: str) -> Sequential:
    return load_model(caminho)

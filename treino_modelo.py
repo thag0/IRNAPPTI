@@ -7,6 +7,13 @@ from keras.activations import leaky_relu
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import tensorflow as tf
+
+import torch
+from modelos import Conv_pytorch
+import torchvision
+import torchvision.transforms as transforms
+
 
 def criar_modelo_convolucional() -> Sequential:
    """
@@ -18,6 +25,7 @@ def criar_modelo_convolucional() -> Sequential:
       Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
       MaxPool2D((2, 2)),
       Conv2D(filters=32, kernel_size=(3, 3), activation='relu'),
+      MaxPool2D((2, 2)),
       Flatten(),
       Dense(128, activation='relu'),
       Dense(10, activation='softmax')
@@ -112,6 +120,17 @@ def plotar_historico(historico):
 
 if __name__ == '__main__':
    os.system('cls')
+
+   modelo = Conv_pytorch((1, 28, 28))
+   print(modelo)
+
+   transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
+   trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+   train_loader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+
+   modelo.train_model(train_loader, 5)
+
+   exit()
 
    epochs = 5
 
