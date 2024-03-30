@@ -24,8 +24,9 @@ def preparar_dataset() -> tuple[DataLoader]:
    test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
 
    # Criar DataLoaders para carregamento em lote
-   train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True)
-   test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=64, shuffle=False)
+   tam_lote: int = 128
+   train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=tam_lote, shuffle=True)
+   test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=tam_lote, shuffle=False)
 
    return (train_loader, test_loader)
 
@@ -33,25 +34,16 @@ if __name__ == '__main__':
    os.system('cls')
 
    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-   modelo = Conv_pytorch(entrada=(1, 28, 28), device=device)
+   modelo = Conv_pytorch(1, device=device)
    print(modelo)
    print(f"Modelo em: {modelo.device}")
 
-   transform = transforms.Compose([
-      transforms.ToTensor(), 
-      transforms.Normalize((0.5,), (0.5,))
-   ])
+   dl_treino, dl_teste = preparar_dataset()
 
-   mnist_treino = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-   ds_treino = DataLoader(mnist_treino, batch_size=64, shuffle=True)
+   hist = modelo.treinar(dl_treino, 3)
 
-   mnist_teste = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-   ds_teste = DataLoader(mnist_teste, batch_size=64, shuffle=True)
-
-   hist = modelo.treinar(ds_treino, 2)
-
-   metricas_treino = modelo.avaliar(ds_treino)
-   metricas_teste = modelo.avaliar(ds_teste)
+   metricas_treino = modelo.avaliar(dl_treino)
+   metricas_teste = modelo.avaliar(dl_teste)
 
    print('treino:', metricas_treino)
    print('teste:', metricas_teste)

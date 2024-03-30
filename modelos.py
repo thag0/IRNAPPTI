@@ -1,51 +1,52 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
 class Conv_pytorch(nn.Module):
-   def __init__(self, entrada: tuple, device: torch.device):
+   def __init__(self, prof: int, device: torch.device):
       """
          Modelo convolucional usado para testes
 
-         entrada: tupla contendo o formato de entrada (prof, alt, larg)
+         prof: profundidade dos dados de entrada que serão usados
+               no modelo. Exemplo: grayscale = 1, RGB = 3.
          device: dispositivo onde o modelo estará sendo usado (cpu ou gpu)
       """
       super(Conv_pytorch, self).__init__()
 
       self.device = device if device is not None else 'cpu'
 
-      prof, alt, larg = entrada[0], entrada[1], entrada[0]
-
-      self.conv1 = nn.Conv2d(in_channels=prof, out_channels=32, kernel_size=3)
-      self.conv2 = nn.Conv2d(in_channels=self.conv1.out_channels, out_channels=32, kernel_size=3)
-      self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-      self.fc1 = nn.Linear(32 * 5 * 5, 128)
-      self.fc2 = nn.Linear(self.fc1.out_features, 10)
+      self.model = nn.Sequential(
+         nn.Conv2d(in_channels=prof, out_channels=32, kernel_size=(3, 3)),
+         nn.ReLU(),
+         nn.Dropout(0.3),
+         nn.MaxPool2d(kernel_size=(2, 2)),
+         nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(3, 3)),
+         nn.ReLU(),
+         nn.Dropout(0.3),
+         nn.MaxPool2d(kernel_size=(2, 2)),
+         nn.Flatten(),
+         nn.Linear((32 * 5*5), 128),
+         nn.ReLU(),
+         nn.Dropout(0.3),
+         nn.Linear(128, 10),
+         nn.LogSoftmax(dim=1)
+      )
 
       self.otimizador = optim.Adam(self.parameters(), lr=0.001)
       self.perda = nn.CrossEntropyLoss()
-      
+
       self.to(self.device) # tentar usar na gpu para acelerar
 
    def forward(self, x):
       """
          Alimenta os dados de entrada através do modelo.
-         
+
          x: dados de entrada.
       """
 
-      x = F.relu(self.conv1(x))
-      x = self.pool(x)
-      x = F.relu(self.conv2(x))
-      x = self.pool(x)
-      x = x.view(-1, 32 * 5 * 5)
-      x = F.relu(self.fc1(x))
-      x = self.fc2(x)
+      return self.model.forward(x)
 
-      return F.softmax(x, dim=1)
-   
    def treinar(self, treino: DataLoader, epochs: int) -> list:
       self.train() #modo treino
       historico = []
@@ -54,21 +55,18 @@ class Conv_pytorch(nn.Module):
       for epoch in range(epochs):
          print(f"Epoch {epoch+1}/{epochs}")
 
-         for i, data in enumerate(treino, 0):
-            # Get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data[0].to(self.device), data[1].to(self.device)
+         for batch in treino:
+            x, y = batch
+            x, y = x.to(self.device), y.to(self.device)
+            prev = self.forward(x)
+            val_perda =  self.perda.forward(prev, y)
 
-            # Zero the parameter gradients
+            #backpropagation
             self.otimizador.zero_grad()
-
-            # Forward and backward pass
-            outputs = self(inputs)
-            loss = self.perda.forward(outputs, labels)
-            historico.append(loss.item())
-            loss.backward()
-
-            # Update weights
+            val_perda.backward()
             self.otimizador.step()
+
+            historico.append(val_perda.item())
 
       return historico
 
@@ -78,34 +76,36 @@ class Conv_pytorch(nn.Module):
 
          teste: conjunto de dados de teste.
 
-         return: dicionário contendo o valor de perda e precisão do modelo. 
+         return: dicionário contendo o valor de perda e precisão do modelo.
       """
 
       self.eval() # modo avaliação
-      val_perda = 0.0
-      acertos = 0
-      total = 0
+      perda_total = 0.0
+      precisao_total = 0.0
 
-      with torch.no_grad():
-         for data in teste:
-            entradas, saidas = data[0].to(self.device), data[1].to(self.device)
+      for imgs, rotulos in teste:
+         imgs, rotulos = imgs.to(self.device), rotulos.to(self.device)
+         prev = self.forward(imgs)
 
-            outputs = self(entradas)
-            loss = self.perda(outputs, saidas)
-            val_perda += loss.item()
-            _, previsto = torch.max(outputs.data, 1)
-            total += saidas.size(0)
-            acertos += (previsto == saidas).sum().item()
+         perda = self.perda.forward(prev, rotulos)
+         perda_total += perda.item()
 
-      res = {}
-      res['loss'] = val_perda / len(teste)
-      res['accuracy'] = 100 * (acertos / total)
-      return res
-   
+         precisao = (prev.argmax(dim=1) == rotulos).float().mean()
+         precisao_total += precisao.item()
+
+      
+      perda_media = perda_total / len(teste)
+      precisao_media = precisao_total / len(teste)
+      
+      return {
+         'loss': perda_media,
+         'accuracy': precisao_media
+      }
+
    def salvar(self, caminho: str):
       """
          Exporta o modelo num aquivo externo.
       """
 
       torch.save(obj=self.state_dict(), f=caminho)
-      print('Modelo salvo')
+      print(f'Modelo salvo em \'{caminho}\'')
