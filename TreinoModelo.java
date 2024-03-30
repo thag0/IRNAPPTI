@@ -82,8 +82,7 @@ public class TreinoModelo{
     static Sequencial criarModelo(){
       Sequencial modelo = new Sequencial(new Camada[]{
          new Entrada(28, 28),
-         new Convolucional(new int[]{3, 3}, 22, "leaky-relu"),
-         new Dropout(0.2),
+         new Convolucional(new int[]{3, 3}, 20, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
          new Convolucional(new int[]{3, 3}, 22, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),

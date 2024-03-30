@@ -20,28 +20,27 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-94";
+      String nomeModelo = "modelo-convolucional";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      final int digito = 9;
-      Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
-      Tensor4D previsao = modelo.calcularSaida(amostra);
+      final int digito = 2;
+      Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_3.jpg"));
+      Tensor4D prev = modelo.calcularSaida(amostra);
 
       funcoes.gradCAM(modelo, amostra, funcoes.gerarRotuloMnist(digito), true);
 
-      previsao.reformatar(10, 1);
-      previsao.print(8);
-      System.out.println("Previsto: " + funcoes.maiorIndice(previsao.paraArray()));
+      prev.reformatar(10, 1);
+      prev.print(8);
+      System.out.println("Dígito " + digito + ", Previsto: " + funcoes.maiorIndice(prev.paraArray()));
 
-      double ec = funcoes.entropiaCondicional(previsao.paraArray());
-      ec *= 100;//visualizar em %
-      System.out.println("Entropia condicional: " + String.format("%.2f", (100 - ec)));
+      double ec = funcoes.entropiaCondicional(prev.paraArray());
+      System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
-      // boolean normalizar = true;
-      // exportarAtivacoes(modelo, 0, normalizar, 20);
-      // exportarAtivacoes(modelo, 2, normalizar, 20);
-      // exportarFiltros(modelo, 0, normalizar);
-      // exportarFiltros(modelo, 2, normalizar);
+      boolean normalizar = true;
+      funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
+      funcoes.exportarAtivacoes(modelo, 3, normalizar, 20);
+      funcoes.exportarFiltros(modelo, 0, normalizar);
+      funcoes.exportarFiltros(modelo, 3, normalizar);
    }
 
    /**
