@@ -1,76 +1,69 @@
 import os
-from keras.models import Sequential, load_model
-from keras.preprocessing import image
 from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import numpy as np
-from numpy.core.multiarray import ndarray
-import tensorflow as tf
-from keras.layers import (Conv2D, MaxPool2D)
-from keras.datasets import cifar10
-from keras.utils import to_categorical 
+import torch
+from torch.nn.modules import (Conv2d, MaxPool2d)
+import torchvision
+from torch.utils.data import DataLoader
+import torchvision.transforms as transforms
+from modelos import Conv_pytorch
+from PIL import Image
 
-def carregar_modelo(caminho: str) -> Sequential:
-   return load_model(caminho)
+def carregar_modelo(prof: int, caminho: str) -> Conv_pytorch:
+   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+   modelo = Conv_pytorch(prof, device)
+   modelo.load_state_dict(torch.load(caminho))
+   
+   return modelo
 
-def carregar_imagem(caminho: str):
-   img = image.load_img(caminho, target_size=(28, 28), color_mode='grayscale')
-   img_tensor = image.img_to_array(img)
-   img_tensor = np.expand_dims(img_tensor, axis=0)
-   img_tensor /= 255.
+def carregar_imagem(file_path) -> torch.Tensor:
+   img = Image.open(file_path)
+   
+   preprocess = transforms.Compose([
+      transforms.ToTensor()
+   ])
+   
+   # Aplicar as transformações na imagem
+   tensor_img = preprocess(img).unsqueeze(0)  # Adicionar uma dimensão extra para o lote (batch)
+   
+   return tensor_img
 
-   return img_tensor
 
-def carregar_dados(n_treino: int=100, n_teste: int=100):
-   (treino_x, treino_y), (teste_x, teste_y) = cifar10.load_data()
+def preparar_dataset() -> tuple[DataLoader]:
+   transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 
-   # Selecionar um subconjunto aleatório de dados
-   treino_x = treino_x[:n_treino]
-   treino_y = treino_y[:n_treino]
-   teste_x = teste_x[:n_teste]
-   teste_y = teste_y[:n_teste]
+   # Carregar os datasets de treinamento e teste
+   train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+   test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
 
-   # Normalizar os valores de pixel para o intervalo [0, 1]
-   treino_x = treino_x.astype('float32') / 255.0
-   teste_x = teste_x.astype('float32') / 255.0
+   # Criar DataLoaders para carregamento em lote
+   tam_lote: int = 128
+   train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=tam_lote, shuffle=True)
+   test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=tam_lote, shuffle=False)
 
-   # Converter rótulos em formato one-hot
-   treino_y = to_categorical(treino_y, num_classes=10)
-   teste_y = to_categorical(teste_y, num_classes=10)
+   return (train_loader, test_loader)
 
-   return treino_x, treino_y, teste_x, teste_y
-
-def entropia_condicional(previsoes) -> float:
-   """
-      Calcula o valor de incerteza do modelo em relação as sua previsões.
-      
-      Valores mais baixos indicam menor incerteza do modelo, que significa
-      que o modelo tem bastante "confiança" na previsão feita.
-   """
-
-   ec = -tf.reduce_sum(previsoes * tf.math.log(previsoes + 1e-10), axis=-1)
-   return float(ec)
-
-def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
-   if not isinstance(modelo.layers[id_camada], (Conv2D, MaxPool2D)):
-      print("Id deve ser de uma camada convolucional ou maxpooling mas é de ", type(modelo.layers[id_camada]))
+def plotar_ativacoes(modelo: Conv_pytorch, entrada: torch.Tensor, id_camada: int):
+   camadas = modelo.get_camadas()
+   camada = camadas[id_camada]
+   if not isinstance(camada, (Conv2d, MaxPool2d)):
+      print("Id deve ser de uma camada convolucional ou maxpooling mas é de ", type(camada))
       return
    
-   # pegar saída
+   # # pegar saída
    saida = entrada
-   for i in range(len(modelo.layers)):
-      saida = modelo.layers[i].call(saida)
+   for i in range(len(camadas)):
+      saida = camadas[i].forward(saida)
       if i == id_camada:
          break
 
-   if len(saida.shape) == 4:
-      # o keras usa (batch, largura, altura, canais)
-      # só tirando o batch_size (largura, altura, canais)
-      saida = saida[0]
+   # o pytorch usa (batch, canais, largura, altura)
+   # só tirando o batch_size (canais, largura, altura)
+   saida = saida.squeeze(0)
 
    # poltar saidas
-   num_filtros = saida.shape[-1]
+   num_filtros = saida.shape[0]
    n_col = 8
    n_lin = int(np.ceil(num_filtros / n_col))
 
@@ -86,7 +79,8 @@ def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
    _, axs = plt.subplots(n_lin, n_col, figsize=(10, 6))
    for i in range(num_filtros):
       ax = axs[i // n_col, i % n_col]
-      imagem = saida[..., i]
+      s = saida.detach().numpy()
+      imagem = s[i, ...]
       ax.imshow(imagem, cmap='viridis')
  
       # remover os eixos X e Y do plot
@@ -96,29 +90,27 @@ def plotar_ativacoes(modelo: Sequential, entrada: ndarray, id_camada: int):
    plt.tight_layout()
    plt.show()
 
-def maior_indice(tensor) -> int:
-   return np.argmax(tensor)
-
-def testar_previsao(modelo: Sequential, amostra):
-   saida: tf.Tensor = modelo.call(amostra)
-   saida = tf.reshape(saida, (10, 1))
-   print(saida)
-   print("Previsto: ", maior_indice(saida))
+def testar_previsao(modelo: Conv_pytorch, amostra: torch.Tensor):
+   prev = modelo.forward(amostra)
+   val = prev.argmax(dim=1).item()
+   print(f'Previsto = {val}')
 
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = carregar_modelo('./modelos/keras/modelo-cifar10.keras')
-   _, _, teste_x, teste_y = carregar_dados(n_treino=2, n_teste=200)
-
-   print('teste_x = ', teste_x.shape) #teste_x =  (200, 32, 32, 3)
-   print('teste_y = ', teste_y.shape) #teste_y =  (200, 10)
-
-   id_amostra = 2
-   plt.imshow(teste_x[id_amostra])
-   amostra = np.expand_dims(teste_x[id_amostra], axis=0)
+   modelo = carregar_modelo(1, './modelos/pytorch/conv-pytorch-mnist.pt')
+   amostra = carregar_imagem('./mnist/teste/5/img_0.jpg')
 
    testar_previsao(modelo, amostra)
-
    plotar_ativacoes(modelo, amostra, 0)
+
+   # _, dl_teste = preparar_dataset()
+
+   # id_amostra = 2
+   # plt.imshow(teste_x[id_amostra])
+   # amostra = np.expand_dims(teste_x[id_amostra], axis=0)
+
+   # testar_previsao(modelo, amostra)
+
+   # plotar_ativacoes(modelo, amostra, 0)
    

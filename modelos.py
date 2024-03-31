@@ -38,7 +38,11 @@ class Conv_pytorch(nn.Module):
 
       self.to(self.device) # tentar usar na gpu para acelerar
 
-   def forward(self, x):
+   def get_camadas(self) -> list[nn.Module]:
+      camadas = list(self.model.children())
+      return camadas
+
+   def forward(self, x) -> torch.Tensor:
       """
          Alimenta os dados de entrada através do modelo.
 
