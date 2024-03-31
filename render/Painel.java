@@ -37,6 +37,11 @@ public class Painel extends JPanel{
     * @param m matriz.
     */
    public void desenharMat(Mat m){
+      if(m == null){
+         throw new IllegalArgumentException(
+            "\nMatriz não pode ser nula."
+         );
+      }
       mat = m;
       repaint();
    }

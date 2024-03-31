@@ -20,12 +20,13 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "modelo-convolucional";
+      String nomeModelo = "conv-mnist-95-7";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
+      testarAcertosMNIST(modelo);
 
-      final int digito = 2;
+      final int digito = 1;
       Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_3.jpg"));
-      Tensor4D prev = modelo.calcularSaida(amostra);
+      Tensor4D prev = modelo.forward(amostra);
 
       funcoes.gradCAM(modelo, amostra, funcoes.gerarRotuloMnist(digito), true);
 
@@ -36,11 +37,11 @@ public class AnaliseModelo{
       double ec = funcoes.entropiaCondicional(prev.paraArray());
       System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
-      boolean normalizar = true;
-      funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
-      funcoes.exportarAtivacoes(modelo, 3, normalizar, 20);
-      funcoes.exportarFiltros(modelo, 0, normalizar);
-      funcoes.exportarFiltros(modelo, 3, normalizar);
+      // boolean normalizar = true;
+      // funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
+      // funcoes.exportarAtivacoes(modelo, 2, normalizar, 20);
+      // funcoes.exportarFiltros(modelo, 0, normalizar);
+      // funcoes.exportarFiltros(modelo, 2, normalizar);
    }
 
    /**
@@ -69,7 +70,7 @@ public class AnaliseModelo{
       double[][][] entrada = new double[1][][];
       String extensao = ".jpg";
       entrada[0] = funcoes.imagemParaMatriz("/mnist/teste/" + caminhoImagem + extensao);
-      modelo.calcularSaida(entrada);
+      modelo.forward(entrada);
       double[] previsao = modelo.saidaParaArray();
       
       System.out.print("\nTestando: " + caminhoImagem + extensao);
@@ -100,7 +101,7 @@ public class AnaliseModelo{
             String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
             Tensor4D img = new Tensor4D(funcoes.imagemParaMatriz(caminhoImagem));
             
-            modelo.calcularSaida(img);
+            modelo.forward(img);
             double[] previsoes = modelo.saidaParaArray();
             if(funcoes.maiorIndice(previsoes) == digito){
                acertos++;

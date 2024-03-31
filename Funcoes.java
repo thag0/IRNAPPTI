@@ -46,14 +46,15 @@ public class Funcoes{
     * @param norm normalizar os valores desenhados na janela.
     */
    public void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo, boolean norm){
-      Tensor4D prev = modelo.calcularSaida(entrada);
+      Tensor4D prev = modelo.forward(entrada);
       
       //passo de backpropagation para ter os gradientes calculados
       double[] derivadas = modelo.perda().derivada(prev.paraArray(), rotulo);
       int numCamadas = modelo.numCamadas();
-      modelo.camada(numCamadas-1).calcularGradiente(new Tensor4D(derivadas));
+      
+      modelo.camadaSaida().backward(new Tensor4D(derivadas));
       for(int i = numCamadas-2; i >= 0; i--){
-         modelo.camada(i).calcularGradiente(modelo.camada(i+1).gradEntrada());
+         modelo.camada(i).backward(modelo.camada(i+1).gradEntrada());
       }
 
       //pegar a ultima camada convolucional
@@ -106,10 +107,13 @@ public class Funcoes{
     * @param normalizar normaliza os valores entre 0 e 1 para evitar artefatos
     * na janela gráfica.
     */
-   public void desenharSaidas(Convolucional conv, int escala, boolean normalizar){
-      Mat[] arr = new Mat[conv.numFiltros()];
+   public void desenharSaidas(Convolucional conv, Tensor4D amostra, int escala, boolean normalizar){
+      Tensor4D prev = conv.forward(amostra);
+      int filtros = conv.numFiltros();
+
+      Mat[] arr = new Mat[filtros];
       for(int i = 0; i < arr.length; i++){
-         arr[i] = new Mat(conv.saida.array2D(0, i));
+         arr[i] = new Mat(prev.array2D(0, i));
       }
       
       desenharMatrizes(arr, escala, normalizar, "Saidas Conv");
@@ -175,12 +179,12 @@ public class Funcoes{
          var imagem = imagemParaMatriz(caminhoAmostra);
          var amostra = new double[][][]{imagem};
 
-         modelo.calcularSaida(amostra);// ver as saídas calculadas
+         Tensor4D prev = modelo.forward(amostra);// ver as saídas calculadas
 
          Mat[] somatorios = new Mat[camada.somatorio.dim2()];
-         Mat[] saidas = new Mat[camada.saida.dim2()];
+         Mat[] saidas = new Mat[prev.dim2()];
          for(int j = 0; j < saidas.length; j++){
-            saidas[j] = new Mat(camada.saida.array2D(0, j));
+            saidas[j] = new Mat(prev.array2D(0, j));
             somatorios[j] = new Mat(camada.somatorio.array2D(0, j));
 
             if(normalizar){

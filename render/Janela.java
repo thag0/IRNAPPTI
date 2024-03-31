@@ -51,12 +51,18 @@ public class Janela extends JFrame{
       this(altura, largura, 1, "Janela");
    }
 
-   public void desenharMat(Mat mat, String titulo){
-      setTitle(titulo);
-      painel.desenharMat(mat);
+   public void desenharMat(Mat mat){
+      desenharMat(mat, getTitle());
    }
 
-   public void desenharMat(Mat mat){
+   public void desenharMat(Mat mat, String titulo){
+      if(mat == null){
+         throw new IllegalArgumentException(
+            "\nMatriz não pode ser nula."
+         );
+      }
+      
+      setTitle(titulo);
       painel.desenharMat(mat);
    }
 

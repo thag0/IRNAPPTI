@@ -134,7 +134,7 @@ public class TreinoModelo{
       System.out.println("\nTestando: " + imagemTeste);
       double[][][] teste1 = new double[1][][];
       teste1[0] = imagemParaMatriz("/dados/mnist/teste/" + imagemTeste + ".jpg");
-      modelo.calcularSaida(teste1);
+      modelo.forward(teste1);
       double[] previsao = modelo.saidaParaArray();
       for(int i = 0; i < previsao.length; i++){
          System.out.println("Prob: " + i + ": " + (int)(previsao[i]*100) + "%");
