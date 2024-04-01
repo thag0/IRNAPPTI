@@ -22,9 +22,8 @@ public class AnaliseModelo{
 
       String nomeModelo = "conv-mnist-95-7";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
-      testarAcertosMNIST(modelo);
 
-      final int digito = 1;
+      final int digito = 4;
       Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_3.jpg"));
       Tensor4D prev = modelo.forward(amostra);
 

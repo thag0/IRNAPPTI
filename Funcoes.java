@@ -90,8 +90,8 @@ public class Funcoes{
       int escala = 25;
       desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, norm, "Mapa");
       
-      for(int i = 0; i < conv.entrada.dim2(); i++){
-         mapa.add(conv.saida.subTensor2D(0, i));
+      for(int i = 0; i < conv.saida().dim2(); i++){
+         mapa.add(conv.saida().subTensor2D(0, i));
       }
       desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, norm, "Mapa+Saida");
    }

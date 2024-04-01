@@ -1,5 +1,5 @@
 import torch
-from modelos import Conv_pytorch
+from modelos import (ConvMnist, ConvCifar10)
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
@@ -16,12 +16,21 @@ def plotar_historico(historico: list):
    plt.ylim(bottom=0)
    plt.show()
 
-def preparar_dataset() -> tuple[DataLoader]:
+def preparar_dataset(nome: str) -> tuple[DataLoader]:
    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 
+   if nome == 'mnist':
+      dataset = torchvision.datasets.MNIST
+   
+   elif nome == 'cifar-10':
+      dataset = torchvision.datasets.CIFAR10
+
+   else:
+      print(f'Dataset \'{nome}\' não encontrado.')
+
    # Carregar os datasets de treinamento e teste
-   train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-   test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+   train_dataset = dataset(root='./data', train=True, download=True, transform=transform)
+   test_dataset = dataset(root='./data', train=False, download=True, transform=transform)
 
    # Criar DataLoaders para carregamento em lote
    tam_lote: int = 128
@@ -34,11 +43,11 @@ if __name__ == '__main__':
    os.system('cls')
 
    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-   modelo = Conv_pytorch(1, device=device)
+   modelo = ConvCifar10(device=device)
    print(modelo)
    print(f"Modelo em: {modelo.device}")
 
-   dl_treino, dl_teste = preparar_dataset()
+   dl_treino, dl_teste = preparar_dataset('cifar-10')
 
    hist = modelo.treinar(dl_treino, 3)
 
@@ -50,4 +59,4 @@ if __name__ == '__main__':
 
    plotar_historico(hist)
 
-   modelo.salvar("./modelos/pytorch/conv-pytorch-mnist.pt")
+   modelo.salvar("./modelos/pytorch/conv-pytorch-cifar10.pt")

@@ -7,18 +7,18 @@ from torch.nn.modules import (Conv2d, MaxPool2d)
 import torchvision
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
-from modelos import Conv_pytorch
+from modelos import ConvMnist
 from PIL import Image
 
-def carregar_modelo(prof: int, caminho: str) -> Conv_pytorch:
+def carregar_modelo(caminho: str) -> ConvMnist:
    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-   modelo = Conv_pytorch(prof, device)
+   modelo = ConvMnist(device)
    modelo.load_state_dict(torch.load(caminho))
    
    return modelo
 
-def carregar_imagem(file_path) -> torch.Tensor:
-   img = Image.open(file_path)
+def carregar_imagem(caminho: str) -> torch.Tensor:
+   img = Image.open(caminho)
    
    preprocess = transforms.Compose([
       transforms.ToTensor()
@@ -28,7 +28,6 @@ def carregar_imagem(file_path) -> torch.Tensor:
    tensor_img = preprocess(img).unsqueeze(0)  # Adicionar uma dimensão extra para o lote (batch)
    
    return tensor_img
-
 
 def preparar_dataset() -> tuple[DataLoader]:
    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -44,7 +43,7 @@ def preparar_dataset() -> tuple[DataLoader]:
 
    return (train_loader, test_loader)
 
-def plotar_ativacoes(modelo: Conv_pytorch, entrada: torch.Tensor, id_camada: int):
+def plotar_ativacoes(modelo: ConvMnist, entrada: torch.Tensor, id_camada: int):
    camadas = modelo.get_camadas()
    camada = camadas[id_camada]
    if not isinstance(camada, (Conv2d, MaxPool2d)):
@@ -68,7 +67,7 @@ def plotar_ativacoes(modelo: Conv_pytorch, entrada: torch.Tensor, id_camada: int
    n_lin = int(np.ceil(num_filtros / n_col))
 
    arr = list()
-   val_max = 5
+   val_max = 10
    for i in range(0, val_max):
       cor = i * (1 / val_max)
       arr.append((0, cor, cor))
@@ -81,7 +80,8 @@ def plotar_ativacoes(modelo: Conv_pytorch, entrada: torch.Tensor, id_camada: int
       ax = axs[i // n_col, i % n_col]
       s = saida.detach().numpy()
       imagem = s[i, ...]
-      ax.imshow(imagem, cmap='viridis')
+      # ax.imshow(imagem, cmap='viridis')
+      ax.imshow(imagem, cmap=color_map)
  
       # remover os eixos X e Y do plot
       ax.set_xticks([])
@@ -90,7 +90,7 @@ def plotar_ativacoes(modelo: Conv_pytorch, entrada: torch.Tensor, id_camada: int
    plt.tight_layout()
    plt.show()
 
-def testar_previsao(modelo: Conv_pytorch, amostra: torch.Tensor):
+def testar_previsao(modelo: ConvMnist, amostra: torch.Tensor):
    prev = modelo.forward(amostra)
    val = prev.argmax(dim=1).item()
    print(f'Previsto = {val}')
@@ -98,19 +98,17 @@ def testar_previsao(modelo: Conv_pytorch, amostra: torch.Tensor):
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = carregar_modelo(1, './modelos/pytorch/conv-pytorch-mnist.pt')
-   amostra = carregar_imagem('./mnist/teste/5/img_0.jpg')
+   modelo = carregar_modelo('./modelos/pytorch/conv-pytorch-mnist.pt')
+
+   digito = 4
+   amostra = carregar_imagem('./mnist/teste/' + str(digito) + '/img_0.jpg')
+
+   conv_ids = []
+
+   for i in range(len(modelo.get_camadas())):
+      if isinstance(modelo.get_camadas()[i], Conv2d):
+         conv_ids.append(i)
 
    testar_previsao(modelo, amostra)
-   plotar_ativacoes(modelo, amostra, 0)
-
-   # _, dl_teste = preparar_dataset()
-
-   # id_amostra = 2
-   # plt.imshow(teste_x[id_amostra])
-   # amostra = np.expand_dims(teste_x[id_amostra], axis=0)
-
-   # testar_previsao(modelo, amostra)
-
-   # plotar_ativacoes(modelo, amostra, 0)
+   plotar_ativacoes(modelo, amostra, conv_ids[0])
    
