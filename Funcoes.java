@@ -72,19 +72,23 @@ public class Funcoes{
 
       for(int i = 0; i < numFiltros; i++){
          //calcular a média de cada gradiente
-         Tensor4D temp = grad.subTensor2D(0, i);
-         double media = temp.somar() / temp.tamanho();
+         Tensor4D tempGrad = grad.subTensor2D(0, i);
+         double media = tempGrad.media();
 
          //multiplicar cada elemento da saída da 
          //camada pela média dos gradientes
-         Tensor4D saidas = conv.saida().clone();
-         saidas.map(x -> x*media);
+         Tensor4D tempSaida = conv.saida().clone();
+         tempSaida.map(x -> x*media);
 
          //adicionar as saídas ao mapa
-         for(int j = 0; j < saidas.dim2(); j++){
-            mapa.add(saidas.subTensor2D(0, j));
+         for(int j = 0; j < tempSaida.dim2(); j++){
+            mapa.add(tempSaida.subTensor2D(0, j));
          }
+
+         mapa.map(x -> x > 0 ? x : 0);
       }
+
+      System.out.println(mapa.shapeStr());
 
       //desenhar os valores calculados
       int escala = 25;
