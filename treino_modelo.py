@@ -48,8 +48,9 @@ if __name__ == '__main__':
    print(f"Modelo em: {modelo.device}")
 
    dl_treino, dl_teste = preparar_dataset('cifar-10')
+   epocas = 4
 
-   hist = modelo.treinar(dl_treino, 7)
+   hist = modelo.treinar(dl_treino, epocas)
 
    metricas_treino = modelo.avaliar(dl_treino)
    metricas_teste = modelo.avaliar(dl_teste)

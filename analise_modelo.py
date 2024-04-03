@@ -10,11 +10,16 @@ import torchvision.transforms as transforms
 from modelos import ConvMnist, ConvCifar10
 from PIL import Image
 
-def carregar_modelo_mnist(caminho: str) -> ConvMnist:
-   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-   modelo = ConvMnist(device)
+def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
+   modelo = ConvMnist('cpu')
    modelo.load_state_dict(torch.load(caminho))
-   
+   modelo.to(device)
+   return modelo
+
+def carregar_modelo_cifar(device: torch.device, caminho: str) -> ConvCifar10:
+   modelo = ConvCifar10('cpu')
+   modelo.load_state_dict(torch.load(caminho))
+   modelo.to(device)
    return modelo
 
 def carregar_imagem(caminho: str) -> torch.Tensor:
@@ -28,13 +33,6 @@ def carregar_imagem(caminho: str) -> torch.Tensor:
    tensor_img = preprocess(img).unsqueeze(0)  # Adicionar uma dimensão extra para o lote (batch)
    
    return tensor_img
-
-def carregar_modelo_cifar(caminho: str) -> ConvCifar10:
-   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-   modelo = ConvCifar10('cpu')
-   modelo.load_state_dict(torch.load(caminho))
-   
-   return modelo
 
 def preparar_dataset(nome: str) -> tuple[DataLoader]:
    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
@@ -123,11 +121,13 @@ def obter_amostra(data_loader: DataLoader) -> tuple[torch.Tensor, torch.Tensor]:
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = carregar_modelo_cifar('./modelos/pytorch/conv-pytorch-cifar-10.pt')
-   train_loader, _ = preparar_dataset('cifar-10')
-   #amostra_x, amostra_y = obter_amostra(train_loader) 
-   digito = 4
+   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+   modelo = carregar_modelo_cifar(device, './modelos/pytorch/conv-pytorch-cifar-10.pt')
+   dl_treino, dl_teste = preparar_dataset('cifar-10')
+
    amostra = carregar_imagem('./cifar/horse.png')
+
    print(amostra.shape)
 
    conv_ids = []

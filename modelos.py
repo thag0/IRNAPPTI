@@ -127,6 +127,7 @@ class ConvMnist(nn.Module):
          Exporta o modelo num aquivo externo.
       """
 
+      self.to('cpu') # garantia
       torch.save(obj=self.state_dict(), f=caminho)
       print(f'Modelo salvo em \'{caminho}\'')
 
@@ -349,5 +350,6 @@ class ConvCifar10(nn.Module):
          Exporta o modelo num aquivo externo.
       """
 
+      self.to('cpu') # garantia
       torch.save(obj=self.state_dict(), f=caminho)
       print(f'Modelo salvo em \'{caminho}\'')
