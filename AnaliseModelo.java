@@ -1,6 +1,5 @@
 import ged.Ged;
 import geim.Geim;
-import rna.camadas.Convolucional;
 import rna.core.OpMatriz;
 import rna.core.OpTensor4D;
 import rna.core.Tensor4D;
@@ -24,7 +23,7 @@ public class AnaliseModelo{
       String nomeModelo = "conv-mnist-95-7";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      final int digito = 4;
+      final int digito = 3;
       Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
       Tensor4D prev = modelo.forward(amostra);
 
@@ -38,11 +37,11 @@ public class AnaliseModelo{
       double ec = funcoes.entropiaCondicional(prev.paraArray());
       System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
-      // boolean normalizar = true;
-      // funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
-      // funcoes.exportarAtivacoes(modelo, 2, normalizar, 20);
-      // funcoes.exportarFiltros(modelo, 0, normalizar);
-      // funcoes.exportarFiltros(modelo, 2, normalizar);
+      boolean normalizar = true;
+      funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
+      funcoes.exportarFiltros(modelo, 0, normalizar);
+      funcoes.exportarAtivacoes(modelo, 2, normalizar, 20);
+      funcoes.exportarFiltros(modelo, 2, normalizar);
    }
 
    /**
