@@ -58,7 +58,11 @@ def plotar_ativacoes(modelo: (ConvMnist|ConvCifar10), entrada: torch.Tensor, id_
       return
    
    # # pegar saída
-   saida = entrada
+   saida = entrada.to(modelo.device)
+
+   print(saida.device)
+   print(modelo.device)
+   
    for i in range(len(camadas)):
       saida = camadas[i].forward(saida)
       if i == id_camada:
@@ -85,7 +89,7 @@ def plotar_ativacoes(modelo: (ConvMnist|ConvCifar10), entrada: torch.Tensor, id_
    _, axs = plt.subplots(n_lin, n_col, figsize=(10, 6))
    for i in range(num_filtros):
       ax = axs[i // n_col, i % n_col]
-      s = saida.detach().numpy()
+      s = saida.detach().cpu().numpy()
       imagem = s[i, ...]
       # ax.imshow(imagem, cmap='viridis')
       ax.imshow(imagem, cmap=color_map)
@@ -106,7 +110,7 @@ if __name__ == '__main__':
    os.system('cls')
 
    modelo = carregar_modelo_mnist('./modelos/pytorch/conv-pytorch-mnist.pt')
-
+   
    digito = 4
    amostra = carregar_imagem('./mnist/teste/' + str(digito) + '/img_0.jpg')
    amostra = amostra.to(modelo.device)
