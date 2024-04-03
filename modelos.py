@@ -18,13 +18,13 @@ class ConvMnist(nn.Module):
          nn.Conv2d(in_channels=1, out_channels=32, kernel_size=(3, 3)),
          nn.ReLU(),
          nn.Dropout(0.3),
-         nn.MaxPool2d(kernel_size=(1, 1)),
+         nn.MaxPool2d(kernel_size=(2, 2)),
          nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(3, 3)),
          nn.ReLU(),
          nn.Dropout(0.3),
          nn.MaxPool2d(kernel_size=(2, 2)),
          nn.Flatten(),
-         nn.Linear((32 * 5*5), 128),
+         nn.Linear(32 *5*5, 128),
          nn.ReLU(),
          nn.Dropout(0.3),
          nn.Linear(128, 10),
@@ -47,6 +47,13 @@ class ConvMnist(nn.Module):
 
          x: dados de entrada.
       """
+
+      # # Obter as dimensões após a camada de Flatten
+      # batch_size = x.size(0)
+      # flattened_dim = x.view(batch_size, -1).size(1)
+
+      # # Ajustar a camada Linear para usar a dimensão correta
+      # self.model[-3] = nn.Linear(flattened_dim, 128)
 
       return self.model.forward(x)
 
