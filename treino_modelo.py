@@ -43,13 +43,13 @@ if __name__ == '__main__':
    os.system('cls')
 
    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-   modelo=ConvMnist(device)
+   modelo = ConvCifar10(device=device)
    print(modelo)
    print(f"Modelo em: {modelo.device}")
 
-   dl_treino, dl_teste = preparar_dataset('mnist')
+   dl_treino, dl_teste = preparar_dataset('cifar-10')
 
-   hist = modelo.treinar(dl_treino, 4)
+   hist = modelo.treinar(dl_treino, 7)
 
    metricas_treino = modelo.avaliar(dl_treino)
    metricas_teste = modelo.avaliar(dl_teste)
@@ -59,4 +59,4 @@ if __name__ == '__main__':
 
    plotar_historico(hist)
 
-   modelo.salvar("./modelos/pytorch/conv-pytorch-mnist.pt")
+   modelo.salvar("./modelos/pytorch/conv-pytorch-cifar10.pt")

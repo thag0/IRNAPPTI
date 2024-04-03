@@ -59,7 +59,7 @@ public class Funcoes{
       for(int i = 0; i < modelo.numCamadas(); i++){
          if(modelo.camada(i) instanceof Convolucional){
             idConv = i;
-            break;
+            // break;
          }
       }
 
@@ -92,7 +92,7 @@ public class Funcoes{
       mapa.map(x -> (x - min) / (max - min));
       
       //desenhar os valores calculados
-      int escala = 15;
+      int escala = 20;
       desenharImagem(mapa, escala, false, "Mapa");
    }
 
