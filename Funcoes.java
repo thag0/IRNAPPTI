@@ -180,12 +180,14 @@ public class Funcoes{
       for(int i = 0; i < digitos; i++){
          String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_16.jpg";
          var imagem = imagemParaMatriz(caminhoAmostra);
-         var amostra = new double[][][]{imagem};
+         var amostra = new Tensor4D(imagem);
 
-         Tensor4D prev = modelo.forward(amostra);// ver as saídas calculadas
+         modelo.forward(amostra);// ver as saídas calculadas
+         Tensor4D prev = camada.saida();
 
          Mat[] somatorios = new Mat[camada.somatorio.dim2()];
          Mat[] saidas = new Mat[prev.dim2()];
+
          for(int j = 0; j < saidas.length; j++){
             saidas[j] = new Mat(prev.array2D(0, j));
             somatorios[j] = new Mat(camada.somatorio.array2D(0, j));
@@ -202,8 +204,8 @@ public class Funcoes{
          limparDiretorio(caminhoSomatorio);
          limparDiretorio(caminhoSaida);
 
-         exportarMatrizes(somatorios, escala, caminhoSomatorio);
          exportarMatrizes(saidas, escala, caminhoSaida);
+         exportarMatrizes(somatorios, escala, caminhoSomatorio);
       }
 
       System.out.println("Ativações exportadas para a camada " + idConv);
@@ -276,6 +278,11 @@ public class Funcoes{
             cinza *= 255;
             estrutura[y][x] = new Pixel((int) cinza, (int) cinza, (int) cinza);
          }
+      }
+
+      File diretorio = new File(caminho).getParentFile();
+      if(!diretorio.exists()){
+         diretorio.mkdirs();
       }
   
       geim.exportarImagemPng(estrutura, caminho);
@@ -359,7 +366,7 @@ public class Funcoes{
          }
 
       }else{
-         System.out.println("O caminho fornecido não é um diretório válido.");
+         System.out.println("\nO caminho fornecido (" + caminho + ") não é um diretório válido.");
       }
    }
 
