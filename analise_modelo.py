@@ -31,17 +31,26 @@ def carregar_imagem(caminho: str) -> torch.Tensor:
 
 def carregar_modelo_cifar(caminho: str) -> ConvCifar10:
    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-   modelo = ConvCifar10(device)
+   modelo = ConvCifar10('cpu')
    modelo.load_state_dict(torch.load(caminho))
    
    return modelo
 
-def preparar_dataset() -> tuple[DataLoader]:
+def preparar_dataset(nome: str) -> tuple[DataLoader]:
    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 
+   if nome == 'mnist':
+      dataset = torchvision.datasets.MNIST
+   
+   elif nome == 'cifar-10':
+      dataset = torchvision.datasets.CIFAR10
+
+   else:
+      print(f'Dataset \'{nome}\' não encontrado.')
+
    # Carregar os datasets de treinamento e teste
-   train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-   test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+   train_dataset = dataset(root='./data', train=True, download=True, transform=transform)
+   test_dataset = dataset(root='./data', train=False, download=True, transform=transform)
 
    # Criar DataLoaders para carregamento em lote
    tam_lote: int = 128
@@ -50,7 +59,7 @@ def preparar_dataset() -> tuple[DataLoader]:
 
    return (train_loader, test_loader)
 
-def plotar_ativacoes(modelo: (ConvMnist|ConvCifar10), entrada: torch.Tensor, id_camada: int):
+def plotar_ativacoes(modelo: ConvCifar10, entrada: torch.Tensor, id_camada: int):
    camadas = modelo.get_camadas()
    camada = camadas[id_camada]
    if not isinstance(camada, (Conv2d, MaxPool2d)):
@@ -91,8 +100,8 @@ def plotar_ativacoes(modelo: (ConvMnist|ConvCifar10), entrada: torch.Tensor, id_
       ax = axs[i // n_col, i % n_col]
       s = saida.detach().cpu().numpy()
       imagem = s[i, ...]
-      # ax.imshow(imagem, cmap='viridis')
-      ax.imshow(imagem, cmap=color_map)
+      ax.imshow(imagem, cmap='viridis')
+      #ax.imshow(imagem, cmap=color_map)
  
       # remover os eixos X e Y do plot
       ax.set_xticks([])
@@ -101,19 +110,25 @@ def plotar_ativacoes(modelo: (ConvMnist|ConvCifar10), entrada: torch.Tensor, id_
    plt.tight_layout()
    plt.show()
 
-def testar_previsao(modelo: ConvMnist|ConvCifar10, amostra: torch.Tensor):
+def testar_previsao(modelo: ConvCifar10, amostra: torch.Tensor):
    prev = modelo.forward(amostra)
    val = prev.argmax(dim=1).item()
    print(f'Previsto = {val}')
 
+def obter_amostra(data_loader: DataLoader) -> tuple[torch.Tensor, torch.Tensor]:
+   for x, y in data_loader:
+      return x[1], y[1]
+
+
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = carregar_modelo_mnist('./modelos/pytorch/conv-pytorch-mnist.pt')
-   
+   modelo = carregar_modelo_cifar('./modelos/pytorch/conv-pytorch-cifar-10.pt')
+   train_loader, _ = preparar_dataset('cifar-10')
+   #amostra_x, amostra_y = obter_amostra(train_loader) 
    digito = 4
-   amostra = carregar_imagem('./mnist/teste/' + str(digito) + '/img_0.jpg')
-   amostra = amostra.to(modelo.device)
+   amostra = carregar_imagem('./cifar/horse.png')
+   print(amostra.shape)
 
    conv_ids = []
 
