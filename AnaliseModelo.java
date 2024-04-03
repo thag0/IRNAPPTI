@@ -1,5 +1,6 @@
 import ged.Ged;
 import geim.Geim;
+import rna.camadas.Convolucional;
 import rna.core.OpMatriz;
 import rna.core.OpTensor4D;
 import rna.core.Tensor4D;
@@ -24,11 +25,11 @@ public class AnaliseModelo{
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
       final int digito = 4;
-      Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_3.jpg"));
+      Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
       Tensor4D prev = modelo.forward(amostra);
 
       double[] rotulo = funcoes.gerarRotuloMnist(digito);
-      funcoes.gradCAM(modelo, amostra, rotulo, true);
+      funcoes.gradCAM(modelo, amostra, rotulo);
 
       prev.reformatar(10, 1);
       prev.print(8);

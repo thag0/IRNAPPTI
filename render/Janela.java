@@ -2,12 +2,10 @@ package render;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
-import rna.core.Mat;
+import rna.core.Tensor4D;
 
 public class Janela extends JFrame{
    
@@ -27,13 +25,6 @@ public class Janela extends JFrame{
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       setLocationRelativeTo(null);
       
-      addWindowListener(new WindowAdapter() {
-         @Override
-         public void windowClosing(WindowEvent e) {
-            dispose();
-         }
-      });
-      
       leitorTeclado = new LeitorTeclado();
       addKeyListener(leitorTeclado); 
       setFocusable(true);
@@ -51,47 +42,55 @@ public class Janela extends JFrame{
       this(altura, largura, 1, "Janela");
    }
 
-   public void desenharMat(Mat mat){
-      desenharMat(mat, getTitle());
+   public void desenharImagem(Tensor4D tensor){
+      desenharImagem(tensor, getTitle());
    }
 
-   public void desenharMat(Mat mat, String titulo){
-      if(mat == null){
+   public void desenharImagem(Tensor4D tensor, String titulo){
+      if(tensor == null){
          throw new IllegalArgumentException(
             "\nMatriz não pode ser nula."
          );
       }
       
       setTitle(titulo);
-      painel.desenharMat(mat);
+
+      new Thread(() -> painel.desenharImagem(tensor)).start();
    }
 
-   public void desenharArray(Mat[] arr){
-      int indice = 0;
-      int tamanho = arr.length;
-
-      while(this.isActive()){
-         if(leitorTeclado.d){
-            if(indice+1 < tamanho) indice++;
-            else indice = 0;
-            leitorTeclado.d = false;
-         
-         }else if(leitorTeclado.a){
-            if(indice-1 >= 0) indice--;
-            else indice = tamanho-1;
-            leitorTeclado.a = false;
+   /**
+    * Desenha as imagens contidas no array.
+    * @param arr array de tensores.
+    */
+   public void desenharImagens(Tensor4D[] arr){
+      new Thread(() -> {
+         int indice = 0;
+         int tamanho = arr.length;
+   
+         while(isEnabled()){
+            if(leitorTeclado.d){
+               if(indice+1 < tamanho) indice++;
+               else indice = 0;
+               leitorTeclado.d = false;
+            
+            }else if(leitorTeclado.a){
+               if(indice-1 >= 0) indice--;
+               else indice = tamanho-1;
+               leitorTeclado.a = false;
+            }
+   
+            setTitle("Img " + indice);
+            painel.desenharImagem(arr[indice]);
+   
+            try{
+               Thread.sleep(50);
+            }catch(Exception e){
+               e.printStackTrace();
+            }
          }
-
-         setTitle("Amostra " + indice);
-         painel.desenharMat(arr[indice]);
-
-         try{
-            Thread.sleep(50);
-         }catch(Exception e){
-            e.printStackTrace();
-         }
-      }
+      }).start();
    }
+
 }
 
 class LeitorTeclado implements KeyListener{

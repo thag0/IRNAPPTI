@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
-import rna.core.Mat;
+import rna.core.Tensor4D;
 
 public class Painel extends JPanel{
 
@@ -15,7 +15,7 @@ public class Painel extends JPanel{
    public final int altura;
    public final int largura;
 
-   Mat mat;
+   Tensor4D tensor;
 
    /**
     * Cria um novo painel com base nos valores dados.
@@ -33,16 +33,16 @@ public class Painel extends JPanel{
    }
    
    /**
-    * Desenha o conteúdo da matriz em escala de cinza.
-    * @param m matriz.
+    * Desenha o conteúdo 2D do tensor.
+    * @param tensor tensor desejado.
     */
-   public void desenharMat(Mat m){
-      if(m == null){
+   public void desenharImagem(Tensor4D tensor){
+      if(tensor == null){
          throw new IllegalArgumentException(
             "\nMatriz não pode ser nula."
          );
       }
-      mat = m;
+      this.tensor = tensor;
       repaint();
    }
 
@@ -51,29 +51,47 @@ public class Painel extends JPanel{
       super.paintComponent(g);
       Graphics2D g2 = (Graphics2D) g;
 
-      int linhas = mat.lin();
-      int colunas = mat.col();
+      int alt = tensor.dim3();
+      int larg = tensor.dim4();
 
-      int larguraPixel = largura / colunas;
-      int alturaPixel = altura / linhas;
+      int largPixel = largura / larg;
+      int altPixel  = altura / alt;
 
-      for(int i = 0; i < linhas; i++){
-         for(int j = 0; j < colunas; j++){
-            double valor = mat.elemento(i, j);
-            int cinza = (int) (255 * valor);
+      boolean rgb = tensor.dim2() == 3;
 
-            if(cinza > 255) cinza = 255;
-            if(cinza < 0) cinza = 0;
+      for(int i = 0; i < alt; i++){
+         for(int j = 0; j < larg; j++){
 
-            int verm = cinza;
-            int verd = cinza;
-            int azul = cinza;
-            g2.setColor(new Color(verm, verd, azul));
+            if(rgb){
+               double valR = tensor.get(0, 0, i, j);
+               double valG = tensor.get(0, 1, i, j);
+               double valB = tensor.get(0, 2, i, j);
+               
+               int corR = (int)(valR * 255);
+               if(corR > 255) corR = 255;
+               if(corR < 0) corR = 0;
+               
+               int corG = (int)(valG * 255);
+               if(corG > 255) corG = 255;
+               if(corG < 0) corG = 0;
+               
+               int corB = (int)(valB * 255);
+               if(corB > 255) corB = 255;
+               if(corB < 0) corR = 0;
+               
+               g2.setColor(new Color(corR, corG, corB));
+            }else{
+               double valCinza = tensor.get(0, 0, i, j);
+               int cinza = (int)(valCinza * 255);
+               if(cinza > 255) cinza = 255;
+               if(cinza < 0) cinza = 0;
+               g2.setColor(new Color(cinza, cinza, cinza));
+            }
 
-            int x = j * larguraPixel;
-            int y = i * alturaPixel;
+            int x = j * largPixel;
+            int y = i * altPixel;
 
-            g2.fillRect(x, y, larguraPixel, alturaPixel);
+            g2.fillRect(x, y, largPixel, altPixel);
          }
       }
    }

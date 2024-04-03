@@ -43,9 +43,8 @@ public class Funcoes{
     * @param modelo modelo treinado.
     * @param entrada amostra de entrada.
     * @param rotulo rótulo correspondente à amostra.
-    * @param norm normalizar os valores desenhados na janela.
     */
-   public void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo, boolean norm){
+   public void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
       //passo de backpropagation para ter os gradientes calculados
       Tensor4D prev = modelo.forward(entrada);
       double[] derivadas = modelo.perda().derivada(prev.paraArray(), rotulo);
@@ -67,39 +66,34 @@ public class Funcoes{
       Convolucional conv = (Convolucional) modelo.camada(idConv);
       
       //aplicar o grad cam
-      Tensor4D gConv = conv.gradSaida.clone();
-      int numFiltros = gConv.dim2();
-      int altura = gConv.dim3(), largura = gConv.dim4();
+      Tensor4D convGrad = conv.gradSaida.clone();
+      Tensor4D convSaida = conv.saida().clone();
+      int canais = convGrad.dim2();
+      int altura = convSaida.dim3(), largura = convSaida.dim4();
       Tensor4D mapa = new Tensor4D(altura, largura);
 
-      for(int i = 0; i < numFiltros; i++){
-         //calcular a média de cada gradiente
-         Tensor4D tempGrad = gConv.subTensor2D(0, i);
-         double media = tempGrad.media();
+      for(int i = 0; i < canais; i++){
+         Tensor4D tempGrad = convGrad.subTensor2D(0, i);
+         Tensor4D tempSaida = convSaida.subTensor2D(0, i);
+         tempGrad.mult(tempSaida);
 
-         //multiplicar cada elemento da saída da 
-         //camada pela média dos gradientes
-         Tensor4D tempSaida = conv.saida().clone();
-         tempSaida.map(x -> x*media);
-
-         //adicionar as saídas ao mapa
-         for(int j = 0; j < tempSaida.dim2(); j++){
-            mapa.add(tempSaida.subTensor2D(0, j));
-         }
+         double peso = tempGrad.somar() / (altura * largura);
+         Tensor4D t = convSaida.subTensor2D(0, i);
+         t.map(x -> x * peso);
+         
+         mapa.add(t); 
       }
 
       //grad cam aplica a relu ao final do processo
       mapa.relu();
+
+      //normalização
+      double min = mapa.minimo(), max = mapa.maximo();
+      mapa.map(x -> (x - min) / (max - min));
       
       //desenhar os valores calculados
       int escala = 15;
-      desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, norm, "Mapa");
-      
-      for(int i = 0; i < conv.saida().dim2(); i++){
-         mapa.add(conv.saida().subTensor2D(0, i));
-      }
-
-      desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, norm, "Mapa+Saida");
+      desenharImagem(mapa, escala, false, "Mapa");
    }
 
    /**
@@ -117,46 +111,49 @@ public class Funcoes{
       Tensor4D prev = conv.forward(amostra);
       int filtros = conv.numFiltros();
 
-      Mat[] arr = new Mat[filtros];
+      Tensor4D[] arr = new Tensor4D[filtros];
       for(int i = 0; i < arr.length; i++){
-         arr[i] = new Mat(prev.array2D(0, i));
+         arr[i] = prev.subTensor2D(0, i);
       }
       
-      desenharMatrizes(arr, escala, normalizar, "Saidas Conv");
+      desenharImagens(arr, escala, normalizar, "Saidas Conv");
    }
 
    /**
-    * 
-    * @param mat
-    * @param escala
-    * @param normalizar
+    * Desenha o conteúdo 2d do tensor em uma janela gráfica.
+    * @param tensor tensor com os dados desejados.
+    * @param escala escala de ampliação da janela.
+    * @param normalizar normalizar os valores do tensor entre 0 e 1
+    * @param titulo nome da janela.
     */
-   public void desenharMatriz(Mat mat, int escala, boolean normalizar, String titulo){
-      if(normalizar) normalizar(mat);
-      Janela janela = new Janela(mat.lin(), mat.col(), escala, titulo);
-      janela.desenharMat(mat);
+   public void desenharImagem(Tensor4D tensor, int escala, boolean normalizar, String titulo){
+      if(normalizar) normalizar(tensor);
+      Janela janela = new Janela(tensor.dim3(), tensor.dim4(), escala, titulo);
+      janela.desenharImagem(tensor);
    }
 
    /**
     * Desenha matriz por matriz dentro do array.
-    * @param arr array de matrizes.
+    * @param arr array de tensores.
     * @param escala escala de ampliação da janela.
     * @param normalizar normalizar os valores entre 0 e 1.
     */
-   public void desenharMatrizes(Mat[] arr, int escala, boolean normalizar, String titulo){
+   public void desenharImagens(Tensor4D[] arr, int escala, boolean normalizar, String titulo){
       int[] dim = {
-         arr[0].lin(), 
-         arr[0].col()
+         arr[0].dim3(), 
+         arr[0].dim4()
       };
+
       Janela janela = new Janela(dim[0], dim[1], escala, titulo);
 
       if(normalizar){
-         for(Mat m : arr){
-            normalizar(m);
+         for(Tensor4D t : arr){
+            normalizar(t);
          }
       }
 
-      janela.desenharArray(arr);
+      janela.desenharImagens(arr);
+      
    }
 
    /**
@@ -305,6 +302,21 @@ public class Funcoes{
       final double minimo = min, maximo = max;
 
       mat.map((x) -> {
+         return (x - minimo) / (maximo - minimo);
+      });
+   }
+
+   /**
+    * Normaliza os valores dentro do tensor.
+    * @param tensor matriz base.
+    */
+   public void normalizar(Tensor4D tensor){
+      double min = tensor.minimo(); 
+      double max = tensor.maximo();
+
+      final double minimo = min, maximo = max;
+
+      tensor.map((x) -> {
          return (x - minimo) / (maximo - minimo);
       });
    }
