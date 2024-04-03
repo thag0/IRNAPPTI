@@ -7,10 +7,10 @@ from torch.nn.modules import (Conv2d, MaxPool2d)
 import torchvision
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
-from modelos import ConvMnist
+from modelos import ConvMnist, ConvCifar10
 from PIL import Image
 
-def carregar_modelo(caminho: str) -> ConvMnist:
+def carregar_modelo_mnist(caminho: str) -> ConvMnist:
    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
    modelo = ConvMnist(device)
    modelo.load_state_dict(torch.load(caminho))
@@ -29,6 +29,13 @@ def carregar_imagem(caminho: str) -> torch.Tensor:
    
    return tensor_img
 
+def carregar_modelo_cifar(caminho: str) -> ConvCifar10:
+   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+   modelo = ConvCifar10(device)
+   modelo.load_state_dict(torch.load(caminho))
+   
+   return modelo
+
 def preparar_dataset() -> tuple[DataLoader]:
    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 
@@ -43,7 +50,7 @@ def preparar_dataset() -> tuple[DataLoader]:
 
    return (train_loader, test_loader)
 
-def plotar_ativacoes(modelo: ConvMnist, entrada: torch.Tensor, id_camada: int):
+def plotar_ativacoes(modelo: (ConvMnist|ConvCifar10), entrada: torch.Tensor, id_camada: int):
    camadas = modelo.get_camadas()
    camada = camadas[id_camada]
    if not isinstance(camada, (Conv2d, MaxPool2d)):
@@ -90,7 +97,7 @@ def plotar_ativacoes(modelo: ConvMnist, entrada: torch.Tensor, id_camada: int):
    plt.tight_layout()
    plt.show()
 
-def testar_previsao(modelo: ConvMnist, amostra: torch.Tensor):
+def testar_previsao(modelo: ConvMnist|ConvCifar10, amostra: torch.Tensor):
    prev = modelo.forward(amostra)
    val = prev.argmax(dim=1).item()
    print(f'Previsto = {val}')
@@ -98,10 +105,11 @@ def testar_previsao(modelo: ConvMnist, amostra: torch.Tensor):
 if __name__ == '__main__':
    os.system('cls')
 
-   modelo = carregar_modelo('./modelos/pytorch/conv-pytorch-mnist.pt')
+   modelo = carregar_modelo_mnist('./modelos/pytorch/conv-pytorch-mnist.pt')
 
    digito = 4
    amostra = carregar_imagem('./mnist/teste/' + str(digito) + '/img_0.jpg')
+   amostra = amostra.to(modelo.device)
 
    conv_ids = []
 

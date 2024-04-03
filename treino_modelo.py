@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
    dl_treino, dl_teste = preparar_dataset('cifar-10')
 
-   hist = modelo.treinar(dl_treino, 3)
+   hist = modelo.treinar(dl_treino, 7)
 
    metricas_treino = modelo.avaliar(dl_treino)
    metricas_teste = modelo.avaliar(dl_teste)

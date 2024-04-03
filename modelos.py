@@ -18,7 +18,7 @@ class ConvMnist(nn.Module):
          nn.Conv2d(in_channels=1, out_channels=32, kernel_size=(3, 3)),
          nn.ReLU(),
          nn.Dropout(0.3),
-         nn.MaxPool2d(kernel_size=(2, 2)),
+         nn.MaxPool2d(kernel_size=(1, 1)),
          nn.Conv2d(in_channels=32, out_channels=32, kernel_size=(3, 3)),
          nn.ReLU(),
          nn.Dropout(0.3),
@@ -135,21 +135,21 @@ class ConvCifar10(nn.Module):
       self.device = device if device is not None else 'cpu'
 
       self.model = nn.Sequential(
-         nn.Conv2d(3, 32, kernel_size=(3, 3), padding=1),
+         nn.Conv2d(3, 32, kernel_size=(3, 3), padding=1, stride=1),
          nn.ReLU(),
-         nn.Conv2d(32, 64, kernel_size=(3, 3)),
+         nn.Conv2d(32, 64, kernel_size=(3, 3), padding=1, stride=1),
          nn.ReLU(),
          nn.MaxPool2d(2, 2), # output: 64 x 16 x 16
  
-         nn.Conv2d(64, 128, kernel_size=(3, 3)),
+         nn.Conv2d(64, 128, kernel_size=(3, 3), padding=1, stride=1),
          nn.ReLU(),
-         nn.Conv2d(128, 128, kernel_size=(3, 3)),
+         nn.Conv2d(128, 128, kernel_size=(3, 3), padding=1, stride=1),
          nn.ReLU(),
          nn.MaxPool2d(2, 2), # output: 128 x 8 x 8
  
-         nn.Conv2d(128, 256, kernel_size=(3, 3)),
+         nn.Conv2d(128, 256, kernel_size=(3, 3), padding=1, stride=1),
          nn.ReLU(),
-         nn.Conv2d(256, 256, kernel_size=(3, 3)),
+         nn.Conv2d(256, 256, kernel_size=(3, 3), padding=1, stride=1),
          nn.ReLU(),
          nn.MaxPool2d(2, 2), # output: 256 x 4 x 4
  
