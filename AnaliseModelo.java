@@ -23,11 +23,12 @@ public class AnaliseModelo{
       String nomeModelo = "conv-mnist-95-7";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      final int digito = 1;
+      final int digito = 4;
       Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_3.jpg"));
       Tensor4D prev = modelo.forward(amostra);
 
-      funcoes.gradCAM(modelo, amostra, funcoes.gerarRotuloMnist(digito), true);
+      double[] rotulo = funcoes.gerarRotuloMnist(digito);
+      funcoes.gradCAM(modelo, amostra, rotulo, true);
 
       prev.reformatar(10, 1);
       prev.print(8);
@@ -66,10 +67,9 @@ public class AnaliseModelo{
     * pelo modelo. Se falsa, mostra apenas o dígito previsto.
     */
    static void testarPrevisao(Sequencial modelo, String caminhoImagem, boolean prob){
-      double[][][] entrada = new double[1][][];
       String extensao = ".jpg";
-      entrada[0] = funcoes.imagemParaMatriz("/mnist/teste/" + caminhoImagem + extensao);
-      modelo.forward(entrada);
+      Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz("/mnist/teste/" + caminhoImagem + extensao));
+      modelo.forward(amostra);
       double[] previsao = modelo.saidaParaArray();
       
       System.out.print("\nTestando: " + caminhoImagem + extensao);

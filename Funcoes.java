@@ -46,33 +46,35 @@ public class Funcoes{
     * @param norm normalizar os valores desenhados na janela.
     */
    public void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo, boolean norm){
-      Tensor4D prev = modelo.forward(entrada);
-      
       //passo de backpropagation para ter os gradientes calculados
+      Tensor4D prev = modelo.forward(entrada);
       double[] derivadas = modelo.perda().derivada(prev.paraArray(), rotulo);
+      Tensor4D grad = new Tensor4D(derivadas);
       int numCamadas = modelo.numCamadas();
-      
-      modelo.camadaSaida().backward(new Tensor4D(derivadas));
-      for(int i = numCamadas-2; i >= 0; i--){
-         modelo.camada(i).backward(modelo.camada(i+1).gradEntrada());
+      for(int i = numCamadas-1; i >= 0; i--){
+         grad = modelo.camada(i).backward(grad);
       }
 
-      //pegar a ultima camada convolucional
-      int idUltimaConv = 0;
+      //pegar índice da camada convolucional do modelo
+      int idConv = 0;
       for(int i = 0; i < modelo.numCamadas(); i++){
-         if(modelo.camada(i) instanceof Convolucional) idUltimaConv = i;
+         if(modelo.camada(i) instanceof Convolucional){
+            idConv = i;
+            break;
+         }
       }
-      Convolucional conv = (Convolucional) modelo.camada(idUltimaConv);
+
+      Convolucional conv = (Convolucional) modelo.camada(idConv);
       
       //aplicar o grad cam
-      Tensor4D grad = conv.gradSaida.clone();
-      int numFiltros = grad.dim2();
-      int altura = grad.dim3(), largura = grad.dim4();
+      Tensor4D gConv = conv.gradSaida.clone();
+      int numFiltros = gConv.dim2();
+      int altura = gConv.dim3(), largura = gConv.dim4();
       Tensor4D mapa = new Tensor4D(altura, largura);
 
       for(int i = 0; i < numFiltros; i++){
          //calcular a média de cada gradiente
-         Tensor4D tempGrad = grad.subTensor2D(0, i);
+         Tensor4D tempGrad = gConv.subTensor2D(0, i);
          double media = tempGrad.media();
 
          //multiplicar cada elemento da saída da 
@@ -84,19 +86,19 @@ public class Funcoes{
          for(int j = 0; j < tempSaida.dim2(); j++){
             mapa.add(tempSaida.subTensor2D(0, j));
          }
-
-         mapa.map(x -> x > 0 ? x : 0);
       }
 
-      System.out.println(mapa.shapeStr());
-
+      //grad cam aplica a relu ao final do processo
+      mapa.relu();
+      
       //desenhar os valores calculados
-      int escala = 25;
+      int escala = 15;
       desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, norm, "Mapa");
       
       for(int i = 0; i < conv.saida().dim2(); i++){
          mapa.add(conv.saida().subTensor2D(0, i));
       }
+
       desenharMatriz(new Mat(mapa.array2D(0, 0)), escala, norm, "Mapa+Saida");
    }
 
