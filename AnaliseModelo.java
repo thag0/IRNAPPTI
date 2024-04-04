@@ -1,6 +1,5 @@
 import ged.Ged;
 import geim.Geim;
-import rna.core.OpMatriz;
 import rna.core.OpTensor4D;
 import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
@@ -12,9 +11,8 @@ public class AnaliseModelo{
 
    static Ged ged = new Ged();
    static Geim geim = new Geim();
-   static OpMatriz opmat = new OpMatriz();
    static OpTensor4D optensor = new OpTensor4D();
-   static Funcoes funcoes = new Funcoes(CAMINHO_IMAGEM);
+   static Funcional f = new Funcional(CAMINHO_IMAGEM);
    static Serializador serializador = new Serializador();
    
    public static void main(String[] args){
@@ -23,25 +21,26 @@ public class AnaliseModelo{
       String nomeModelo = "conv-mnist-95-7";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
 
-      final int digito = 3;
-      Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+      final int digito = 4;
+      Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
       Tensor4D prev = modelo.forward(amostra);
 
-      double[] rotulo = funcoes.gerarRotuloMnist(digito);
-      funcoes.gradCAM(modelo, amostra, rotulo);
+      double[] rotulo = f.gerarRotuloMnist(digito);
+      Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
+      f.desenharImagem(mapa, 15, false, "Heatmap");
 
       prev.reformatar(10, 1);
-      prev.print(8);
-      System.out.println("Dígito " + digito + ", Previsto: " + funcoes.maiorIndice(prev.paraArray()));
+      prev.print(4);
+      System.out.println("Dígito " + digito + ", Previsto: " + f.maiorIndice(prev.paraArray()));
 
-      double ec = funcoes.entropiaCondicional(prev.paraArray());
+      double ec = f.entropiaCondicional(prev.paraArray());
       System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
-      boolean normalizar = true;
-      funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
-      funcoes.exportarFiltros(modelo, 0, normalizar);
-      funcoes.exportarAtivacoes(modelo, 2, normalizar, 20);
-      funcoes.exportarFiltros(modelo, 2, normalizar);
+      // boolean normalizar = true;
+      // funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
+      // funcoes.exportarFiltros(modelo, 0, normalizar);
+      // funcoes.exportarAtivacoes(modelo, 2, normalizar, 20);
+      // funcoes.exportarFiltros(modelo, 2, normalizar);
    }
 
    /**
@@ -68,7 +67,7 @@ public class AnaliseModelo{
     */
    static void testarPrevisao(Sequencial modelo, String caminhoImagem, boolean prob){
       String extensao = ".jpg";
-      Tensor4D amostra = new Tensor4D(funcoes.imagemParaMatriz("/mnist/teste/" + caminhoImagem + extensao));
+      Tensor4D amostra = f.carregarImagemCinza("/mnist/teste/" + caminhoImagem + extensao);
       modelo.forward(amostra);
       double[] previsao = modelo.saidaParaArray();
       
@@ -79,7 +78,7 @@ public class AnaliseModelo{
             System.out.println("Prob: " + i + ": " + (int)(previsao[i]*100) + "%");
          }
       }else{
-         System.out.print(" -> Prev: " + funcoes.maiorIndice(previsao));
+         System.out.print(" -> Prev: " + f.maiorIndice(previsao));
       }
 
    }
@@ -98,11 +97,11 @@ public class AnaliseModelo{
          double acertos = 0;
          for(int amostra = 0; amostra < amostras; amostra++){
             String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
-            Tensor4D img = new Tensor4D(funcoes.imagemParaMatriz(caminhoImagem));
+            Tensor4D img = f.carregarImagemCinza(caminhoImagem);
             
             modelo.forward(img);
             double[] previsoes = modelo.saidaParaArray();
-            if(funcoes.maiorIndice(previsoes) == digito){
+            if(f.maiorIndice(previsoes) == digito){
                acertos++;
             }
          }

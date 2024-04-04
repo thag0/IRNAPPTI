@@ -9,7 +9,7 @@ import rna.core.Mat;
 import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
 
-public class Funcoes{
+public class Funcional{
    final String CAMINHO_IMAGEM;
    private Geim geim = new Geim();
 
@@ -17,7 +17,7 @@ public class Funcoes{
     * Auxiliar contendo funções úteis para análise e testes.
     * @param caminhoImagem diretório contendo imagens do {@code MNIST}
     */
-   public Funcoes(String caminhoImagem){
+   public Funcional(String caminhoImagem){
       this.CAMINHO_IMAGEM = caminhoImagem;
    }
 
@@ -39,12 +39,13 @@ public class Funcoes{
    }
 
    /**
-    * Região mais significativa para o modelo prever o dígito.
+    * Calcula a região mais significativa para o modelo fazer sua previsão.
     * @param modelo modelo treinado.
     * @param entrada amostra de entrada.
     * @param rotulo rótulo correspondente à amostra.
+    * @return {@code Tensor} contendo o mapa de calor calculado.
     */
-   public void gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
+   public Tensor4D gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
       //passo de backpropagation para ter os gradientes calculados
       Tensor4D prev = modelo.forward(entrada);
       double[] derivadas = modelo.perda().derivada(prev.paraArray(), rotulo);
@@ -59,41 +60,34 @@ public class Funcoes{
       for(int i = 0; i < modelo.numCamadas(); i++){
          if(modelo.camada(i) instanceof Convolucional){
             idConv = i;
-            // break;
          }
       }
 
       Convolucional conv = (Convolucional) modelo.camada(idConv);
       
-      //aplicar o grad cam
+      //calcular mapa de calor
+      Tensor4D convAtv = conv.saida().clone();
       Tensor4D convGrad = conv.gradSaida.clone();
-      Tensor4D convSaida = conv.saida().clone();
-      int canais = convGrad.dim2();
-      int altura = convSaida.dim3(), largura = convSaida.dim4();
-      Tensor4D mapa = new Tensor4D(altura, largura);
+      int canais  = convGrad.dim2();
+      int altura  = convGrad.dim3();
+      int largura = convGrad.dim4();
+   
+      Tensor4D heatmap = new Tensor4D(altura, largura);
 
-      for(int i = 0; i < canais; i++){
-         Tensor4D tempGrad = convGrad.subTensor2D(0, i);
-         Tensor4D tempSaida = convSaida.subTensor2D(0, i);
-         tempGrad.mult(tempSaida);
+      for(int c = 0; c < canais; c++){
+         Tensor4D g = convGrad.subTensor2D(0, c);
+         double media = g.media();
 
-         double peso = tempGrad.somar() / (altura * largura);
-         Tensor4D t = convSaida.subTensor2D(0, i);
-         t.map(x -> x * peso);
-         
-         mapa.add(t); 
-      }
+         Tensor4D a = convAtv.subTensor2D(0, c);
+         a.map(x -> x * media);
 
-      //grad cam aplica a relu ao final do processo
-      mapa.relu();
+         heatmap.add(a);
+      } 
 
-      //normalização
-      double min = mapa.minimo(), max = mapa.maximo();
-      mapa.map(x -> (x - min) / (max - min));
-      
-      //desenhar os valores calculados
-      int escala = 20;
-      desenharImagem(mapa, escala, false, "Mapa");
+      heatmap.relu();
+      normalizar(heatmap);
+
+      return heatmap;
    }
 
    /**
@@ -179,8 +173,7 @@ public class Funcoes{
       final int digitos = 10;
       for(int i = 0; i < digitos; i++){
          String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_16.jpg";
-         var imagem = imagemParaMatriz(caminhoAmostra);
-         var amostra = new Tensor4D(imagem);
+         var amostra = carregarImagemCinza(caminhoAmostra);
 
          modelo.forward(amostra);// ver as saídas calculadas
          Tensor4D prev = camada.saida();
@@ -329,21 +322,53 @@ public class Funcoes{
    }
 
    /**
-    * Converte uma imagem numa matriz contendo seus valores de brilho entre 0 e 1.
+    * Carrega a imagem a partir de um arquivo.
     * @param caminho caminho da imagem.
-    * @return matriz contendo os valores de brilho da imagem.
+    * @return {@code Tensor} contendo os dados da imagem no
+    * padrão RGB.
     */
-   public double[][] imagemParaMatriz(String caminho){
+   public Tensor4D carregarImagemRGB(String caminho){
       BufferedImage img = geim.lerImagem(caminho);
-      double[][] imagem = new double[img.getHeight()][img.getWidth()];
+      int altura = img.getHeight(), largura = img.getHeight();
 
-      int[][] cinza = geim.obterCinza(img);
+      Tensor4D imagem = new Tensor4D(3, altura, largura);
 
-      for(int y = 0; y < imagem.length; y++){
-         for(int x = 0; x < imagem[y].length; x++){
-            imagem[y][x] = (double)cinza[y][x] / 255;
+      int[][] r = geim.obterVermelho(img);
+      int[][] g = geim.obterVerde(img);
+      int[][] b = geim.obterAzul(img);
+
+      for(int y = 0; y < altura; y++){
+         for(int x = 0; x < largura; x++){
+            imagem.set((double)(r[y][x]) / 255, 0, 0, y, x);
+            imagem.set((double)(g[y][x]) / 255, 0, 1, y, x);
+            imagem.set((double)(b[y][x]) / 255, 0, 2, y, x);
          }
       }
+
+      return imagem;
+   }
+
+   /**
+    * Carrega a imagem a partir de um arquivo.
+    * @param caminho caminho da imagem.
+    * @return {@code Tensor} contendo os dados da imagem em
+    * escala de cinza.
+    */
+   public Tensor4D carregarImagemCinza(String caminho){
+      BufferedImage img = geim.lerImagem(caminho);
+      int altura = img.getHeight(), largura = img.getHeight();
+      Tensor4D imagem = new Tensor4D(altura, largura);
+
+      int[][] c = geim.obterCinza(img);   
+
+      for(int y = 0; y < altura; y++){
+         for(int x = 0; x < largura; x++){
+            double val = (double)(c[y][x]) / 255;
+            imagem.set(val, 0, 0, y, x);
+         }  
+      }
+
+
       return imagem;
    }
 
