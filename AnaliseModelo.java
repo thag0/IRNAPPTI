@@ -36,11 +36,11 @@ public class AnaliseModelo{
       double ec = f.entropiaCondicional(prev.paraArray());
       System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
-      // boolean normalizar = true;
-      // funcoes.exportarAtivacoes(modelo, 0, normalizar, 20);
-      // funcoes.exportarFiltros(modelo, 0, normalizar);
-      // funcoes.exportarAtivacoes(modelo, 2, normalizar, 20);
-      // funcoes.exportarFiltros(modelo, 2, normalizar);
+      boolean normalizar = true;
+      f.exportarAtivacoes(modelo, 0, normalizar, 20);
+      f.exportarFiltros(modelo, 0, normalizar);
+      f.exportarAtivacoes(modelo, 2, normalizar, 20);
+      f.exportarFiltros(modelo, 2, normalizar);
    }
 
    /**

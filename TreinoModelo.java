@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 import ged.Dados;
 import ged.Ged;
 import geim.Geim;
-import rna.camadas.Camada;
 import rna.camadas.Convolucional;
 import rna.camadas.Densa;
 import rna.camadas.Dropout;
@@ -80,7 +79,7 @@ public class TreinoModelo{
     * Criação de modelos para testes.
     */
     static Sequencial criarModelo(){
-      Sequencial modelo = new Sequencial(new Camada[]{
+      Sequencial modelo = new Sequencial(
          new Entrada(28, 28),
          new Convolucional(new int[]{3, 3}, 20, "leaky-relu"),
          new MaxPooling(new int[]{2, 2}),
@@ -90,7 +89,7 @@ public class TreinoModelo{
          new Densa(128, "sigmoid"),
          new Dropout(0.2),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
-      });
+      );
 
       modelo.compilar(new SGD(0.01, 0.9), "entropia-cruzada");
       return modelo;

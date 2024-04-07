@@ -278,7 +278,7 @@ public class Funcional{
          diretorio.mkdirs();
       }
   
-      geim.exportarImagemPng(estrutura, caminho);
+      geim.exportarPng(estrutura, caminho);
    }
 
    /**
