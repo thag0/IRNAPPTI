@@ -4,6 +4,7 @@ import java.io.File;
 import geim.Geim;
 import geim.Pixel;
 import render.Janela;
+import render.realtime.JanelaDesenho;
 import rna.camadas.Convolucional;
 import rna.core.Mat;
 import rna.core.Tensor4D;
@@ -88,6 +89,26 @@ public class Funcional{
       normalizar(heatmap);
 
       return heatmap;
+   }
+
+   /**
+    * Desenha uma janela gráfica para testar o modelo treinado com o dataset
+    * {@code MNIST} em tempo real.
+    * @param modelo modelo treinado.
+    */
+   public void desenharMnist(Sequencial modelo){
+      final byte fator = 28;
+
+      JanelaDesenho jd = new JanelaDesenho(fator*20, fator*40, modelo);
+      while(jd.isVisible()){
+         jd.atualizar();
+
+         try{
+            Thread.sleep(50);
+         } catch (Exception e) {}
+      }
+
+      jd.dispose();
    }
 
    /**

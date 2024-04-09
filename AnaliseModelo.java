@@ -18,23 +18,25 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-95-7";
-      Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".txt");
+      String nomeModelo = "conv-mnist-95-3";
+      Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-      final int digito = 4;
-      Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
-      Tensor4D prev = modelo.forward(amostra);
+      f.desenharMnist(modelo);
 
-      double[] rotulo = f.gerarRotuloMnist(digito);
-      Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
-      f.desenharImagem(mapa, 15, false, "Heatmap");
+      // final int digito = 4;
+      // Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
+      // Tensor4D prev = modelo.forward(amostra);
 
-      prev.reformatar(10, 1);
-      prev.print(4);
-      System.out.println("Dígito " + digito + ", Previsto: " + f.maiorIndice(prev.paraArray()));
+      // double[] rotulo = f.gerarRotuloMnist(digito);
+      // Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
+      // f.desenharImagem(mapa, 15, false, "Heatmap");
 
-      double ec = f.entropiaCondicional(prev.paraArray());
-      System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
+      // prev.reformatar(10, 1);
+      // prev.print(4);
+      // System.out.println("Dígito " + digito + ", Previsto: " + f.maiorIndice(prev.paraArray()));
+
+      // double ec = f.entropiaCondicional(prev.paraArray());
+      // System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
       // boolean normalizar = true;
       // f.exportarAtivacoes(modelo, 0, normalizar, 20);
