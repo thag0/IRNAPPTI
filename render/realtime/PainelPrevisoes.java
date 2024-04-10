@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 public class PainelPrevisoes extends JPanel{
    
-   String texto = "";
+   String txt = "";
 
    public PainelPrevisoes(int altura, int largura) {
       setPreferredSize(new Dimension(largura, altura));
@@ -19,20 +19,18 @@ public class PainelPrevisoes extends JPanel{
    protected void paintComponent(Graphics g) {
       super.paintComponent(g);
 
-      texto = "Previsto: " + texto;
-      g.setColor(Color.white);
-      g.setFont(getFont().deriveFont(40.f));
+      txt = "Previsto " + txt;
 
-      // Obtém as métricas do texto
+      g.setColor(Color.white);
+      g.setFont(getFont().deriveFont(40.f).deriveFont(1));
+
       FontMetrics metrics = g.getFontMetrics();
-      int larguraTexto = metrics.stringWidth(texto);
+      int larguraTexto = metrics.stringWidth(txt);
       int alturaTexto = metrics.getHeight();
 
-      // Calcula a posição de desenho para centralizar o texto
       int x = (getWidth() - larguraTexto) / 2;
       int y = (getHeight() - alturaTexto) / 2 + metrics.getAscent();
-
-      // Desenha o texto centralizado
-      g.drawString(texto, x, y);
+      
+      g.drawString(txt, x, y);
    }
 }

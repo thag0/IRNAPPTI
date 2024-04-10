@@ -5,15 +5,22 @@ import java.awt.GridLayout;
 import javax.swing.JFrame;
 
 import rna.core.Tensor4D;
-import rna.modelos.Modelo;
+import rna.modelos.Sequencial;
 
 public class JanelaDesenho extends JFrame{
 
    PainelDesenho pd;
    PainelPrevisoes pp;
-   Modelo modelo;
+   Sequencial modelo;
    
-   public JanelaDesenho(int altura, int largura, Modelo modelo) {
+   /**
+    * Inicializa uma janela de desenho para testar o modelo usando
+    * uma grade 28x28 (do conjunto mnist)
+    * @param altura altura da janela (pixels).
+    * @param largura largura da janela (pixels).
+    * @param modelo modelo treinado.
+    */
+   public JanelaDesenho(int altura, int largura, Sequencial modelo) {
       pd = new PainelDesenho(altura, largura/2);
       pp = new PainelPrevisoes(altura, largura/2);
 
@@ -32,11 +39,11 @@ public class JanelaDesenho extends JFrame{
       setLocationRelativeTo(null);
    }
 
-   public void atualizar(){
+   public void atualizar() {
       double[][] entrada = new double[pd.tamBloco][pd.tamBloco];
-      for(int i = 0; i < entrada.length; i++){
-         for(int j = 0; j < entrada[i].length; j++){
-            entrada[i][j] = (pd.blocosPintados[i][j] == true) ? 1.0 : 0.0;
+      for (int i = 0; i < entrada.length; i++) {
+         for (int j = 0; j < entrada[i].length; j++) {
+            entrada[i][j] = (pd.blocosPintados[i][j]) ? 1.0 : 0.0;
          }
       }
 
@@ -45,12 +52,13 @@ public class JanelaDesenho extends JFrame{
 
       double max = prev.maximo();
       double[] arr = prev.paraArray();
-      int id = 0;
-      for(int i = 1; i < arr.length; i++){
-         if(arr[i] == max) id = i;
+      int idMaior = 0;
+      for (int i = 1; i < arr.length; i++) {
+         if (arr[i] == max) idMaior = i;
       }
 
-      pp.texto = Integer.toString(id) + "(" + ((int)(arr[id] * 100)) + "%)";
+      pp.txt = Integer.toString(idMaior) + " (" + ((int)(arr[idMaior] * 100)) + "%)";
       pp.repaint();
    }
+   
 }
