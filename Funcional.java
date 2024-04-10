@@ -98,13 +98,14 @@ public class Funcional{
     */
    public void desenharMnist(Sequencial modelo){
       final byte fator = 28;
+      final int escala = 16;
 
-      JanelaDesenho jd = new JanelaDesenho(fator*20, fator*40, modelo);
+      JanelaDesenho jd = new JanelaDesenho(fator*escala, fator*(escala*2), modelo);
       while(jd.isVisible()){
          jd.atualizar();
 
          try{
-            Thread.sleep(50);
+            Thread.sleep(80);
          } catch (Exception e) {}
       }
 

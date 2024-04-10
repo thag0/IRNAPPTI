@@ -29,14 +29,15 @@ public class JanelaDesenho extends JFrame{
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       setLayout(new GridLayout(1, 2));
       setTitle("Teste modelo");
+      setResizable(false);
       
       add(pd);
       add(pp);
-      
-      setVisible(true);
-      pack();
 
+      pack();
+      
       setLocationRelativeTo(null);
+      setVisible(true);
    }
 
    public void atualizar() {
@@ -52,12 +53,20 @@ public class JanelaDesenho extends JFrame{
 
       double max = prev.maximo();
       double[] arr = prev.paraArray();
-      int idMaior = 0;
+      int idMaior = 0, idSegMaior = 0;
+
       for (int i = 1; i < arr.length; i++) {
          if (arr[i] == max) idMaior = i;
       }
 
-      pp.txt = Integer.toString(idMaior) + " (" + ((int)(arr[idMaior] * 100)) + "%)";
+      for (int i = 1; i < arr.length; i++) {
+         if (arr[i] < max && arr[i] > arr[idSegMaior]) {
+            idSegMaior = i;
+         }
+      }
+
+      pp.txt1 = Integer.toString(idMaior) + " (" + ((int)(arr[idMaior] * 100)) + "%)";
+      pp.txt2 = Integer.toString(idSegMaior) + " (" + ((int)(arr[idSegMaior] * 100)) + "%)";
       pp.repaint();
    }
    
