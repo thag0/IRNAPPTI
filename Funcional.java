@@ -1,6 +1,7 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import ged.Dados;
 import geim.Geim;
 import geim.Pixel;
 import render.Janela;
@@ -61,6 +62,7 @@ public class Funcional{
       for(int i = 0; i < modelo.numCamadas(); i++){
          if(modelo.camada(i) instanceof Convolucional){
             idConv = i;
+            break;
          }
       }
 
@@ -110,6 +112,62 @@ public class Funcional{
       }
 
       jd.dispose();
+   }
+
+   /**
+    * Calcula a matriz de confusão das predições do modelo.
+    * @param modelo modelo treinado.
+    */
+   public void matrizConfusao(Sequencial modelo){
+      int amostras = 100;
+      int digitos = 10;
+      Tensor4D entradas = new Tensor4D(carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos));
+      double[][] rotulos = criarRotulosMNIST(amostras, digitos);
+      
+      int[][] matrizConfusao = modelo.avaliador().matrizConfusao(entradas, rotulos);
+      Dados d = new Dados(matrizConfusao);
+      d.print();
+   }
+
+   /**
+    * Carrega os dados de entrada do MNIST (apenas features).
+    * @param amostras quantidade de amostras por dígito
+    * @param digitos quantidade de dígitos, iniciando do dígito 0.
+    * @return dados carregados.
+    */
+   double[][][][] carregarDadosMNIST(String caminho, int amostras, int digitos){
+      double[][][][] entradas = new double[digitos * amostras][1][][];
+
+      int id = 0;
+      for(int i = 0; i < digitos; i++){
+         for(int j = 0; j < amostras; j++){
+            String caminhoCompleto = caminho + i + "/img_" + j + ".jpg";
+            double[][] imagem = carregarImagemCinza(caminhoCompleto).array2D(0, 0);
+            entradas[id++][0] = imagem;
+         }
+      }
+
+      System.out.println("Imagens carregadas (" + entradas.length + ").");
+      return entradas;
+   }
+
+   /**
+    * Carrega os dados de saída do MNIST (classes / rótulos)
+    * @param amostras quantidade de amostras por dígito
+    * @param digitos quantidade de dígitos, iniciando do dígito 0.
+    * @return dados carregados.
+    */
+   double[][] criarRotulosMNIST(int amostras, int digitos){
+      double[][] rotulos = new double[digitos * amostras][digitos];
+      for(int numero = 0; numero < digitos; numero++){
+         for(int i = 0; i < amostras; i++){
+            int indice = numero * amostras + i;
+            rotulos[indice][numero] = 1;
+         }
+      }
+      
+      System.out.println("Rótulos gerados de 0 a " + (digitos-1) + ".");
+      return rotulos;
    }
 
    /**

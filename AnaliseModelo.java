@@ -21,9 +21,10 @@ public class AnaliseModelo{
       String nomeModelo = "conv-mnist-95-3";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-      f.desenharMnist(modelo);
+      f.matrizConfusao(modelo);
+      // f.desenharMnist(modelo);
 
-      // final int digito = 4;
+      // final int digito = 8;
       // Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
       // Tensor4D prev = modelo.forward(amostra);
 
