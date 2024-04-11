@@ -52,8 +52,7 @@ public class Funcional{
       Tensor4D prev = modelo.forward(entrada);
       double[] derivadas = modelo.perda().derivada(prev.paraArray(), rotulo);
       Tensor4D grad = new Tensor4D(derivadas);
-      int numCamadas = modelo.numCamadas();
-      for(int i = numCamadas-1; i >= 0; i--){
+      for(int i = modelo.numCamadas()-1; i >= 0; i--){
          grad = modelo.camada(i).backward(grad);
       }
 
@@ -69,8 +68,8 @@ public class Funcional{
       Convolucional conv = (Convolucional) modelo.camada(idConv);
       
       //calcular mapa de calor
-      Tensor4D convAtv = conv.saida().clone();
-      Tensor4D convGrad = conv.gradSaida.clone();
+      Tensor4D convAtv = conv._saida.clone();
+      Tensor4D convGrad = conv._gradSaida.clone();
       int canais  = convGrad.dim2();
       int altura  = convGrad.dim3();
       int largura = convGrad.dim4();
@@ -78,13 +77,8 @@ public class Funcional{
       Tensor4D heatmap = new Tensor4D(altura, largura);
 
       for(int c = 0; c < canais; c++){
-         Tensor4D g = convGrad.subTensor2D(0, c);
-         double media = g.media();
-
-         Tensor4D a = convAtv.subTensor2D(0, c);
-         a.map(x -> x * media);
-
-         heatmap.add(a);
+         double media = convGrad.subTensor2D(0, c).media();
+         heatmap.add(convAtv.subTensor2D(0, c).map(x -> x*media));
       } 
 
       heatmap.relu();
@@ -100,7 +94,7 @@ public class Funcional{
     */
    public void desenharMnist(Sequencial modelo){
       final byte fator = 28;
-      final int escala = 16;
+      final int escala = 18;
 
       JanelaDesenho jd = new JanelaDesenho(fator*escala, fator*(escala*2), modelo);
       while(jd.isVisible()){
@@ -258,12 +252,12 @@ public class Funcional{
          modelo.forward(amostra);// ver as saídas calculadas
          Tensor4D prev = camada.saida();
 
-         Mat[] somatorios = new Mat[camada.somatorio.dim2()];
+         Mat[] somatorios = new Mat[camada._somatorio.dim2()];
          Mat[] saidas = new Mat[prev.dim2()];
 
          for(int j = 0; j < saidas.length; j++){
             saidas[j] = new Mat(prev.array2D(0, j));
-            somatorios[j] = new Mat(camada.somatorio.array2D(0, j));
+            somatorios[j] = new Mat(camada._somatorio.array2D(0, j));
 
             if(normalizar){
                normalizar(saidas[j]);
@@ -304,7 +298,7 @@ public class Funcional{
       String diretorioCamada = "conv" + ((idConv == 0) ? "1" : "2");
       String caminho = "./resultados/filtros/" + diretorioCamada + "/";
 
-      Tensor4D filtros = camada.filtros;
+      Tensor4D filtros = camada._filtros;
       limparDiretorio(caminho);
 
       int numFiltros = filtros.dim1();
@@ -391,13 +385,11 @@ public class Funcional{
     * @param tensor matriz base.
     */
    public void normalizar(Tensor4D tensor){
-      double min = tensor.minimo(); 
-      double max = tensor.maximo();
-
-      final double minimo = min, maximo = max;
+      final double min = tensor.minimo(); 
+      final double max = tensor.maximo();
 
       tensor.map((x) -> {
-         return (x - minimo) / (maximo - minimo);
+         return (x - min) / (max - min);
       });
    }
 

@@ -21,17 +21,17 @@ public class AnaliseModelo{
       String nomeModelo = "conv-mnist-95-3";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-      f.matrizConfusao(modelo);
-      // f.desenharMnist(modelo);
+      // f.matrizConfusao(modelo);
+      f.desenharMnist(modelo);
 
-      // final int digito = 8;
-      // Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
-      // Tensor4D prev = modelo.forward(amostra);
-
+      // final int digito = 4;
+      // Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
+      
       // double[] rotulo = f.gerarRotuloMnist(digito);
       // Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
-      // f.desenharImagem(mapa, 15, false, "Heatmap");
-
+      // f.desenharImagem(mapa, 20, false, "Heatmap");
+      
+      // Tensor4D prev = modelo.forward(amostra);
       // prev.reformatar(10, 1);
       // prev.print(4);
       // System.out.println("Dígito " + digito + ", Previsto: " + f.maiorIndice(prev.paraArray()));
