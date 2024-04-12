@@ -23,15 +23,18 @@ public class AnaliseModelo{
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
       // f.matrizConfusao(modelo);
-      f.desenharMnist(modelo);
+      
+      final int digito = 3;
+      Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
+      double[] rotulo = f.gerarRotuloMnist(digito);
+      Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
 
-      // final int digito = 4;
-      // Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
-      
-      // double[] rotulo = f.gerarRotuloMnist(digito);
-      // Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
       // f.desenharImagem(mapa, 20, false, "Heatmap");
+      f.desenharImagem(mapa.sub(amostra), 15, false, "Heatmap + Amostra");
+      f.desenharImagem(amostra, 15, false, "Amostra");
       
+      new Thread(() -> f.desenharMnist(modelo)).start();
+
       // Tensor4D prev = modelo.forward(amostra);
       // prev.reformatar(10, 1);
       // prev.print(4);

@@ -62,12 +62,11 @@ public class Funcional{
          grad = modelo.camada(i).backward(grad);
       }
 
-      //pegar índice da camada convolucional do modelo
+      //pegar índice da última camada convolucional do modelo
       int idConv = -1;
       for (int i = 0; i < modelo.numCamadas(); i++) {
          if (modelo.camada(i) instanceof Convolucional) {
             idConv = i;
-            break;
          }
       }
 
@@ -90,10 +89,18 @@ public class Funcional{
 
       for (int c = 0; c < canais; c++) {
          double media = convGrad.subTensor2D(0, c).media();
-         heatmap.add(convAtv.subTensor2D(0, c).map(x -> x*media));
+         heatmap.add(
+            convAtv.subTensor2D(0, c)
+            .map(x -> x*media)
+         );
       } 
 
       heatmap.relu().normalizar(0, 1);
+      // heatmap.normalizar(0, 1);
+
+      double[][] m = heatmap.array2D(0, 0);
+      m = ampliarMatriz(m, 28, 28);
+      heatmap = new Tensor4D(m);
 
       return heatmap;
    }
@@ -500,5 +507,37 @@ public class Funcional{
       arr[digito] = 1.0;
 
       return arr;
+   }
+
+   public double[][] ampliarMatriz(double[][] m, int newWidth, int newHeight) {
+      int height = m.length;
+      int width = m[0].length;
+      
+      double[][] scaledMatrix = new double[newHeight][newWidth];
+      
+      for (int i = 0; i < newHeight; i++) {
+         for (int j = 0; j < newWidth; j++) {
+            double scaledHeight = (double) i / (newHeight - 1) * (height - 1);
+            double scaledWidth = (double) j / (newWidth - 1) * (width - 1);
+            
+            int y0 = (int) scaledHeight;
+            int x0 = (int) scaledWidth;
+            int y1 = Math.min(y0 + 1, height - 1);
+            int x1 = Math.min(x0 + 1, width - 1);
+            
+            double dx = scaledWidth - x0;
+            double dy = scaledHeight - y0;
+            
+            double interpolatedValue = 
+               (1 - dx) * (1 - dy) * m[y0][x0] +
+               dx * (1 - dy) * m[y0][x1] +
+               (1 - dx) * dy * m[y1][x0] +
+               dx * dy * m[y1][x1];
+            
+            scaledMatrix[i][j] = interpolatedValue;
+         }
+      }
+      
+      return scaledMatrix;
    }
 }
