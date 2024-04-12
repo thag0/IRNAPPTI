@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-import torch.functional as F
+import torch.nn.functional as F
 
 class ConvMnist(nn.Module):
    def __init__(self, device: torch.device = None):
@@ -143,8 +143,6 @@ class ConvMnist(nn.Module):
       Returns:
          torch.Tensor: O GradCAM para a imagem de entrada.
       """
-      self.eval()
-      
       # Obter as camadas convolucionais
       conv_layers = [layer for layer in self.model if isinstance(layer, nn.Conv2d)]
       
@@ -153,7 +151,7 @@ class ConvMnist(nn.Module):
       for layer in conv_layers:
          features = layer(features)
          if layer != conv_layers[-1]:
-            features = F.relu(features)
+               features = F.relu(features)
 
       # Calcular o gradiente da saída em relação às ativações
       self.zero_grad()
@@ -163,7 +161,12 @@ class ConvMnist(nn.Module):
       one_hot_output.requires_grad_(True)
       
       prev_layer_output = features.detach().requires_grad_(True)
-      gradient = torch.autograd.grad(outputs=one_hot_output, inputs=prev_layer_output, grad_outputs=torch.ones_like(one_hot_output), create_graph=True)[0]
+      gradient = torch.autograd.grad(outputs=one_hot_output, inputs=prev_layer_output, grad_outputs=torch.ones_like(one_hot_output), create_graph=True, allow_unused=True)[0]
+
+      # Verificar se o gradiente é None ou vazio
+      if gradient is None or gradient.nelement() == 0:
+         # Se o gradiente for None ou vazio, retornar um GradCAM vazio
+         return torch.zeros_like(features)
 
       # Calcular os pesos do GradCAM
       weights = F.adaptive_avg_pool2d(gradient, 1)
@@ -178,8 +181,8 @@ class ConvMnist(nn.Module):
 
       # Redimensionar e normalizar os mapas de ativação
       gradcam = F.interpolate(gradcam, size=x.shape[2:], mode='bilinear', align_corners=False)
-      gradcam -= gradcam.min()
-      gradcam /= gradcam.max()
+      gradcam = gradcam - gradcam.min()
+      gradcam = gradcam / gradcam.max()
 
       return gradcam
 
