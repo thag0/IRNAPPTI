@@ -11,17 +11,23 @@ import rna.core.Mat;
 import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
 
+@SuppressWarnings("deprecation")//para classe Mat
 public class Funcional{
-   final String CAMINHO_IMAGEM;
+
+   /**
+    * Caminho das imagens de teste do mnist.
+    */
+   static final String CAMINHO_IMAGEM = "/mnist/teste/";
+
+   /**
+    * Gerenciador de imagens.
+    */
    private Geim geim = new Geim();
 
    /**
-    * Auxiliar contendo funções úteis para análise e testes.
-    * @param caminhoImagem diretório contendo imagens do {@code MNIST}
+    * Interface funcional.
     */
-   public Funcional(String caminhoImagem){
-      this.CAMINHO_IMAGEM = caminhoImagem;
-   }
+   public Funcional(){}
 
    /**
     * Calcula o valor de incerteza do modelo em relação as sua previsões.
@@ -32,9 +38,9 @@ public class Funcional{
     * @param previsoes previsões do modelo.
     * @return valor de entropia condicional com base nas previsões.
     */
-   public double entropiaCondicional(double[] previsoes){
+   public double entropiaCondicional(double[] previsoes) {
       double ec = 0;
-      for(double prev : previsoes){
+      for (double prev : previsoes) {
          ec += prev * Math.log(prev);
       }
       return -ec;
@@ -47,22 +53,28 @@ public class Funcional{
     * @param rotulo rótulo correspondente à amostra.
     * @return {@code Tensor} contendo o mapa de calor calculado.
     */
-   public Tensor4D gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo){
+   public Tensor4D gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo) {
       //passo de backpropagation para ter os gradientes calculados
       Tensor4D prev = modelo.forward(entrada);
       double[] derivadas = modelo.perda().derivada(prev.paraArray(), rotulo);
       Tensor4D grad = new Tensor4D(derivadas);
-      for(int i = modelo.numCamadas()-1; i >= 0; i--){
+      for (int i = modelo.numCamadas()-1; i >= 0; i--) {
          grad = modelo.camada(i).backward(grad);
       }
 
       //pegar índice da camada convolucional do modelo
-      int idConv = 0;
-      for(int i = 0; i < modelo.numCamadas(); i++){
-         if(modelo.camada(i) instanceof Convolucional){
+      int idConv = -1;
+      for (int i = 0; i < modelo.numCamadas(); i++) {
+         if (modelo.camada(i) instanceof Convolucional) {
             idConv = i;
             break;
          }
+      }
+
+      if (idConv == -1) {
+         throw new IllegalArgumentException(
+            "\nNenhuma camada convolucional encontrada no modelo."
+         );
       }
 
       Convolucional conv = (Convolucional) modelo.camada(idConv);
@@ -76,13 +88,12 @@ public class Funcional{
    
       Tensor4D heatmap = new Tensor4D(altura, largura);
 
-      for(int c = 0; c < canais; c++){
+      for (int c = 0; c < canais; c++) {
          double media = convGrad.subTensor2D(0, c).media();
          heatmap.add(convAtv.subTensor2D(0, c).map(x -> x*media));
       } 
 
-      heatmap.relu();
-      normalizar(heatmap);
+      heatmap.relu().normalizar(0, 1);
 
       return heatmap;
    }
@@ -92,15 +103,16 @@ public class Funcional{
     * {@code MNIST} em tempo real.
     * @param modelo modelo treinado.
     */
-   public void desenharMnist(Sequencial modelo){
+   public void desenharMnist(Sequencial modelo) {
       final byte fator = 28;
       final int escala = 18;
 
       JanelaDesenho jd = new JanelaDesenho(fator*escala, fator*(escala*2), modelo);
-      while(jd.isVisible()){
+
+      while (jd.isVisible()) {
          jd.atualizar();
 
-         try{
+         try {
             Thread.sleep(80);
          } catch (Exception e) {}
       }
@@ -112,15 +124,16 @@ public class Funcional{
     * Calcula a matriz de confusão das predições do modelo.
     * @param modelo modelo treinado.
     */
-   public void matrizConfusao(Sequencial modelo){
+   public void matrizConfusao(Sequencial modelo) {
       int amostras = 100;
       int digitos = 10;
       Tensor4D entradas = new Tensor4D(carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos));
       double[][] rotulos = criarRotulosMNIST(amostras, digitos);
       
       int[][] matrizConfusao = modelo.avaliador().matrizConfusao(entradas, rotulos);
-      Dados d = new Dados(matrizConfusao);
-      d.print();
+      
+      Dados matriz = new Dados(matrizConfusao);
+      matriz.print();
    }
 
    /**
@@ -129,19 +142,18 @@ public class Funcional{
     * @param digitos quantidade de dígitos, iniciando do dígito 0.
     * @return dados carregados.
     */
-   double[][][][] carregarDadosMNIST(String caminho, int amostras, int digitos){
+   double[][][][] carregarDadosMNIST(String caminho, int amostras, int digitos) {
       double[][][][] entradas = new double[digitos * amostras][1][][];
 
       int id = 0;
-      for(int i = 0; i < digitos; i++){
-         for(int j = 0; j < amostras; j++){
-            String caminhoCompleto = caminho + i + "/img_" + j + ".jpg";
+      for (int dig = 0; dig < digitos; dig++) {
+         for (int ams = 0; ams < amostras; ams++) {
+            String caminhoCompleto = caminho + dig + "/img_" + ams + ".jpg";
             double[][] imagem = carregarImagemCinza(caminhoCompleto).array2D(0, 0);
             entradas[id++][0] = imagem;
          }
       }
 
-      System.out.println("Imagens carregadas (" + entradas.length + ").");
       return entradas;
    }
 
@@ -151,16 +163,16 @@ public class Funcional{
     * @param digitos quantidade de dígitos, iniciando do dígito 0.
     * @return dados carregados.
     */
-   double[][] criarRotulosMNIST(int amostras, int digitos){
+   double[][] criarRotulosMNIST(int amostras, int digitos) {
       double[][] rotulos = new double[digitos * amostras][digitos];
-      for(int numero = 0; numero < digitos; numero++){
-         for(int i = 0; i < amostras; i++){
-            int indice = numero * amostras + i;
-            rotulos[indice][numero] = 1;
+      
+      for (int dig = 0; dig < digitos; dig++) {
+         for (int ams = 0; ams < amostras; ams++) {
+            int indice = dig * amostras + ams;
+            rotulos[indice][dig] = 1;
          }
       }
       
-      System.out.println("Rótulos gerados de 0 a " + (digitos-1) + ".");
       return rotulos;
    }
 
@@ -172,30 +184,30 @@ public class Funcional{
     * </p>
     * @param conv camada convolucional.
     * @param escala escala de ampliação da imagem original.
-    * @param normalizar normaliza os valores entre 0 e 1 para evitar artefatos
+    * @param norm normaliza os valores entre 0 e 1 para evitar artefatos
     * na janela gráfica.
     */
-   public void desenharSaidas(Convolucional conv, Tensor4D amostra, int escala, boolean normalizar){
+   public void desenharSaidas(Convolucional conv, Tensor4D amostra, int escala, boolean norm) {
       Tensor4D prev = conv.forward(amostra);
       int filtros = conv.numFiltros();
-
       Tensor4D[] arr = new Tensor4D[filtros];
-      for(int i = 0; i < arr.length; i++){
+
+      for (int i = 0; i < arr.length; i++) {
          arr[i] = prev.subTensor2D(0, i);
       }
       
-      desenharImagens(arr, escala, normalizar, "Saidas Conv");
+      desenharImagens(arr, escala, norm, "Saidas Conv");
    }
 
    /**
     * Desenha o conteúdo 2d do tensor em uma janela gráfica.
     * @param tensor tensor com os dados desejados.
     * @param escala escala de ampliação da janela.
-    * @param normalizar normalizar os valores do tensor entre 0 e 1
+    * @param norm normalizar os valores do tensor entre 0 e 1
     * @param titulo nome da janela.
     */
-   public void desenharImagem(Tensor4D tensor, int escala, boolean normalizar, String titulo){
-      if(normalizar) normalizar(tensor);
+   public void desenharImagem(Tensor4D tensor, int escala, boolean norm, String titulo) {
+      if (norm) tensor.normalizar(0, 1);
       Janela janela = new Janela(tensor.dim3(), tensor.dim4(), escala, titulo);
       janela.desenharImagem(tensor);
    }
@@ -204,9 +216,9 @@ public class Funcional{
     * Desenha matriz por matriz dentro do array.
     * @param arr array de tensores.
     * @param escala escala de ampliação da janela.
-    * @param normalizar normalizar os valores entre 0 e 1.
+    * @param norm normalizar os valores entre 0 e 1.
     */
-   public void desenharImagens(Tensor4D[] arr, int escala, boolean normalizar, String titulo){
+   public void desenharImagens(Tensor4D[] arr, int escala, boolean norm, String titulo) {
       int[] dim = {
          arr[0].dim3(), 
          arr[0].dim4()
@@ -214,9 +226,9 @@ public class Funcional{
 
       Janela janela = new Janela(dim[0], dim[1], escala, titulo);
 
-      if(normalizar){
-         for(Tensor4D t : arr){
-            normalizar(t);
+      if (norm) {
+         for (Tensor4D t : arr) {
+            t.normalizar(0, 1);
          }
       }
 
@@ -229,13 +241,13 @@ public class Funcional{
     * convolucional do modelo
     * @param modelo modelo desejado.
     * @param idConv índice da camada convolucional do modelo.
-    * @param normalizar normaliza os valores entre 0 e 1.
+    * @param norm normaliza os valores entre 0 e 1.
     */
-   public void exportarAtivacoes(Sequencial modelo, int idConv, boolean normalizar, int escala){
+   public void exportarAtivacoes(Sequencial modelo, int idConv, boolean norm, int escala) {
       Convolucional camada;
-      try{
+      try {
          camada = (Convolucional) modelo.camada(idConv);
-      }catch(Exception e){
+      } catch (Exception e) {
          throw new IllegalArgumentException(
             "\nCamada com id " + idConv + " não é do tipo Convolucional e sim " + 
             modelo.camada(idConv).getClass().getSimpleName() + ", escolha um id válido."
@@ -245,21 +257,20 @@ public class Funcional{
       String diretorioCamada = "conv" + ((idConv == 0) ? "1" : "2");
 
       final int digitos = 10;
-      for(int i = 0; i < digitos; i++){
+      for (int i = 0; i < digitos; i++) {
          String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_16.jpg";
          var amostra = carregarImagemCinza(caminhoAmostra);
 
-         modelo.forward(amostra);// ver as saídas calculadas
-         Tensor4D prev = camada.saida();
+         Tensor4D prev = modelo.forward(amostra);
 
          Mat[] somatorios = new Mat[camada._somatorio.dim2()];
          Mat[] saidas = new Mat[prev.dim2()];
 
-         for(int j = 0; j < saidas.length; j++){
+         for (int j = 0; j < saidas.length; j++) {
             saidas[j] = new Mat(prev.array2D(0, j));
             somatorios[j] = new Mat(camada._somatorio.array2D(0, j));
 
-            if(normalizar){
+            if (norm) {
                normalizar(saidas[j]);
                normalizar(somatorios[j]);
             }
@@ -282,13 +293,13 @@ public class Funcional{
     * Exporta os filtros da camada convolucional
     * @param modelo modelo desejado.
     * @param idConv índice da camada convolucional do modelo.
-    * @param normalizar normaliza os valores entre 0 e 1.
+    * @param norm normaliza os valores entre 0 e 1.
     */
-   public void exportarFiltros(Sequencial modelo, int idConv, boolean normalizar){
+   public void exportarFiltros(Sequencial modelo, int idConv, boolean norm, int escala) {
       Convolucional camada;
-      try{
+      try {
          camada = (Convolucional) modelo.camada(idConv);
-      }catch(Exception e){
+      } catch (Exception e) {
          throw new IllegalArgumentException(
             "\nCamada com id " + idConv + " não é do tipo Convolucional e sim " + 
             modelo.camada(idConv).getClass().getSimpleName() + ", escolha um id válido."
@@ -303,12 +314,12 @@ public class Funcional{
 
       int numFiltros = filtros.dim1();
       Mat[] arrFiltros = new Mat[numFiltros];
-      for(int i = 0; i < numFiltros; i++){
+      for (int i = 0; i < numFiltros; i++) {
          arrFiltros[i] = new Mat(filtros.array2D(i, 0));
-         if(normalizar) normalizar(arrFiltros[i]);
+         if (norm) normalizar(arrFiltros[i]);
       }
 
-      exportarMatrizes(arrFiltros, 20, caminho);
+      exportarMatrizes(arrFiltros, escala, caminho);
 
       System.out.println("Filtros exportados para a camada " + idConv);
    }
@@ -318,26 +329,26 @@ public class Funcional{
     * @param arr array de matrizes.
     * @param caminho diretório onde os arquivos serão salvos.
     */
-   public void exportarMatrizes(Mat[] arr, int escala, String caminho){
-      for(int i = 0; i < arr.length; i++){
+   public void exportarMatrizes(Mat[] arr, int escala, String caminho) {
+      for (int i = 0; i < arr.length; i++) {
          normalizar(arr[i]);
          exportarImagem(arr[i], (caminho + "amostra-" + (i+1)), escala);
       }
    }
 
    /**
-    * 
-    * @param mat
-    * @param caminho
-    * @param escala
+    * Salva a matriz num arquivo de imagem externo.
+    * @param mat matriz desejada.
+    * @param caminho diretório de destino.
+    * @param escala escala de tratamento da imagem final.
     */
-   public void exportarImagem(Mat mat, String caminho, double escala){
+   public void exportarImagem(Mat mat, String caminho, double escala) {
       int altura =  (int) (mat.lin() * escala);
       int largura = (int) (mat.col() * escala);
       Pixel[][] estrutura = new Pixel[altura][largura];
   
-      for(int y = 0; y < altura; y++){
-         for(int x = 0; x < largura; x++){
+      for (int y = 0; y < altura; y++) {
+         for (int x = 0; x < largura; x++) {
             int originalY = (int) (y / escala);
             int originalX = (int) (x / escala);
 
@@ -348,9 +359,7 @@ public class Funcional{
       }
 
       File diretorio = new File(caminho).getParentFile();
-      if(!diretorio.exists()){
-         diretorio.mkdirs();
-      }
+      if (!diretorio.exists()) diretorio.mkdirs();
   
       geim.exportarPng(estrutura, caminho);
    }
@@ -359,17 +368,17 @@ public class Funcional{
     * Normaliza os valores dentro da matriz.
     * @param mat matriz base.
     */
-   public void normalizar(Mat mat){
+   public void normalizar(Mat mat) {
       int linhas = mat.lin();
       int colunas = mat.col();
       double min = mat.elemento(0, 0); 
       double max = mat.elemento(0, 0);
 
-      for(int i = 0; i < linhas; i++){
-         for(int j = 0; j < colunas; j++){
+      for (int i = 0; i < linhas; i++) {
+         for (int j = 0; j < colunas; j++) {
             double valor = mat.elemento(i, j);
-            if(valor < min) min = valor;
-            if(valor > max) max = valor;
+            if (valor < min) min = valor;
+            if (valor > max) max = valor;
          }
       }
 
@@ -381,25 +390,12 @@ public class Funcional{
    }
 
    /**
-    * Normaliza os valores dentro do tensor.
-    * @param tensor matriz base.
-    */
-   public void normalizar(Tensor4D tensor){
-      final double min = tensor.minimo(); 
-      final double max = tensor.maximo();
-
-      tensor.map((x) -> {
-         return (x - min) / (max - min);
-      });
-   }
-
-   /**
     * Carrega a imagem a partir de um arquivo.
     * @param caminho caminho da imagem.
     * @return {@code Tensor} contendo os dados da imagem no
     * padrão RGB.
     */
-   public Tensor4D carregarImagemRGB(String caminho){
+   public Tensor4D carregarImagemRGB(String caminho) {
       BufferedImage img = geim.lerImagem(caminho);
       int altura = img.getHeight(), largura = img.getHeight();
 
@@ -409,8 +405,8 @@ public class Funcional{
       int[][] g = geim.obterVerde(img);
       int[][] b = geim.obterAzul(img);
 
-      for(int y = 0; y < altura; y++){
-         for(int x = 0; x < largura; x++){
+      for (int y = 0; y < altura; y++) {
+         for (int x = 0; x < largura; x++) {
             imagem.set((double)(r[y][x]) / 255, 0, 0, y, x);
             imagem.set((double)(g[y][x]) / 255, 0, 1, y, x);
             imagem.set((double)(b[y][x]) / 255, 0, 2, y, x);
@@ -426,20 +422,19 @@ public class Funcional{
     * @return {@code Tensor} contendo os dados da imagem em
     * escala de cinza.
     */
-   public Tensor4D carregarImagemCinza(String caminho){
+   public Tensor4D carregarImagemCinza(String caminho) {
       BufferedImage img = geim.lerImagem(caminho);
       int altura = img.getHeight(), largura = img.getHeight();
       Tensor4D imagem = new Tensor4D(altura, largura);
 
-      int[][] c = geim.obterCinza(img);   
+      int[][] cinza = geim.obterCinza(img);   
 
-      for(int y = 0; y < altura; y++){
-         for(int x = 0; x < largura; x++){
-            double val = (double)(c[y][x]) / 255;
-            imagem.set(val, 0, 0, y, x);
+      for (int y = 0; y < altura; y++) {
+         for (int x = 0; x < largura; x++) {
+            double c = (double)(cinza[y][x]) / 255;
+            imagem.set(c, 0, 0, y, x);
          }  
       }
-
 
       return imagem;
    }
@@ -448,21 +443,19 @@ public class Funcional{
     * Limpa os arquivos do diretório.
     * @param caminho caminho do diretório.
     */
-   public void limparDiretorio(String caminho){
+   public void limparDiretorio(String caminho) {
       File diretorio = new File(caminho);
   
-      if(diretorio.isDirectory()){
+      if (diretorio.isDirectory()) {
          File[] arquivos = diretorio.listFiles();
   
-         if(arquivos != null){
-            for (File arquivo : arquivos){
-               if(arquivo.isFile()){
-                  arquivo.delete();
-               }
+         if (arquivos != null) {
+            for (File arquivo : arquivos) {
+               if (arquivo.isFile()) arquivo.delete();
             }
          }
 
-      }else{
+      } else {
          System.out.println("\nO caminho fornecido (" + caminho + ") não é um diretório válido.");
       }
    }
@@ -472,12 +465,12 @@ public class Funcional{
     * @param arr array base.
     * @return índice com o maior valor.
     */
-   public int maiorIndice(double[] arr){
+   public int maiorIndice(double[] arr) {
       int id = 0;
       double maior = arr[0];
 
-      for(int i = 1; i < arr.length; i++){
-         if(arr[i] > maior){
+      for (int i = 1; i < arr.length; i++) {
+         if (arr[i] > maior) {
             id = i;
             maior = arr[i];
          }
@@ -498,10 +491,10 @@ public class Funcional{
     * @param digito digito desejado de {@code 0 a 9}
     * @return array contendo a saída categórica para o índice desejado.
     */
-   public double[] gerarRotuloMnist(int digito){
+   public double[] gerarRotuloMnist(int digito) {
       double[] arr = new double[10];
 
-      for(int i = 0; i < arr.length; i++){
+      for (int i = 0; i < arr.length; i++) {
          arr[i] = 0.0;
       }
       arr[digito] = 1.0;

@@ -12,13 +12,14 @@ public class AnaliseModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
    static OpTensor4D optensor = new OpTensor4D();
-   static Funcional f = new Funcional(CAMINHO_IMAGEM);
+   static Funcional f = new Funcional();
    static Serializador serializador = new Serializador();
    
    public static void main(String[] args){
       ged.limparConsole();
 
       String nomeModelo = "conv-mnist-95-3";
+      // String nomeModelo = "mlp-mnist-89";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
       // f.matrizConfusao(modelo);

@@ -44,7 +44,7 @@ public class JanelaDesenho extends JFrame{
       double[][] entrada = new double[pd.tamBloco][pd.tamBloco];
       for (int i = 0; i < entrada.length; i++) {
          for (int j = 0; j < entrada[i].length; j++) {
-            entrada[i][j] = (pd.blocosPintados[i][j]) ? 1.0 : 0.0;
+            entrada[i][j] = (pd.blocos[i][j]) ? 1.0 : 0.0;
          }
       }
 

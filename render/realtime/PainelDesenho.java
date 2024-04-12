@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 public class PainelDesenho extends JPanel {
 
 	public final int tamBloco = 28;
-	public boolean[][] blocosPintados = new boolean[tamBloco][tamBloco];
+	public boolean[][] blocos = new boolean[tamBloco][tamBloco];
 
 	public PainelDesenho(int altura, int largura) {
 		setPreferredSize(new Dimension(largura, altura));
@@ -40,9 +40,9 @@ public class PainelDesenho extends JPanel {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_R){
-					for(int i = 0; i < blocosPintados.length; i++){
-						for(int j = 0; j < blocosPintados[i].length; j++){
-							blocosPintados[i][j] = false;
+					for(int i = 0; i < blocos.length; i++){
+						for(int j = 0; j < blocos[i].length; j++){
+							blocos[i][j] = false;
 						}
 					}
 					repaint();
@@ -58,11 +58,10 @@ public class PainelDesenho extends JPanel {
 	}
 
 	private void desenharBloco(int x, int y) {
-		int colunaClicada = x / (getWidth() / tamBloco);
-		int linhaClicada = y / (getHeight() / tamBloco);
-		if (colunaClicada >= 0 && colunaClicada < blocosPintados[0].length &&
-					linhaClicada >= 0 && linhaClicada < blocosPintados.length) {
-			blocosPintados[linhaClicada][colunaClicada] = true;
+		int col = x / (getWidth() / tamBloco);
+		int lin = y / (getHeight() / tamBloco);
+		if ((col >= 0 && col < blocos[0].length) && (lin >= 0 && lin < blocos.length)) {
+			blocos[lin][col] = true;
 			repaint();
 		}
 	}
@@ -82,7 +81,7 @@ public class PainelDesenho extends JPanel {
 	
 		for (int i = 0; i < tamBloco; i++) {
 			for (int j = 0; j < tamBloco; j++) {
-				if (blocosPintados[i][j]) {
+				if (blocos[i][j]) {
 					g.setColor(Color.white);
 					g.fillRect(j * tamanhoBloco, i * tamanhoBloco, tamanhoBloco, tamanhoBloco);
 				}
