@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import torch.functional as F
 
 class ConvMnist(nn.Module):
    def __init__(self, device: torch.device = None):
@@ -130,6 +131,58 @@ class ConvMnist(nn.Module):
       self.to('cpu') # garantia
       torch.save(obj=self.state_dict(), f=caminho)
       print(f'Modelo salvo em \'{caminho}\'')
+
+   def generate_gradcam(self, x, target_class):
+      """
+      Gera o GradCAM para uma imagem de entrada.
+
+      Args:
+         x (torch.Tensor): A imagem de entrada.
+         target_class (int): A classe alvo para a qual queremos visualizar a ativação.
+
+      Returns:
+         torch.Tensor: O GradCAM para a imagem de entrada.
+      """
+      self.eval()
+      
+      # Obter as camadas convolucionais
+      conv_layers = [layer for layer in self.model if isinstance(layer, nn.Conv2d)]
+      
+      # Forward pass
+      features = x.clone()
+      for layer in conv_layers:
+         features = layer(features)
+         if layer != conv_layers[-1]:
+            features = F.relu(features)
+
+      # Calcular o gradiente da saída em relação às ativações
+      self.zero_grad()
+      target = torch.tensor([target_class], dtype=torch.long, device=x.device)
+      one_hot_output = torch.zeros_like(self.forward(x))
+      one_hot_output.scatter_(1, target.unsqueeze(1), 1.0)
+      one_hot_output.requires_grad_(True)
+      
+      prev_layer_output = features.detach().requires_grad_(True)
+      gradient = torch.autograd.grad(outputs=one_hot_output, inputs=prev_layer_output, grad_outputs=torch.ones_like(one_hot_output), create_graph=True)[0]
+
+      # Calcular os pesos do GradCAM
+      weights = F.adaptive_avg_pool2d(gradient, 1)
+      
+      # Agregar os mapas de ativação ponderados
+      gradcam = torch.zeros_like(features)
+      for i, weight in enumerate(weights.squeeze()):
+         gradcam[:, i] = weight * features[:, i]
+
+      gradcam = gradcam.sum(dim=1, keepdim=True)
+      gradcam = F.relu(gradcam)
+
+      # Redimensionar e normalizar os mapas de ativação
+      gradcam = F.interpolate(gradcam, size=x.shape[2:], mode='bilinear', align_corners=False)
+      gradcam -= gradcam.min()
+      gradcam /= gradcam.max()
+
+      return gradcam
+
 
 class ConvCifar10(nn.Module):
    def __init__(self, device: torch.device = None):

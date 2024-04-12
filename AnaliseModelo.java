@@ -24,7 +24,7 @@ public class AnaliseModelo{
 
       // f.matrizConfusao(modelo);
       
-      final int digito = 3;
+      final int digito = 8;
       Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
       double[] rotulo = f.gerarRotuloMnist(digito);
       Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);

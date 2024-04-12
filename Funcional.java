@@ -88,19 +88,24 @@ public class Funcional{
       Tensor4D heatmap = new Tensor4D(altura, largura);
 
       for (int c = 0; c < canais; c++) {
-         double media = convGrad.subTensor2D(0, c).media();
+         double alfa = convGrad.subTensor2D(0, c).media();
          heatmap.add(
             convAtv.subTensor2D(0, c)
-            .map(x -> x*media)
+            .map(x -> x*alfa)
          );
       } 
 
-      heatmap.relu().normalizar(0, 1);
-      // heatmap.normalizar(0, 1);
+      heatmap
+      .relu() // preservar características que tem influência positiva na classe de interesse
+      .normalizar(0, 1); // ajudar na visualização
 
-      double[][] m = heatmap.array2D(0, 0);
-      m = ampliarMatriz(m, 28, 28);
-      heatmap = new Tensor4D(m);
+      // redimensionar o mapa de calor para as dimensões da imagem de entrada
+      heatmap = new Tensor4D(
+         ampliarMatriz(
+            heatmap.array2D(0, 0),
+            entrada.dim3(), entrada.dim4()
+         )
+      );
 
       return heatmap;
    }

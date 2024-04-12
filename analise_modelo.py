@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from modelos import ConvMnist, ConvCifar10
 from PIL import Image
+import funcional as f
 
 def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
    modelo = ConvMnist('cpu')
@@ -123,19 +124,47 @@ if __name__ == '__main__':
 
    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-   modelo = carregar_modelo_cifar(device, './modelos/pytorch/conv-pytorch-cifar-10.pt')
-   dl_treino, dl_teste = preparar_dataset('cifar-10')
+   modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
+   dl_treino, dl_teste = preparar_dataset('mnist')
 
-   amostra = carregar_imagem('./cifar/horse.png')
+   lote = next(iter(dl_teste))
+   imgs, classes = lote
 
-   print(amostra.shape)
+   id_img = 0
+   img = imgs[id_img].unsqueeze(0).to(device)
+   rotulo = classes[id_img]
 
-   conv_ids = []
+   with torch.no_grad():
+      saida = modelo(img)
 
-   for i in range(len(modelo.get_camadas())):
-      if isinstance(modelo.get_camadas()[i], Conv2d):
-         conv_ids.append(i)
+   classe_alvo = rotulo.item()
+   gradcam = modelo.generate_gradcam(img, classe_alvo)
 
-   testar_previsao(modelo, amostra)
-   plotar_ativacoes(modelo, amostra, conv_ids[0])
+   modelo.generate_gradcam()
+
+   plt.figure(figsize=(10, 5))
+   plt.subplot(1, 2, 1)
+   plt.title('Imagem Original')
+   plt.imshow(img.squeeze().cpu().numpy(), cmap='gray')
+   plt.axis('off')
+
+   plt.subplot(1, 2, 2)
+   plt.title('GradCAM')
+   plt.imshow(gradcam.squeeze().cpu().numpy(), cmap='hot', interpolation='nearest')
+   plt.axis('off')
+
+   plt.show()
+
+   # amostra = carregar_imagem('./cifar/horse.png')
+
+   # print(amostra.shape)
+
+   # conv_ids = []
+
+   # for i in range(len(modelo.get_camadas())):
+   #    if isinstance(modelo.get_camadas()[i], Conv2d):
+   #       conv_ids.append(i)
+
+   # testar_previsao(modelo, amostra)
+   # plotar_ativacoes(modelo, amostra, conv_ids[0])
    
