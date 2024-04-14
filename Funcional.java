@@ -11,7 +11,6 @@ import rna.core.Mat;
 import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
 
-@SuppressWarnings("deprecation")//para classe Mat
 public class Funcional{
 
    /**
