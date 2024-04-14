@@ -11,7 +11,7 @@ import rna.core.Mat;
 import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
 
-public class Funcional{
+public class Funcional {
 
    /**
     * Caminho das imagens de teste do mnist.
@@ -26,30 +26,35 @@ public class Funcional{
    /**
     * Interface funcional.
     */
-   public Funcional(){}
+   public Funcional() {}
 
    /**
-    * Calcula o valor de incerteza do modelo em relação as sua previsões.
+    * Calcula o valor da Entropia Condicional com base nas previsões do modelo.
+    * <p>
+    *    A entropia condicional é uma medida de incerteza associada às previsões 
+    *    do modelo.
+    * </p>
     * <p>
     *    Valores mais baixos indicam menor incerteza do modelo, que significa
     *    que o modelo tem bastante "confiança" na previsão feita.
     * </p>
-    * @param previsoes previsões do modelo.
+    * @param prevs previsões do modelo.
     * @return valor de entropia condicional com base nas previsões.
     */
-   public double entropiaCondicional(double[] previsoes) {
+   public double entropiaCondicional(double[] prevs) {
       double ec = 0;
-      for (double prev : previsoes) {
+      for (double prev : prevs) {
          ec += prev * Math.log(prev);
       }
+
       return -ec;
    }
 
    /**
-    * Calcula a região mais significativa para o modelo fazer sua previsão.
+    * Calcula o mapa de calor do Grad-CAM.
     * @param modelo modelo treinado.
     * @param entrada amostra de entrada.
-    * @param rotulo rótulo correspondente à amostra.
+    * @param rotulo rótulo desejado.
     * @return {@code Tensor} contendo o mapa de calor calculado.
     */
    public Tensor4D gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo) {
@@ -64,9 +69,7 @@ public class Funcional{
       //pegar índice da última camada convolucional do modelo
       int idConv = -1;
       for (int i = 0; i < modelo.numCamadas(); i++) {
-         if (modelo.camada(i) instanceof Convolucional) {
-            idConv = i;
-         }
+         if (modelo.camada(i) instanceof Convolucional) idConv = i;
       }
 
       if (idConv == -1) {
@@ -144,6 +147,7 @@ public class Funcional{
       int[][] matrizConfusao = modelo.avaliador().matrizConfusao(entradas, rotulos);
       
       Dados matriz = new Dados(matrizConfusao);
+      matriz.editarNome("Matriz de confusão");
       matriz.print();
    }
 
@@ -364,8 +368,8 @@ public class Funcional{
             int originalX = (int) (x / escala);
 
             double cinza = mat.elemento(originalY, originalX);
-            cinza *= 255;
-            estrutura[y][x] = new Pixel((int) cinza, (int) cinza, (int) cinza);
+            int c = (int) (cinza * 255);
+            estrutura[y][x] = new Pixel(c, c, c);
          }
       }
 
@@ -508,40 +512,47 @@ public class Funcional{
       for (int i = 0; i < arr.length; i++) {
          arr[i] = 0.0;
       }
-      arr[digito] = 1.0;
+      arr[digito] = 1.0d;
 
       return arr;
    }
 
-   public double[][] ampliarMatriz(double[][] m, int newWidth, int newHeight) {
-      int height = m.length;
-      int width = m[0].length;
+   /**
+    * Interpola os valores da matriz para o novo tamanho.
+    * @param m matriz desejada.
+    * @param novaAlt novo valor de altura da matriz.
+    * @param novaLarg novo valor de largura da matriz.
+    * @return matriz reescalada.
+    */
+   public double[][] ampliarMatriz(double[][] m, int novaAlt, int novaLarg) {
+      int alt = m.length;
+      int larg = m[0].length;
       
-      double[][] scaledMatrix = new double[newHeight][newWidth];
+      double[][] mat = new double[novaAlt][novaLarg];
       
-      for (int i = 0; i < newHeight; i++) {
-         for (int j = 0; j < newWidth; j++) {
-            double scaledHeight = (double) i / (newHeight - 1) * (height - 1);
-            double scaledWidth = (double) j / (newWidth - 1) * (width - 1);
+      for (int i = 0; i < novaAlt; i++) {
+         for (int j = 0; j < novaLarg; j++) {
+            double ampAlt  = (double) i / (novaAlt - 1)  * (alt - 1);
+            double ampLarg = (double) j / (novaLarg - 1) * (larg - 1);
             
-            int y0 = (int) scaledHeight;
-            int x0 = (int) scaledWidth;
-            int y1 = Math.min(y0 + 1, height - 1);
-            int x1 = Math.min(x0 + 1, width - 1);
+            int y0 = (int) ampAlt;
+            int x0 = (int) ampLarg;
+            int y1 = Math.min(y0 + 1, alt - 1);
+            int x1 = Math.min(x0 + 1, larg - 1);
             
-            double dx = scaledWidth - x0;
-            double dy = scaledHeight - y0;
+            double dx = ampLarg - x0;
+            double dy = ampAlt - y0;
             
-            double interpolatedValue = 
+            double valorInterpolado = 
                (1 - dx) * (1 - dy) * m[y0][x0] +
                dx * (1 - dy) * m[y0][x1] +
                (1 - dx) * dy * m[y1][x0] +
                dx * dy * m[y1][x1];
             
-            scaledMatrix[i][j] = interpolatedValue;
+            mat[i][j] = valorInterpolado;
          }
       }
       
-      return scaledMatrix;
+      return mat;
    }
 }
