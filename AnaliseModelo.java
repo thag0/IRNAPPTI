@@ -22,18 +22,18 @@ public class AnaliseModelo{
       // String nomeModelo = "mlp-mnist-89";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-      // f.matrizConfusao(modelo);
+      f.matrizConfusao(modelo, 100);
       
-      final int digito = 8;
-      Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
-      double[] rotulo = f.gerarRotuloMnist(digito);
-      Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
-
+      // final int digito = 4;
+      // Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
+      // double[] rotulo = f.gerarRotuloMnist(digito);
+      // Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
       // f.desenharImagem(mapa, 20, false, "Heatmap");
-      f.desenharImagem(mapa.sub(amostra), 15, false, "Heatmap + Amostra");
-      f.desenharImagem(amostra, 15, false, "Amostra");
+
+      // f.desenharImagem(mapa.sub(amostra), 15, false, "Heatmap + Amostra");
+      // f.desenharImagem(amostra, 15, false, "Amostra");
       
-      new Thread(() -> f.desenharMnist(modelo)).start();
+      f.desenharMnist(modelo);
 
       // Tensor4D prev = modelo.forward(amostra);
       // prev.reformatar(10, 1);
@@ -45,9 +45,9 @@ public class AnaliseModelo{
 
       // boolean normalizar = true;
       // f.exportarAtivacoes(modelo, 0, normalizar, 20);
-      // f.exportarFiltros(modelo, 0, normalizar);
-      // f.exportarAtivacoes(modelo, 2, normalizar, 20);
-      // f.exportarFiltros(modelo, 2, normalizar);
+      // f.exportarFiltros(modelo, 0, normalizar, 20);
+      // f.exportarAtivacoes(modelo, 3, normalizar, 20);
+      // f.exportarFiltros(modelo, 3, normalizar, 20);
    }
 
    /**

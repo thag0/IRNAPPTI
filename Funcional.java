@@ -1,16 +1,19 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import ged.Dados;
 import geim.Geim;
 import geim.Pixel;
 import render.Janela;
+import render.matconf.JanelaMatriz;
 import render.realtime.JanelaDesenho;
 import rna.camadas.Convolucional;
 import rna.core.Mat;
 import rna.core.Tensor4D;
 import rna.modelos.Sequencial;
 
+/**
+ * Interface funcional.
+ */
 public class Funcional {
 
    /**
@@ -121,34 +124,37 @@ public class Funcional {
       final byte fator = 28;
       final int escala = 18;
 
-      JanelaDesenho jd = new JanelaDesenho(fator*escala, fator*(escala*2), modelo);
+      new Thread(() -> {
+         JanelaDesenho jd = new JanelaDesenho(fator*escala, fator*(escala*2), modelo);
 
-      while (jd.isVisible()) {
-         jd.atualizar();
-
-         try {
-            Thread.sleep(80);
-         } catch (Exception e) {}
-      }
-
-      jd.dispose();
+         while (jd.isVisible()) {
+            jd.atualizar();
+   
+            try {
+               Thread.sleep(80);
+            } catch (Exception e) {}
+         }
+   
+         jd.dispose();
+      }).start();
    }
 
    /**
     * Calcula a matriz de confusão das predições do modelo.
     * @param modelo modelo treinado.
     */
-   public void matrizConfusao(Sequencial modelo) {
-      int amostras = 100;
+   public void matrizConfusao(Sequencial modelo, int amostras) {
+      System.out.println("Calculando Matriz de Confusão");
       int digitos = 10;
       Tensor4D entradas = new Tensor4D(carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos));
       double[][] rotulos = criarRotulosMNIST(amostras, digitos);
       
-      int[][] matrizConfusao = modelo.avaliador().matrizConfusao(entradas, rotulos);
-      
-      Dados matriz = new Dados(matrizConfusao);
-      matriz.editarNome("Matriz de confusão");
-      matriz.print();
+      int[][] m = modelo.avaliador().matrizConfusao(entradas, rotulos);
+
+      new Thread(() -> {
+         JanelaMatriz jm = new JanelaMatriz(400, 400, m);
+         jm.exibir();
+      }).start();
    }
 
    /**
@@ -275,14 +281,13 @@ public class Funcional {
       for (int i = 0; i < digitos; i++) {
          String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_16.jpg";
          var amostra = carregarImagemCinza(caminhoAmostra);
-
-         Tensor4D prev = modelo.forward(amostra);
+         modelo.forward(amostra);
 
          Mat[] somatorios = new Mat[camada._somatorio.dim2()];
-         Mat[] saidas = new Mat[prev.dim2()];
+         Mat[] saidas = new Mat[camada.saida().dim2()];
 
          for (int j = 0; j < saidas.length; j++) {
-            saidas[j] = new Mat(prev.array2D(0, j));
+            saidas[j] = new Mat(camada.saida().array2D(0, j));
             somatorios[j] = new Mat(camada._somatorio.array2D(0, j));
 
             if (norm) {
@@ -345,8 +350,21 @@ public class Funcional {
     * @param caminho diretório onde os arquivos serão salvos.
     */
    public void exportarMatrizes(Mat[] arr, int escala, String caminho) {
+      if (arr == null) {
+         throw new IllegalArgumentException(
+            "\nArray fornecido é nulo."
+         );
+      }
+
       for (int i = 0; i < arr.length; i++) {
-         normalizar(arr[i]);
+         if (arr[i] == null) {
+            throw new IllegalArgumentException(
+               "\nElemento " + i + " do array é nulo."
+            );      
+         }
+      }
+
+      for (int i = 0; i < arr.length; i++) {
          exportarImagem(arr[i], (caminho + "amostra-" + (i+1)), escala);
       }
    }
@@ -384,6 +402,12 @@ public class Funcional {
     * @param mat matriz base.
     */
    public void normalizar(Mat mat) {
+      if (mat == null) {
+         throw new IllegalArgumentException(
+            "\nMatriz fornecida é nula."
+         );
+      }
+
       int linhas = mat.lin();
       int colunas = mat.col();
       double min = mat.elemento(0, 0); 
