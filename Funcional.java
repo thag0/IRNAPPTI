@@ -152,7 +152,7 @@ public class Funcional {
       int[][] m = modelo.avaliador().matrizConfusao(entradas, rotulos);
 
       new Thread(() -> {
-         JanelaMatriz jm = new JanelaMatriz(400, 400, m);
+         JanelaMatriz jm = new JanelaMatriz(500, 500, m);
          jm.exibir();
       }).start();
    }
