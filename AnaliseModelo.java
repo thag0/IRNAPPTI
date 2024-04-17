@@ -18,30 +18,23 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-95-3";
+      // String nomeModelo = "conv-mnist-95-3";
+      String nomeModelo = "conv-mnist-96-5";
       // String nomeModelo = "mlp-mnist-89";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-      // f.matrizConfusao(modelo, 100);
+      f.matrizConfusao(modelo, 100);
       
-      {
-         final int digito = 4;
-         Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
-         double[] rotulo = f.gerarRotuloMnist(digito);
-         Tensor4D mapa = f.gradCAM(modelo, amostra, rotulo);
-         Tensor4D mapaRGB = new Tensor4D(3, mapa.dim3(), mapa.dim4());
-         System.out.println(mapa.shapeStr());
-         System.out.println(mapaRGB.shapeStr());
-         mapaRGB.copiar(mapa, 0, 0);
-         mapaRGB.copiar(mapa, 0, 1);
-         mapaRGB.copiar(mapa, 0, 2);
-         f.desenharImagem(mapa, 15, false, "Heatmap");
-      }
+      // final int digito = 7;
+      // Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg");
+      // double[] rotulo = f.gerarRotuloMnist(digito);
+      // Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
+      // f.desenharImagem(heatmap, 15, false, "Heatmap");
 
-      // f.desenharImagem(mapa.sub(amostra), 15, false, "Heatmap + Amostra");
+      // f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");
       // f.desenharImagem(amostra, 15, false, "Amostra");
       
-      f.desenharMnist(modelo);
+      // f.desenharMnist(modelo);
 
       // Tensor4D prev = modelo.forward(amostra);
       // prev.reformatar(10, 1);
