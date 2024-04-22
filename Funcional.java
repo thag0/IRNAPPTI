@@ -279,7 +279,7 @@ public class Funcional {
 
       final int digitos = 10;
       for (int i = 0; i < digitos; i++) {
-         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_16.jpg";
+         String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_20.jpg";
          var amostra = carregarImagemCinza(caminhoAmostra);
          modelo.forward(amostra);
 
@@ -287,13 +287,16 @@ public class Funcional {
          Mat[] saidas = new Mat[camada.saida().dim2()];
 
          for (int j = 0; j < saidas.length; j++) {
-            saidas[j] = new Mat(camada.saida().array2D(0, j));
-            somatorios[j] = new Mat(camada._somatorio.array2D(0, j));
-
+            Tensor4D tempSaida = new Tensor4D(camada.saida().array2D(0, j));
+            Tensor4D tempSomatorio = new Tensor4D(camada._somatorio.array2D(0, j));
+            
             if (norm) {
-               normalizar(saidas[j]);
-               normalizar(somatorios[j]);
+               tempSaida.normalizar(0, 1);
+               tempSomatorio.normalizar(0, 1);
             }
+            
+            saidas[j] = new Mat(tempSaida.array2D(0, 0));
+            somatorios[j] = new Mat(tempSomatorio.array2D(0, 0));
          }
 
          String caminhoSomatorio = "./resultados/pre-ativacoes/" + diretorioCamada + "/" + i + "/";
@@ -335,8 +338,10 @@ public class Funcional {
       int numFiltros = filtros.dim1();
       Mat[] arrFiltros = new Mat[numFiltros];
       for (int i = 0; i < numFiltros; i++) {
-         arrFiltros[i] = new Mat(filtros.array2D(i, 0));
-         if (norm) normalizar(arrFiltros[i]);
+         Tensor4D temp = new Tensor4D(filtros.array2D(i, 0));
+
+         if (norm) temp.normalizar(0, 1);
+         arrFiltros[i] = new Mat(temp.array2D(0, 0));
       }
 
       exportarMatrizes(arrFiltros, escala, caminho);

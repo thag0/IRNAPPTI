@@ -18,37 +18,39 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-95-6";
+      String nomeModelo = "conv-mnist-95-4";
+      // String nomeModelo = "conv-mnist-95-6";
       // String nomeModelo = "conv-mnist-96-5";
       // String nomeModelo = "mlp-mnist-89";
       Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
       // f.matrizConfusao(modelo, 100);
       
-      final int digito = 8;
-      Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
+      final int digito = 5;
+      Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_3.jpg");
       double[] rotulo = f.gerarRotuloMnist(digito);
       Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
       f.desenharImagem(heatmap, 15, false, "Heatmap");
 
-      // f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");
       // f.desenharImagem(amostra, 15, false, "Amostra");
+      // f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");
       
       // f.desenharMnist(modelo);
 
       // Tensor4D prev = modelo.forward(amostra);
       // prev.reformatar(10, 1);
-      // prev.print(4);
+      // prev.print(16);
       // System.out.println("Dígito " + digito + ", Previsto: " + f.maiorIndice(prev.paraArray()));
 
       // double ec = f.entropiaCondicional(prev.paraArray());
       // System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
       // boolean normalizar = true;
-      // f.exportarAtivacoes(modelo, 0, normalizar, 20);
-      // f.exportarFiltros(modelo, 0, normalizar, 20);
-      // f.exportarAtivacoes(modelo, 3, normalizar, 20);
-      // f.exportarFiltros(modelo, 3, normalizar, 20);
+      // int escala = 20;
+      // f.exportarAtivacoes(modelo, 0, normalizar, escala);
+      // f.exportarFiltros(modelo, 0, normalizar, escala);
+      // f.exportarAtivacoes(modelo, 2, normalizar, escala);
+      // f.exportarFiltros(modelo, 2, normalizar, escala);
    }
 
    /**
