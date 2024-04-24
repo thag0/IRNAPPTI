@@ -6,10 +6,10 @@ import geim.Pixel;
 import render.Janela;
 import render.matconf.JanelaMatriz;
 import render.realtime.JanelaDesenho;
-import rna.camadas.Convolucional;
-import rna.core.Mat;
-import rna.core.Tensor4D;
-import rna.modelos.Sequencial;
+import jnn.camadas.Convolucional;
+import jnn.core.Mat;
+import jnn.core.Tensor4D;
+import jnn.modelos.Sequencial;
 
 /**
  * Interface funcional.

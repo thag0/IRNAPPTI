@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
-import rna.core.Tensor4D;
+import jnn.core.Tensor4D;
 
 public class Painel extends JPanel{
 

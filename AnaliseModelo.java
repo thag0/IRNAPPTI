@@ -1,9 +1,10 @@
 import ged.Ged;
 import geim.Geim;
-import rna.core.OpTensor4D;
-import rna.core.Tensor4D;
-import rna.modelos.Sequencial;
-import rna.serializacao.Serializador;
+import jnn.camadas.Convolucional;
+import jnn.core.OpTensor4D;
+import jnn.core.Tensor4D;
+import jnn.modelos.Sequencial;
+import jnn.serializacao.Serializador;
 
 public class AnaliseModelo{
    static final String CAMINHO_MODELO = "./modelos/rna/";

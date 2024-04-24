@@ -5,17 +5,17 @@ import java.util.concurrent.TimeUnit;
 import ged.Dados;
 import ged.Ged;
 import geim.Geim;
-import rna.camadas.Convolucional;
-import rna.camadas.Densa;
-import rna.camadas.Dropout;
-import rna.camadas.Entrada;
-import rna.camadas.Flatten;
-import rna.camadas.MaxPooling;
-import rna.core.Tensor4D;
-import rna.modelos.Modelo;
-import rna.modelos.Sequencial;
-import rna.otimizadores.SGD;
-import rna.serializacao.Serializador;
+import jnn.camadas.Convolucional;
+import jnn.camadas.Densa;
+import jnn.camadas.Dropout;
+import jnn.camadas.Entrada;
+import jnn.camadas.Flatten;
+import jnn.camadas.MaxPooling;
+import jnn.core.Tensor4D;
+import jnn.modelos.Modelo;
+import jnn.modelos.Sequencial;
+import jnn.otimizadores.SGD;
+import jnn.serializacao.Serializador;
 
 public class TreinoModelo{
    static Ged ged = new Ged();
