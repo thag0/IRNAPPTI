@@ -1,13 +1,12 @@
 import ged.Ged;
 import geim.Geim;
-import jnn.camadas.Convolucional;
 import jnn.core.OpTensor4D;
 import jnn.core.Tensor4D;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
 
 public class AnaliseModelo{
-   static final String CAMINHO_MODELO = "./modelos/rna/";
+   static final String CAMINHO_MODELO = "./modelos/jnn/";
    static final String CAMINHO_IMAGEM = "/mnist/teste/";
 
    static Ged ged = new Ged();
@@ -19,7 +18,8 @@ public class AnaliseModelo{
    public static void main(String[] args){
       ged.limparConsole();
 
-      String nomeModelo = "conv-mnist-95-4";
+      String nomeModelo = "modelo-treinado";
+      // String nomeModelo = "conv-mnist-95-4";
       // String nomeModelo = "conv-mnist-95-6";
       // String nomeModelo = "conv-mnist-96-5";
       // String nomeModelo = "mlp-mnist-89";
@@ -27,7 +27,7 @@ public class AnaliseModelo{
 
       // f.matrizConfusao(modelo, 100);
       
-      final int digito = 5;
+      final int digito = 4;
       Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_3.jpg");
       double[] rotulo = f.gerarRotuloMnist(digito);
       Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
@@ -46,12 +46,14 @@ public class AnaliseModelo{
       // double ec = f.entropiaCondicional(prev.paraArray());
       // System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
-      // boolean normalizar = true;
-      // int escala = 20;
-      // f.exportarAtivacoes(modelo, 0, normalizar, escala);
-      // f.exportarFiltros(modelo, 0, normalizar, escala);
-      // f.exportarAtivacoes(modelo, 2, normalizar, escala);
-      // f.exportarFiltros(modelo, 2, normalizar, escala);
+      new Thread(() -> {
+         boolean normalizar = true;
+         int escala = 20;
+         f.exportarAtivacoes(modelo, 0, normalizar, escala);
+         f.exportarFiltros(modelo, 0, normalizar, escala);
+         f.exportarAtivacoes(modelo, 3, normalizar, escala);
+         f.exportarFiltros(modelo, 3, normalizar, escala);
+      }).start();
    }
 
    /**
