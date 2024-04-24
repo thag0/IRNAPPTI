@@ -19,7 +19,7 @@ public class Funcional {
    /**
     * Caminho das imagens de teste do mnist.
     */
-   static final String CAMINHO_IMAGEM = "/mnist/teste/";
+   static final String CAMINHO_IMAGEM = "./mnist/teste/";
 
    /**
     * Gerenciador de imagens.
