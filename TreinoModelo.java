@@ -33,8 +33,8 @@ public class TreinoModelo{
    static final boolean TREINO_LOGS = true;
 
    // caminhos de arquivos externos
-   static final String CAMINHO_TREINO = "/dados/mnist/treino/";
-   static final String CAMINHO_TESTE = "/dados/mnist/teste/";
+   static final String CAMINHO_TREINO = "/mnist/treino/";
+   static final String CAMINHO_TESTE = "/mnist/teste/";
    static final String CAMINHO_SAIDA_MODELO = "./dados/modelos/modelo-treinado.nn";
    static final String CAMINHO_HISTORICO = "historico-perda";
 
@@ -78,13 +78,13 @@ public class TreinoModelo{
     static Sequencial criarModelo(){
       Sequencial modelo = new Sequencial(
          new Entrada(28, 28),
-         new Convolucional(new int[]{3, 3}, 20, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 20, "relu"),
          new MaxPooling(new int[]{2, 2}),
-         new Convolucional(new int[]{3, 3}, 22, "leaky-relu"),
+         new Convolucional(new int[]{3, 3}, 22, "relu"),
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
-         new Densa(128, "sigmoid"),
-         new Dropout(0.25),
+         new Densa(128, "tanh"),
+         new Dropout(0.3),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       );
 
@@ -107,19 +107,20 @@ public class TreinoModelo{
     * @param caminho caminho da imagem.
     * @return matriz contendo os valores de brilho da imagem.
     */
-   static double[][] imagemParaMatriz(String caminho){
+   static double[][] imagemParaMatriz(String caminho) {
       BufferedImage img = geim.lerImagem(caminho);
+  
       double[][] imagem = new double[img.getHeight()][img.getWidth()];
-
       int[][] cinza = geim.obterCinza(img);
-
-      for(int y = 0; y < imagem.length; y++){
-         for(int x = 0; x < imagem[y].length; x++){
-            imagem[y][x] = (double)cinza[y][x] / 255;
-         }
+  
+      for (int y = 0; y < imagem.length; y++) {
+          for (int x = 0; x < imagem[y].length; x++) {
+              imagem[y][x] = (double) cinza[y][x] / 255;
+          }
       }
+  
       return imagem;
-   }
+  }
 
    /**
     * Testa as previsões do modelo no formato de probabilidade.
