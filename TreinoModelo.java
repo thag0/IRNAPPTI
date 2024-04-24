@@ -32,7 +32,7 @@ public class TreinoModelo{
 
    static final String caminhoTreino = "/mnist/treino/";
    static final String caminhoTeste = "/mnist/teste/";
-   static final String caminhoSaidaModelo = "./modelos/rna/modelo-convolucional.txt";
+   static final String caminhoSaidaModelo = "./modelos/jnn/modelo-treinado.nn";
 
    public static void main(String[] args){
       ged.limparConsole();
