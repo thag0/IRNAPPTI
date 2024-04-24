@@ -17,65 +17,59 @@ import jnn.camadas.MaxPooling;
 import jnn.core.Tensor4D;
 import jnn.modelos.Modelo;
 import jnn.modelos.Sequencial;
-import jnn.otimizadores.SGD;
 import jnn.serializacao.Serializador;
 
 public class TreinoModelo{
    static Ged ged = new Ged();
    static Geim geim = new Geim();
 
+   // dados de controle
    static final int NUM_DIGITOS_TREINO = 10;
    static final int NUM_DIGITOS_TESTE  = NUM_DIGITOS_TREINO;
    static final int NUM_AMOSTRAS_TREINO = 400;
    static final int NUM_AMOSTRAS_TESTE  = 100;
-   static final int EPOCAS_TREINO = 12;
+   static final int TREINO_EPOCAS = 12;
+   static final int TREINO_LOTE = 1;
+   static final boolean TREINO_LOGS = true;
 
-   static final String caminhoTreino = "/mnist/treino/";
-   static final String caminhoTeste = "/mnist/teste/";
-   static final String caminhoSaidaModelo = "./modelos/jnn/modelo-treinado.nn";
+   // caminhos de arquivos externos
+   static final String CAMINHO_TREINO = "/dados/mnist/treino/";
+   static final String CAMINHO_TESTE = "/dados/mnist/teste/";
+   static final String CAMINHO_SAIDA_MODELO = "./dados/modelos/modelo-treinado.nn";
+   static final String CAMINHO_HISTORICO = "historico-perda";
 
-   public static void main(String[] args){
+   public static void main(String[] args) {
       ged.limparConsole();
       
-      final var treinoX = new Tensor4D(carregarDadosMNIST(caminhoTreino, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
+      final var treinoX = new Tensor4D(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
       final var treinoY = criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
-      System.out.println("Dados de treino = " + treinoX.shapeStr());
 
       Sequencial modelo = criarModelo();
       modelo.setHistorico(true);
       modelo.info();
 
-      // treinar e marcar tempo
-      long t1, t2;
-      long horas, minutos, segundos;
-
       System.out.println("Treinando.");
-      t1 = System.nanoTime();
-      modelo.treinar(treinoX, treinoY, EPOCAS_TREINO, true);
-      t2 = System.nanoTime();
+      long tempo = System.nanoTime();
+         modelo.treinar(treinoX, treinoY, TREINO_EPOCAS, TREINO_LOTE, TREINO_LOGS);
+      tempo = System.nanoTime() - tempo;
 
-      long tempoDecorrido = t2 - t1;
-      long segundosTotais = TimeUnit.NANOSECONDS.toSeconds(tempoDecorrido);
-      horas = segundosTotais / 3600;
-      minutos = (segundosTotais % 3600) / 60;
-      segundos = segundosTotais % 60;
+      long segundosTotais = TimeUnit.NANOSECONDS.toSeconds(tempo);
+      long horas = segundosTotais / 3600;
+      long minutos = (segundosTotais % 3600) / 60;
+      long segundos = segundosTotais % 60;
 
-      System.out.println();
-      System.out.println("Tempo de treinamento: " + horas + "h " + minutos + "m " + segundos + "s");
-      System.out.println(
-         "Treino -> perda: " + modelo.avaliar(treinoX, treinoY) + 
-         " - acurácia: " + (modelo.avaliador().acuracia(treinoX, treinoY) * 100) + "%"
-      );
+      System.out.println("\nTempo de treino: " + horas + "h " + minutos + "min " + segundos + "s");
+      System.out.print("Treino -> perda: " + modelo.avaliar(treinoX, treinoY) + " - ");
+      System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(treinoX, treinoY) * 100), 4) + "%");
 
       System.out.println("\nCarregando dados de teste.");
-      final var testeX = carregarDadosMNIST(caminhoTeste, NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE);
+      final var testeX = carregarDadosMNIST(CAMINHO_TESTE, NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE);
       final var testeY = criarRotulosMNIST(NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE);
-      System.out.println(
-         "Teste -> perda: " + modelo.avaliar(testeX, testeY) + 
-         " - acurácia: " + (modelo.avaliador().acuracia(testeX, testeY) * 100) + "%"
-      );
+      System.out.print("Teste -> perda: " + modelo.avaliar(testeX, testeY) + " - ");
+      System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(testeX, testeY) * 100), 4) + "%");
 
-      salvarModelo(modelo, caminhoSaidaModelo);
+      exportarHistorico(modelo, CAMINHO_HISTORICO);
+      salvarModelo(modelo, CAMINHO_SAIDA_MODELO);
    }
 
    /*
@@ -90,11 +84,11 @@ public class TreinoModelo{
          new MaxPooling(new int[]{2, 2}),
          new Flatten(),
          new Densa(128, "sigmoid"),
-         new Dropout(0.2),
+         new Dropout(0.25),
          new Densa(NUM_DIGITOS_TREINO, "softmax")
       );
 
-      modelo.compilar(new SGD(0.01, 0.9), "entropia-cruzada");
+      modelo.compilar("sgd", "entropia-cruzada");
       return modelo;
    }
 

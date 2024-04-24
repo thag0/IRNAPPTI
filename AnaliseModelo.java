@@ -27,7 +27,7 @@ public class AnaliseModelo{
 
       // f.matrizConfusao(modelo, 100);
       
-      final int digito = 4;
+      final int digito = 3;
       Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_3.jpg");
       double[] rotulo = f.gerarRotuloMnist(digito);
       Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
@@ -46,14 +46,14 @@ public class AnaliseModelo{
       // double ec = f.entropiaCondicional(prev.paraArray());
       // System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
-      new Thread(() -> {
-         boolean normalizar = true;
-         int escala = 20;
-         f.exportarAtivacoes(modelo, 0, normalizar, escala);
-         f.exportarFiltros(modelo, 0, normalizar, escala);
-         f.exportarAtivacoes(modelo, 3, normalizar, escala);
-         f.exportarFiltros(modelo, 3, normalizar, escala);
-      }).start();
+      // new Thread(() -> {
+      //    boolean normalizar = true;
+      //    int escala = 20;
+      //    f.exportarAtivacoes(modelo, 0, normalizar, escala);
+      //    f.exportarFiltros(modelo, 0, normalizar, escala);
+      //    f.exportarAtivacoes(modelo, 2, normalizar, escala);
+      //    f.exportarFiltros(modelo, 2, normalizar, escala);
+      // }).start();
    }
 
    /**
