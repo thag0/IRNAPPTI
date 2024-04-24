@@ -1,6 +1,9 @@
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
+
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 import ged.Dados;
 import ged.Ged;
@@ -23,9 +26,9 @@ public class TreinoModelo{
 
    static final int NUM_DIGITOS_TREINO = 10;
    static final int NUM_DIGITOS_TESTE  = NUM_DIGITOS_TREINO;
-   static final int NUM_AMOSTRAS_TREINO = 200;
+   static final int NUM_AMOSTRAS_TREINO = 400;
    static final int NUM_AMOSTRAS_TESTE  = 100;
-   static final int EPOCAS_TREINO = 20;
+   static final int EPOCAS_TREINO = 12;
 
    static final String caminhoTreino = "/mnist/treino/";
    static final String caminhoTeste = "/mnist/teste/";
@@ -141,25 +144,54 @@ public class TreinoModelo{
    }
 
    /**
-    * Carrega os dados de entrada do MNIST (apenas features).
+    * Carrega as imagens do conjunto de dados {@code MNIST}.
+    * <p>
+    *    Nota
+    * </p>
+    * O diretório deve conter subdiretórios, cada um contendo o conjunto de 
+    * imagens de cada dígito, exemplo:
+    * <pre>
+    *"mnist/treino/0"
+    *"mnist/treino/1"
+    *"mnist/treino/2"
+    *"mnist/treino/3"
+    *"mnist/treino/4"
+    *"mnist/treino/5"
+    *"mnist/treino/6"
+    *"mnist/treino/7"
+    *"mnist/treino/8"
+    *"mnist/treino/9"
+    * </pre>
+    * @param caminho caminho do diretório das imagens.
     * @param amostras quantidade de amostras por dígito
     * @param digitos quantidade de dígitos, iniciando do dígito 0.
     * @return dados carregados.
     */
-   static double[][][][] carregarDadosMNIST(String caminho, int amostras, int digitos){
-      double[][][][] entradas = new double[digitos * amostras][1][][];
+   static double[][][][] carregarDadosMNIST(String caminho, int amostras, int digitos) {
+      final double[][][][] imagens = new double[digitos * amostras][1][][];
+      final int numThreads = Runtime.getRuntime().availableProcessors()/2;
 
-      int id = 0;
-      for(int i = 0; i < digitos; i++){
-         for(int j = 0; j < amostras; j++){
-            String caminhoCompleto = caminho + i + "/img_" + j + ".jpg";
-            double[][] imagem = imagemParaMatriz(caminhoCompleto);
-            entradas[id++][0] = imagem;
+      try (ExecutorService exec = Executors.newFixedThreadPool(numThreads)) {
+         int id = 0;
+         for (int i = 0; i < digitos; i++) {
+            for (int j = 0; j < amostras; j++) {
+               final String caminhoCompleto = caminho + i + "/img_" + j + ".jpg";
+               final int indice = id;
+               exec.submit(() -> {
+                  double[][] imagem = imagemParaMatriz(caminhoCompleto);
+                  imagens[indice][0] = imagem;
+               });
+               id++;
+            }
          }
+      
+      } catch (Exception e) {
+         System.out.println(e.getMessage());
       }
 
-      System.out.println("Imagens carregadas (" + entradas.length + ").");
-      return entradas;
+      System.out.println("Imagens carregadas (" + imagens.length + ").");
+
+      return imagens;
    }
 
    /**
