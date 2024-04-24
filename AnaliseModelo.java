@@ -7,7 +7,7 @@ import jnn.serializacao.Serializador;
 
 public class AnaliseModelo{
    static final String CAMINHO_MODELO = "./modelos/jnn/";
-   static final String CAMINHO_IMAGEM = "/mnist/teste/";
+   static final String CAMINHO_IMAGEM = "./mnist/teste/";
 
    static Ged ged = new Ged();
    static Geim geim = new Geim();

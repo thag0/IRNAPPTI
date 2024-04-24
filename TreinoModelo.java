@@ -33,8 +33,8 @@ public class TreinoModelo{
    static final boolean TREINO_LOGS = true;
 
    // caminhos de arquivos externos
-   static final String CAMINHO_TREINO = "/mnist/treino/";
-   static final String CAMINHO_TESTE = "/mnist/teste/";
+   static final String CAMINHO_TREINO = "./mnist/treino/";
+   static final String CAMINHO_TESTE = "./mnist/teste/";
    static final String CAMINHO_SAIDA_MODELO = "./dados/modelos/modelo-treinado.nn";
    static final String CAMINHO_HISTORICO = "historico-perda";
 
@@ -164,28 +164,35 @@ public class TreinoModelo{
     */
    static double[][][][] carregarDadosMNIST(String caminho, int amostras, int digitos) {
       final double[][][][] imagens = new double[digitos * amostras][1][][];
-      final int numThreads = Runtime.getRuntime().availableProcessors()/2;
-
+      final int numThreads = Runtime.getRuntime().availableProcessors() / 2;
+  
       try (ExecutorService exec = Executors.newFixedThreadPool(numThreads)) {
          int id = 0;
          for (int i = 0; i < digitos; i++) {
             for (int j = 0; j < amostras; j++) {
                final String caminhoCompleto = caminho + i + "/img_" + j + ".jpg";
                final int indice = id;
+               
                exec.submit(() -> {
-                  double[][] imagem = imagemParaMatriz(caminhoCompleto);
-                  imagens[indice][0] = imagem;
+                  try {
+                     double[][] imagem = imagemParaMatriz(caminhoCompleto);
+                     imagens[indice][0] = imagem;
+                  } catch (Exception e) {
+                     System.out.println(e.getMessage());
+                     System.exit(1);
+                  }
                });
+
                id++;
             }
          }
-      
+  
       } catch (Exception e) {
          System.out.println(e.getMessage());
       }
-
+  
       System.out.println("Imagens carregadas (" + imagens.length + ").");
-
+  
       return imagens;
    }
 
