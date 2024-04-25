@@ -114,23 +114,11 @@ def testar_previsao(modelo: ConvCifar10, amostra: torch.Tensor):
 	val = prev.argmax(dim=1).item()
 	print(f'Previsto = {val}')
 
-def obter_amostra(data_loader: DataLoader) -> tuple[torch.Tensor, torch.Tensor]:
-	for x, y in data_loader:
-		return x[1], y[1]
-
-
-if __name__ == '__main__':
-	os.system('cls')
-
-	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
-	dl_treino, dl_teste = preparar_dataset('mnist') #formato N C W H
-
+def grad_cam(modelo, dl_teste: DataLoader):
 	lote = next(iter(dl_teste))
 	imgs, classes = lote
 
-	id_img = 0
+	id_img = 1
 	img = imgs[id_img].unsqueeze(0).to(device)
 	rotulo = classes[id_img]
 
@@ -151,11 +139,21 @@ if __name__ == '__main__':
 	# Soma dos gradientes ao longo do canal
 	gradcam_sum = gradcam.sum(dim=1, keepdim=True)
 	gradcam_sum = gradcam_sum.squeeze().cpu().numpy()
-	print(gradcam_sum)
 	plt.imshow(gradcam_sum, cmap='hot', interpolation='nearest')
 	plt.axis('off')
 
 	plt.show()
+
+
+if __name__ == '__main__':
+	os.system('cls')
+
+	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
+	dl_treino, dl_teste = preparar_dataset('mnist') #formato N C W H
+
+	grad_cam(modelo, dl_teste)
 
 	# ----------------
 
