@@ -43,7 +43,7 @@ public class TreinoModelo{
 		final var treinoX = new Tensor4D(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
 		final var treinoY = criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
 
-		Sequencial modelo = criarModelo();
+		Sequencial modelo = modeloConv();
 		modelo.setHistorico(true);
 		modelo.info();
 
@@ -71,9 +71,9 @@ public class TreinoModelo{
 	}
 
 	/*
-	 * Criação de modelos para testes.
+	 * Criação de modelos Convolucionais.
 	 */
-	static Sequencial criarModelo() {
+	static Sequencial modeloConv() {
 		Sequencial modelo = new Sequencial(
 			new Entrada(28, 28),
 			new Convolucional(new int[]{3, 3}, 18, "relu"),
@@ -87,6 +87,23 @@ public class TreinoModelo{
 
 		// modelo.compilar("sgd", "entropia-cruzada");
 		modelo.compilar("adam", "entropia-cruzada");
+		
+		return modelo;
+	}
+
+	/*
+	 * Criação de modelos Multilayer Perceptrons.
+	 */
+	static Sequencial modeloMlp() {
+		Sequencial modelo = new Sequencial(
+			new Entrada(28, 28),
+			new Flatten(),
+			new Densa(20, "sigmoid"),
+			new Densa(20, "sigmoid"),
+			new Densa(NUM_DIGITOS_TREINO, "softmax")
+		);
+
+		modelo.compilar("sgd", "entropia-cruzada");
 		
 		return modelo;
 	}
