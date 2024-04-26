@@ -19,25 +19,24 @@ public class AnaliseModelo{
 	public static void main(String[] args){
 		ged.limparConsole();
 
-		String nomeModelo = "modelo-treinado";
-		// String nomeModelo = "conv-mnist-95-4";
-		// String nomeModelo = "conv-mnist-95-6";
-		// String nomeModelo = "conv-mnist-96-5";
+		// String nomeModelo = "modelo-treinado";
+		String nomeModelo = "conv-mnist-95-1";
+		// String nomeModelo = "conv-mnist-94-4";
 		// String nomeModelo = "mlp-mnist-89";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
-
-		// f.matrizConfusao(modelo, 100);
 		
-		final int digito = 3;
+		final int digito = 2;
 		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
 		double[] rotulo = f.gerarRotuloMnist(digito);
 		Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
-		// f.desenharImagem(heatmap, 15, false, "Heatmap");
+		f.desenharImagem(heatmap, 15, false, "Heatmap");
 
 		// f.desenharImagem(amostra, 15, false, "Amostra");
 		// f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");
 		
 		// f.desenharMnist(modelo);
+
+		// f.matrizConfusao(modelo, 100);
 
 		// f.desenharSaidas((Convolucional) modelo.camada(0), amostra, 20, true);
 
@@ -83,7 +82,7 @@ public class AnaliseModelo{
 	 */
 	static void testarPrevisao(Sequencial modelo, String caminhoImagem, boolean prob){
 		String extensao = ".jpg";
-		Tensor4D amostra = f.carregarImagemCinza("/mnist/teste/" + caminhoImagem + extensao);
+		Tensor4D amostra = f.carregarImagemCinza("./mnist/teste/" + caminhoImagem + extensao);
 		modelo.forward(amostra);
 		double[] previsao = modelo.saidaParaArray();
 		
@@ -104,7 +103,7 @@ public class AnaliseModelo{
 	 * @param modelo modelo treinado.
 	 */
 	static void testarAcertosMNIST(Sequencial modelo){
-		String caminho = "/mnist/teste/";
+		String caminho = "./mnist/teste/";
 		
 		int digitos = 10;
 		int amostras = 100;

@@ -83,7 +83,6 @@ public class TreinoModelo{
 			new MaxPooling(new int[]{2, 2}),
 			new Flatten(),
 			new Densa(128, "tanh"),
-			new Dropout(0.2),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 
@@ -99,8 +98,9 @@ public class TreinoModelo{
 	 * @param caminho caminho de destino
 	 */
 	static void salvarModelo(Sequencial modelo, String caminho){
-		System.out.println("Salvando modelo.");
-		new Serializador().salvar(modelo, caminho, "double");
+		String tipo = "float";
+		System.out.println("Salvando modelo (" + tipo + ").");
+		new Serializador().salvar(modelo, caminho, tipo);
 	}
 
 	/**
