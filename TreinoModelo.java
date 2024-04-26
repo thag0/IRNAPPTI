@@ -28,7 +28,7 @@ public class TreinoModelo{
 	static final int NUM_DIGITOS_TESTE  = NUM_DIGITOS_TREINO;
 	static final int NUM_AMOSTRAS_TREINO = 400;
 	static final int NUM_AMOSTRAS_TESTE  = 100;
-	static final int TREINO_EPOCAS = 14;
+	static final int TREINO_EPOCAS = 12;
 	static final int TREINO_LOTE = 1;
 	static final boolean TREINO_LOGS = true;
 
@@ -68,7 +68,6 @@ public class TreinoModelo{
 		System.out.print("Teste -> perda: " + modelo.avaliar(testeX, testeY) + " - ");
 		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(testeX, testeY) * 100), 4) + "%");
 
-		exportarHistorico(modelo, CAMINHO_HISTORICO);
 		salvarModelo(modelo, CAMINHO_SAIDA_MODELO);
 	}
 
@@ -78,13 +77,12 @@ public class TreinoModelo{
 	 static Sequencial criarModelo(){
 		Sequencial modelo = new Sequencial(
 			new Entrada(28, 28),
-			new Convolucional(new int[]{3, 3}, 16, "relu"),
+			new Convolucional(new int[]{3, 3}, 18, "relu"),
 			new MaxPooling(new int[]{2, 2}),
 			new Convolucional(new int[]{3, 3}, 22, "relu"),
 			new MaxPooling(new int[]{2, 2}),
 			new Flatten(),
 			new Densa(128, "sigmoid"),
-			new Dropout(0.3),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 

@@ -1,5 +1,6 @@
 import ged.Ged;
 import geim.Geim;
+import jnn.camadas.Convolucional;
 import jnn.core.OpTensor4D;
 import jnn.core.Tensor4D;
 import jnn.modelos.Sequencial;
@@ -18,7 +19,8 @@ public class AnaliseModelo{
 	public static void main(String[] args){
 		ged.limparConsole();
 
-		String nomeModelo = "modelo-treinado";
+		// String nomeModelo = "modelo-treinado";
+		String nomeModelo = "conv-mnist-94-6";
 		// String nomeModelo = "conv-mnist-95-4";
 		// String nomeModelo = "conv-mnist-95-6";
 		// String nomeModelo = "conv-mnist-96-5";
@@ -27,7 +29,7 @@ public class AnaliseModelo{
 
 		// f.matrizConfusao(modelo, 100);
 		
-		final int digito = 4;
+		final int digito = 3;
 		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_3.jpg");
 		double[] rotulo = f.gerarRotuloMnist(digito);
 		Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
@@ -37,6 +39,8 @@ public class AnaliseModelo{
 		// f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");
 		
 		// f.desenharMnist(modelo);
+
+		// f.desenharSaidas((Convolucional) modelo.camada(0), amostra, 20, true);
 
 		// Tensor4D prev = modelo.forward(amostra);
 		// prev.reformatar(10, 1);
