@@ -19,8 +19,7 @@ public class AnaliseModelo{
 	public static void main(String[] args){
 		ged.limparConsole();
 
-		// String nomeModelo = "modelo-treinado";
-		String nomeModelo = "conv-mnist-94-6";
+		String nomeModelo = "modelo-treinado";
 		// String nomeModelo = "conv-mnist-95-4";
 		// String nomeModelo = "conv-mnist-95-6";
 		// String nomeModelo = "conv-mnist-96-5";
@@ -30,10 +29,10 @@ public class AnaliseModelo{
 		// f.matrizConfusao(modelo, 100);
 		
 		final int digito = 3;
-		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_3.jpg");
+		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
 		double[] rotulo = f.gerarRotuloMnist(digito);
 		Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
-		f.desenharImagem(heatmap, 15, false, "Heatmap");
+		// f.desenharImagem(heatmap, 15, false, "Heatmap");
 
 		// f.desenharImagem(amostra, 15, false, "Amostra");
 		// f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");
@@ -43,9 +42,9 @@ public class AnaliseModelo{
 		// f.desenharSaidas((Convolucional) modelo.camada(0), amostra, 20, true);
 
 		// Tensor4D prev = modelo.forward(amostra);
-		// prev.reformatar(10, 1);
+		// prev.reshape(10, 1);
 		// prev.print(16);
-		// System.out.println("Dígito " + digito + ", Previsto: " + f.maiorIndice(prev.paraArray()));
+		// System.out.println("Dígito " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
 		// double ec = f.entropiaCondicional(prev.paraArray());
 		// System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));

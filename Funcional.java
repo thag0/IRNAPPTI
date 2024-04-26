@@ -279,7 +279,7 @@ public class Funcional {
 
 		final int digitos = 10;
 		for (int i = 0; i < digitos; i++) {
-			String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_20.jpg";
+			String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_0.jpg";
 			var amostra = carregarImagemCinza(caminhoAmostra);
 			modelo.forward(amostra);
 
