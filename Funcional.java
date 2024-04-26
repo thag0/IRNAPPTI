@@ -6,6 +6,7 @@ import geim.Pixel;
 import render.Janela;
 import render.matconf.JanelaMatriz;
 import render.realtime.JanelaDesenho;
+import jnn.camadas.Camada;
 import jnn.camadas.Convolucional;
 import jnn.core.Mat;
 import jnn.core.Tensor4D;
@@ -208,9 +209,17 @@ public class Funcional {
 	 * @param norm normaliza os valores entre 0 e 1 para evitar artefatos
 	 * na janela gráfica.
 	 */
-	public void desenharSaidas(Convolucional conv, Tensor4D amostra, int escala, boolean norm) {
-		Tensor4D prev = conv.forward(amostra);
-		int filtros = conv.numFiltros();
+	public void desenharSaidas(Camada conv, Tensor4D amostra, int escala, boolean norm) {
+		Convolucional camada = null;
+
+		try {
+			camada = (Convolucional) conv;
+		} catch (Exception e) {
+			System.out.println("\nCamada fornecida não é do tipo convolucional.");
+		}
+
+		Tensor4D prev = camada.forward(amostra);
+		int filtros = camada.numFiltros();
 		Tensor4D[] arr = new Tensor4D[filtros];
 
 		for (int i = 0; i < arr.length; i++) {

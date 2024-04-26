@@ -10,7 +10,6 @@ import ged.Ged;
 import geim.Geim;
 import jnn.camadas.Convolucional;
 import jnn.camadas.Densa;
-import jnn.camadas.Dropout;
 import jnn.camadas.Entrada;
 import jnn.camadas.Flatten;
 import jnn.camadas.MaxPooling;
@@ -74,7 +73,7 @@ public class TreinoModelo{
 	/*
 	 * Criação de modelos para testes.
 	 */
-	 static Sequencial criarModelo(){
+	static Sequencial criarModelo() {
 		Sequencial modelo = new Sequencial(
 			new Entrada(28, 28),
 			new Convolucional(new int[]{3, 3}, 18, "relu"),
@@ -97,7 +96,7 @@ public class TreinoModelo{
 	 * @param modelo modelo desejado.
 	 * @param caminho caminho de destino
 	 */
-	static void salvarModelo(Sequencial modelo, String caminho){
+	static void salvarModelo(Sequencial modelo, String caminho) {
 		String tipo = "float";
 		System.out.println("Salvando modelo (" + tipo + ").");
 		new Serializador().salvar(modelo, caminho, tipo);
@@ -115,26 +114,27 @@ public class TreinoModelo{
 		int[][] cinza = geim.obterCinza(img);
   
 		for (int y = 0; y < imagem.length; y++) {
-			 for (int x = 0; x < imagem[y].length; x++) {
-				  imagem[y][x] = (double) cinza[y][x] / 255;
-			 }
+			for (int x = 0; x < imagem[y].length; x++) {
+				imagem[y][x] = (double) cinza[y][x] / 255;
+			}
 		}
   
 		return imagem;
-  }
+  	}
 
 	/**
 	 * Testa as previsões do modelo no formato de probabilidade.
 	 * @param modelo modelo sequencial de camadas.
-	 * @param imagemTeste nome da imagem que deve estar no diretório /minst/teste/
+	 * @param caminhoImg nome da imagem que deve estar no diretório /minst/teste/
 	 */
-	static void testarPorbabilidade(Sequencial modelo, String imagemTeste){
-		System.out.println("\nTestando: " + imagemTeste);
+	static void testarPorbabilidade(Sequencial modelo, String caminhoImg) {
+		System.out.println("\nTestando: " + caminhoImg);
 		double[][][] teste1 = new double[1][][];
-		teste1[0] = imagemParaMatriz("/dados/mnist/teste/" + imagemTeste + ".jpg");
+		teste1[0] = imagemParaMatriz("/dados/mnist/teste/" + caminhoImg + ".jpg");
 		modelo.forward(teste1);
 		double[] previsao = modelo.saidaParaArray();
-		for(int i = 0; i < previsao.length; i++){
+
+		for (int i = 0; i < previsao.length; i++) {
 			System.out.println("Prob: " + i + ": " + (int)(previsao[i]*100) + "%");
 		}
 	}
@@ -203,10 +203,10 @@ public class TreinoModelo{
 	 * @param digitos quantidade de dígitos, iniciando do dígito 0.
 	 * @return dados carregados.
 	 */
-	static double[][] criarRotulosMNIST(int amostras, int digitos){
+	static double[][] criarRotulosMNIST(int amostras, int digitos) {
 		double[][] rotulos = new double[digitos * amostras][digitos];
-		for(int numero = 0; numero < digitos; numero++){
-			for(int i = 0; i < amostras; i++){
+		for (int numero = 0; numero < digitos; numero++){
+			for (int i = 0; i < amostras; i++) {
 				int indice = numero * amostras + i;
 				rotulos[indice][numero] = 1;
 			}
@@ -223,11 +223,11 @@ public class TreinoModelo{
 	 * @param casas quantidade de casas após o ponto flutuante.
 	 * @return
 	 */
-	static String formatarDecimal(double valor, int casas){
+	static String formatarDecimal(double valor, int casas) {
 		String valorFormatado = "";
 
 		String formato = "#.";
-		for(int i = 0; i < casas; i++) formato += "#";
+		for (int i = 0; i < casas; i++) formato += "#";
 
 		DecimalFormat df = new DecimalFormat(formato);
 		valorFormatado = df.format(valor);
@@ -240,12 +240,12 @@ public class TreinoModelo{
 	 * @param modelo modelo.
 	 * @param caminho caminho onde será salvo o arquivo.
 	 */
-	static void exportarHistorico(Modelo modelo, String caminho){
+	static void exportarHistorico(Modelo modelo, String caminho) {
 		System.out.println("Exportando histórico de perda");
 		double[] perdas = modelo.historico();
 		double[][] dadosPerdas = new double[perdas.length][1];
 
-		for(int i = 0; i < dadosPerdas.length; i++){
+		for (int i = 0; i < dadosPerdas.length; i++) {
 			dadosPerdas[i][0] = perdas[i];
 		}
 
