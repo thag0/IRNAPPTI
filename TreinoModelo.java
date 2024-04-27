@@ -28,7 +28,7 @@ public class TreinoModelo{
 	static final int NUM_AMOSTRAS_TREINO = 400;
 	static final int NUM_AMOSTRAS_TESTE  = 100;
 	static final int TREINO_EPOCAS = 12;
-	static final int TREINO_LOTE = 12;
+	static final int TREINO_LOTE = 16;
 	static final boolean TREINO_LOGS = true;
 
 	// caminhos de arquivos externos
