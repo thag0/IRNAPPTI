@@ -23,13 +23,12 @@ public class AnaliseModelo{
 		// String nomeModelo = "conv-mnist-94-4";
 		// String nomeModelo = "mlp-mnist-89";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
-		modelo.info();
 
 		final int digito = 7;
 		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
 		double[] rotulo = f.gerarRotuloMnist(digito);
-		// Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
-		// f.desenharImagem(heatmap, 10, true, "Heatmap");
+		Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
+		f.desenharImagem(heatmap, 10, true, "Heatmap");
 
 		// f.desenharImagem(amostra, 15, false, "Amostra");
 		// f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");

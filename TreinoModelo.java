@@ -43,7 +43,8 @@ public class TreinoModelo{
 		final var treinoX = new Tensor4D(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
 		final var treinoY = criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
 
-		Sequencial modelo = modeloConv();
+		// Sequencial modelo = modeloConv();
+		Sequencial modelo = modeloMlp();
 		modelo.setHistorico(true);
 		modelo.info();
 
