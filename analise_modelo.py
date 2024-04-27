@@ -1,3 +1,4 @@
+import itertools
 import os
 from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
@@ -10,6 +11,8 @@ import torchvision.transforms as transforms
 from modelos import ConvMnist, ConvCifar10
 from PIL import Image
 import torch.nn.functional as F
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
 	modelo = ConvMnist('cpu')
@@ -114,6 +117,36 @@ def testar_previsao(modelo: ConvCifar10, amostra: torch.Tensor):
 	val = prev.argmax(dim=1).item()
 	print(f'Previsto = {val}')
 
+def matriz_confusao(modelo, dataloader):
+	modelo.eval()
+
+	prev = []
+	real = []
+
+	with torch.no_grad():
+		for imagens, rotulos in dataloader:
+			# Mover imagens e rótulos para o dispositivo (GPU ou CPU)
+			imagens = imagens.to(device)
+			rotulos = rotulos.to(device)
+
+			# Fazer previsões
+			saidas = modelo.forward(imagens)
+			_, previsao = torch.max(saidas, 1)
+
+			# Adicionar previsões e rótulos verdadeiros às listas
+			prev.extend(previsao.cpu().numpy())
+			real.extend(rotulos.cpu().numpy())
+
+	matriz_confusao = confusion_matrix(real, prev)
+
+	# Plotar a matriz de confusão como um mapa de calor
+	plt.figure(figsize=(8, 6))
+	sns.heatmap(matriz_confusao, annot=True, fmt="d")
+	plt.xlabel('Predito')
+	plt.ylabel('Real')
+	plt.title('Matriz de confusão')
+	plt.show()
+
 def grad_cam(modelo, dl_teste: DataLoader):
 	lote = next(iter(dl_teste))
 	imgs, classes = lote
@@ -151,9 +184,11 @@ if __name__ == '__main__':
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
-	dl_treino, dl_teste = preparar_dataset('mnist') #formato N C W H
+	dl_treino, dl_teste = preparar_dataset('mnist')
 
-	grad_cam(modelo, dl_teste)
+	matriz_confusao(modelo, dl_teste)
+
+	# grad_cam(modelo, dl_teste)
 
 	# ----------------
 
