@@ -450,7 +450,7 @@ public class Funcional {
 	 */
 	public Tensor4D carregarImagemRGB(String caminho) {
 		BufferedImage img = geim.lerImagem(caminho);
-		int altura = img.getHeight(), largura = img.getHeight();
+		int altura = img.getHeight(), largura = img.getWidth();
 
 		Tensor4D imagem = new Tensor4D(3, altura, largura);
 
@@ -477,7 +477,7 @@ public class Funcional {
 	 */
 	public Tensor4D carregarImagemCinza(String caminho) {
 		BufferedImage img = geim.lerImagem(caminho);
-		int altura = img.getHeight(), largura = img.getHeight();
+		int altura = img.getHeight(), largura = img.getWidth();
 		Tensor4D imagem = new Tensor4D(altura, largura);
 
 		int[][] cinza = geim.obterCinza(img);   

@@ -24,14 +24,24 @@ public class AnaliseModelo{
 		// String nomeModelo = "mlp-mnist-89";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 7;
-		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
+		final int digito = 8;
+		// Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_2.jpg");
+		Tensor4D amostra = f.carregarImagemCinza("./mnist/3-8.png");
+		// Tensor4D amostra = f.carregarImagemCinza("./mnist/3_deslocado.jpg");
+		
 		double[] rotulo = f.gerarRotuloMnist(digito);
 		Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
-		f.desenharImagem(heatmap, 10, true, "Heatmap");
+		Tensor4D heatpmapRGB = tensorCinzaParaRGB(heatmap);
+		Tensor4D amostraRGB = tensorCinzaParaRGB(amostra);
 
-		// f.desenharImagem(amostra, 15, false, "Amostra");
-		// f.desenharImagem(heatmap.sub(amostra), 15, false, "Heatmap + Amostra");
+		amostraRGB.map(x -> x*0.95);
+		heatpmapRGB.map2D(0, 0, x -> x*0.6);// r
+		heatpmapRGB.map2D(0, 1, x -> x*0.3);// g 
+		heatpmapRGB.map2D(0, 2, x -> x*0.9);// b
+
+		f.desenharImagem(heatpmapRGB, 10, true, "Heatmap");
+		f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
 		// f.desenharMnist(modelo);
 
@@ -39,13 +49,13 @@ public class AnaliseModelo{
 
 		// f.desenharSaidas(modelo.camada(0), amostra, 20, true);
 
-		// Tensor4D prev = modelo.forward(amostra);
-		// prev.reshape(10, 1);
-		// prev.print(16);
-		// System.out.println("Dígito " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
+		Tensor4D prev = modelo.forward(amostra);
+		prev.reshape(10, 1);
+		prev.print(10);
+		System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
-		// double ec = f.entropiaCondicional(prev.paraArray());
-		// System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
+		double ec = f.entropiaCondicional(prev.paraArray());
+		System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
 		// new Thread(() -> {
 		// 	boolean normalizar = true;
@@ -124,6 +134,17 @@ public class AnaliseModelo{
 			System.out.println("Acertos " + digito + " -> " + porcentagem);
 		}
 		System.out.println("média acertos: " + String.format("%.2f", (media/digitos)*100) + "%");
+	}
+
+	static Tensor4D tensorCinzaParaRGB(Tensor4D tensor) {
+		Tensor4D rgb = new Tensor4D(3, tensor.dim3(), tensor.dim4());
+
+		double[][] cinza = tensor.array2D(0, 0);
+		rgb.copiar(cinza, 0, 0);
+		rgb.copiar(cinza, 0, 1);
+		rgb.copiar(cinza, 0, 2);
+
+		return rgb;
 	}
 
 }

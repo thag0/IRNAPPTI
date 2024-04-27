@@ -13,6 +13,7 @@ from PIL import Image
 import torch.nn.functional as F
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
+import torchvision.utils
 
 def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
 	modelo = ConvMnist('cpu')
@@ -68,11 +69,8 @@ def plotar_ativacoes(modelo: ConvCifar10, entrada: torch.Tensor, id_camada: int)
 		print("Id deve ser de uma camada convolucional ou maxpooling mas é de ", type(camada))
 		return
 	
-	# # pegar saída
+	# pegar saída
 	saida = entrada.to(modelo.device)
-
-	print(saida.device)
-	print(modelo.device)
 	
 	for i in range(len(camadas)):
 		saida = camadas[i].forward(saida)
@@ -186,22 +184,17 @@ if __name__ == '__main__':
 	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
 	dl_treino, dl_teste = preparar_dataset('mnist')
 
-	matriz_confusao(modelo, dl_teste)
+	# matriz_confusao(modelo, dl_teste)
 
 	# grad_cam(modelo, dl_teste)
 
-	# ----------------
-
-	# amostra = carregar_imagem('./cifar/horse.png')
-
-	# print(amostra.shape)
-
-	# conv_ids = []
-
-	# for i in range(len(modelo.get_camadas())):
-	#    if isinstance(modelo.get_camadas()[i], Conv2d):
-	#       conv_ids.append(i)
+	amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
 
 	# testar_previsao(modelo, amostra)
-	# plotar_ativacoes(modelo, amostra, conv_ids[0])
+
+	conv_ids = []
+	for i in range(len(modelo.get_camadas())):
+		if isinstance(modelo.get_camadas()[i], Conv2d):
+			conv_ids.append(i)
+	plotar_ativacoes(modelo, amostra, conv_ids[1])
 	
