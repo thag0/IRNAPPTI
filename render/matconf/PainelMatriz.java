@@ -2,6 +2,7 @@ package render.matconf;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
@@ -50,12 +51,14 @@ public class PainelMatriz extends JPanel{
 				g.fillRect(x, y, larguraPainel / colunas, alturaPainel / linhas);
 
 				g.setColor(corTexto);
-				g.drawString(String.valueOf(matriz[i][j]), x + larguraPainel / (2 * colunas), y + alturaPainel / (2 * linhas));
+				FontMetrics fm = g.getFontMetrics();
+				int textoX = x + (larguraPainel / colunas - fm.stringWidth(String.valueOf(matriz[i][j]))) / 2;
+				int textoY = y + ((alturaPainel / linhas) - fm.getHeight()) / 2 + fm.getAscent();
+				g.drawString(String.valueOf(matriz[i][j]), textoX, textoY);
 			}
 		}
 	}
 
-	// Função para interpolar linearmente entre duas cores
 	private Color interpolarCores(Color corMin, Color corMax, float valor) {
 		int r = (int) (corMin.getRed() + valor * (corMax.getRed() - corMin.getRed()));
 		int g = (int) (corMin.getGreen() + valor * (corMax.getGreen() - corMin.getGreen()));
