@@ -22,11 +22,12 @@ public class PainelMatriz extends JPanel {
 	final int pad = 30;
 
     // cores
-	Color corMax   = new Color(190, 30, 80);
-	Color corMin   = new Color(60, 30, 40);
-	Color corZero  = new Color(30, 30, 30);
+    Color corFundo = new Color(30, 30, 30);
 	Color corTexto = new Color(255, 255, 255);
 	Color corBorda = new Color(255, 255, 255);
+	Color corZero  = new Color(30, 30, 30);
+	Color corMin   = new Color(60, 30, 40);
+	Color corMax   = new Color(180, 30, 90);
 
     /**
      * Inicializa um novo painel que desenha uma matriz de confusão.
@@ -36,7 +37,7 @@ public class PainelMatriz extends JPanel {
      */
 	public PainelMatriz(int altura, int largura, int[][] m) {
 		setPreferredSize(new Dimension(largura, altura));
-		setBackground(new Color(30, 30, 30));
+		setBackground(corFundo);
 		
         this.matriz = m;
 	}
@@ -45,8 +46,8 @@ public class PainelMatriz extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        int alturaUtil = getHeight() - 2 * pad;
-        int larguraUtil = getWidth() - 2 * pad;
+        int alturaUtil = getHeight() - (2 * pad);
+        int larguraUtil = getWidth() - (2 * pad);
         int linhas = matriz.length;
         int colunas = matriz[0].length;
 
@@ -67,9 +68,9 @@ public class PainelMatriz extends JPanel {
                 int y = pad + (alturaUtil / linhas) * i;
                 int tamanhoBloco = Math.min(larguraUtil / colunas, alturaUtil / linhas);
 
-                float valorNormalizado = (float) (matriz[i][j] - valorMin) / (valorMax - valorMin);
+                float valNorm = (float) (matriz[i][j] - valorMin) / (valorMax - valorMin);
 
-                Color c = valorNormalizado == 0 ? corZero : interpolarCores(corMin, corMax, valorNormalizado);
+                Color c = valNorm == 0 ? corZero : interpolarCores(corMin, corMax, valNorm);
                 g.setColor(c);
                 g.fillRect(x, y, tamanhoBloco, tamanhoBloco);
 
@@ -82,9 +83,9 @@ public class PainelMatriz extends JPanel {
         }
 
 		// linhas em volta da matriz
-		g.setColor(corBorda);
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(new BasicStroke(1.8f));
+		g2.setStroke(new BasicStroke(3f));
+		g.setColor(corBorda);
 		g.drawLine(pad, pad, getWidth()-pad, pad);
 		g.drawLine(pad, getHeight()-pad, getWidth()-pad, getHeight()-pad);
 		g.drawLine(pad, pad, pad, getHeight()-pad);

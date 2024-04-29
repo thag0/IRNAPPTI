@@ -43,7 +43,7 @@ public class AnaliseModelo{
 		
 		// f.desenharMnist(modelo);
 
-		f.matrizConfusao(modelo, 100);
+		f.matrizConfusao(modelo, 20);
 
 		// f.desenharSaidas(modelo.camada(0), amostra, 20, true);
 
