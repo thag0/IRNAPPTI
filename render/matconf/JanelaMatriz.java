@@ -9,6 +9,7 @@ public class JanelaMatriz extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		PainelMatriz painel = new PainelMatriz(altura, largura, m);
+		setResizable(false);
 		add(painel);
 		pack();
 
