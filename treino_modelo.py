@@ -48,7 +48,7 @@ if __name__ == '__main__':
 	print(f"Modelo em: {modelo.device}")
 
 	dl_treino, dl_teste = preparar_dataset('mnist')
-	epocas = 4
+	epocas = 3
 
 	hist = modelo.treinar(dl_treino, epocas)
 
