@@ -19,13 +19,14 @@ public class AnaliseModelo{
 		ged.limparConsole();
 
 		// String nomeModelo = "modelo-treinado";
-		String nomeModelo = "conv-mnist-95-1";
+		// String nomeModelo = "conv-mnist-95-1";
+		String nomeModelo = "conv-mnist-96";
 		// String nomeModelo = "conv-mnist-94-4";
 		// String nomeModelo = "mlp-mnist-89";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 3;
-		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_2.jpg");
+		final int digito = 4;
+		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
 		
 		double[] rotulo = f.gerarRotuloMnist(digito);
 		Tensor4D heatmap = f.gradCAM(modelo, amostra, rotulo);
@@ -37,20 +38,19 @@ public class AnaliseModelo{
 			.map2D(0, 1, x -> x*0.2)// g 
 			.map2D(0, 2, x -> x*0.9);// b
 
-		// f.desenharImagem(heatpmapRGB, 10, true, "Heatmap");
-		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
-		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		f.desenharImagem(heatpmapRGB, 10, true, "Heatmap");
+		f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
 		// f.desenharMnist(modelo);
 
-		f.matrizConfusao(modelo, 100);
+		// f.matrizConfusao(modelo, 100);
 
 		// f.desenharSaidas(modelo.camada(0), amostra, 20, true);
 
-		// Tensor4D prev = modelo.forward(amostra);
-		// prev.reshape(10, 1);
-		// prev.print(10);
-		// System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
+		Tensor4D prev = modelo.forward(amostra);
+		prev.reshape(10, 1).print(10);
+		System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
 		// double ec = f.entropiaCondicional(prev.paraArray());
 		// System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));

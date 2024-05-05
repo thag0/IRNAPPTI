@@ -77,7 +77,7 @@ public class TreinoModelo{
 	static Sequencial modeloConv() {
 		Sequencial modelo = new Sequencial(
 			new Entrada(28, 28),
-			new Convolucional(new int[]{3, 3}, 18, "relu"),
+			new Convolucional(new int[]{3, 3}, 16, "relu"),
 			new MaxPooling(new int[]{2, 2}),
 			new Convolucional(new int[]{3, 3}, 22, "relu"),
 			new MaxPooling(new int[]{2, 2}),
@@ -104,7 +104,7 @@ public class TreinoModelo{
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 
-		modelo.compilar("sgd", "entropia-cruzada");
+		modelo.compilar("adam", "entropia-cruzada");
 		
 		return modelo;
 	}
