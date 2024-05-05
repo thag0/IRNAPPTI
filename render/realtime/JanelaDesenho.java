@@ -4,7 +4,7 @@ import java.awt.GridLayout;
 
 import javax.swing.JFrame;
 
-import jnn.core.Tensor4D;
+import jnn.core.tensor.Tensor4D;
 import jnn.modelos.Sequencial;
 
 public class JanelaDesenho extends JFrame{

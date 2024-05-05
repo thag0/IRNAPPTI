@@ -13,7 +13,7 @@ import jnn.camadas.Densa;
 import jnn.camadas.Entrada;
 import jnn.camadas.Flatten;
 import jnn.camadas.MaxPooling;
-import jnn.core.Tensor4D;
+import jnn.core.tensor.Tensor4D;
 import jnn.modelos.Modelo;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;

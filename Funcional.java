@@ -9,7 +9,7 @@ import render.realtime.JanelaDesenho;
 import jnn.camadas.Camada;
 import jnn.camadas.Convolucional;
 import jnn.core.Mat;
-import jnn.core.Tensor4D;
+import jnn.core.tensor.Tensor4D;
 import jnn.modelos.Sequencial;
 
 /**

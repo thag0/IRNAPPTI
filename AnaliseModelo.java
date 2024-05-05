@@ -1,7 +1,7 @@
 import ged.Ged;
 import geim.Geim;
-import jnn.core.OpTensor4D;
-import jnn.core.Tensor4D;
+import jnn.core.tensor.OpTensor4D;
+import jnn.core.tensor.Tensor4D;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
 
@@ -25,7 +25,7 @@ public class AnaliseModelo{
 		// String nomeModelo = "mlp-mnist-89";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 4;
+		final int digito = 3;
 		Tensor4D amostra = f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg");
 		
 		double[] rotulo = f.gerarRotuloMnist(digito);
@@ -33,12 +33,12 @@ public class AnaliseModelo{
 		Tensor4D heatpmapRGB = tensorCinzaParaRGB(heatmap);
 		Tensor4D amostraRGB = tensorCinzaParaRGB(amostra);
 
-		amostraRGB.map(x -> x*0.95);
-		heatpmapRGB.map2D(0, 0, x -> x*0.6)// r
-			.map2D(0, 1, x -> x*0.2)// g 
-			.map2D(0, 2, x -> x*0.9);// b
+		amostraRGB.aplicar(x -> x*0.95);
+		heatpmapRGB.aplicar(0, 0, x -> x*0.6)// r
+			.aplicar(0, 1, x -> x*0.2)// g 
+			.aplicar(0, 2, x -> x*0.9);// b
 
-		f.desenharImagem(heatpmapRGB, 10, true, "Heatmap");
+		f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
 		f.desenharImagem(amostraRGB, 10, false, "Amostra");
 		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
@@ -52,8 +52,8 @@ public class AnaliseModelo{
 		prev.reshape(10, 1).print(10);
 		System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
-		// double ec = f.entropiaCondicional(prev.paraArray());
-		// System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
+		double ec = f.entropiaCondicional(prev.paraArray());
+		System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
 
 		// new Thread(() -> {
 		// 	boolean normalizar = true;

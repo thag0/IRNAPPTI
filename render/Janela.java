@@ -5,7 +5,7 @@ import java.awt.event.KeyListener;
 
 import javax.swing.JFrame;
 
-import jnn.core.Tensor4D;
+import jnn.core.tensor.Tensor4D;
 
 public class Janela extends JFrame{
 	
