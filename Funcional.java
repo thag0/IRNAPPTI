@@ -147,7 +147,7 @@ public class Funcional {
 				jd.atualizar();
 	
 				try {
-					Thread.sleep(80);
+					Thread.sleep(90);
 				} catch (Exception e) {}
 			}
 	

@@ -26,10 +26,10 @@ public class TreinoModelo{
 	// dados de controle
 	static final int NUM_DIGITOS_TREINO = 10;
 	static final int NUM_DIGITOS_TESTE  = NUM_DIGITOS_TREINO;
-	static final int NUM_AMOSTRAS_TREINO = 100;//max 400
+	static final int NUM_AMOSTRAS_TREINO = 400;//max 400
 	static final int NUM_AMOSTRAS_TESTE  = 100;//max 100
 	static final int TREINO_EPOCAS = 12;
-	static final int TREINO_LOTE = 8;
+	static final int TREINO_LOTE = 10;
 	static final boolean TREINO_LOGS = true;
 
 	// caminhos de arquivos externos
@@ -68,7 +68,6 @@ public class TreinoModelo{
 		System.out.print("Teste -> perda: " + modelo.avaliar(testeX, testeY).item() + " - ");
 		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(testeX, testeY).item() * 100), 4) + "%");
 
-		exportarHistorico(modelo, CAMINHO_HISTORICO);
 		salvarModelo(modelo, CAMINHO_SAIDA_MODELO);
 	}
 
@@ -87,8 +86,7 @@ public class TreinoModelo{
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 
-		// modelo.compilar("sgd", "entropia-cruzada");
-		modelo.compilar("adam", "entropia-cruzada");
+		modelo.compilar("sgd", "entropia-cruzada");
 		
 		return modelo;
 	}
@@ -100,12 +98,12 @@ public class TreinoModelo{
 		Sequencial modelo = new Sequencial(
 			new Entrada(28, 28),
 			new Flatten(),
-			new Densa(20, "sigmoid"),
-			new Densa(20, "sigmoid"),
+			new Densa(21, "sigmoid"),
+			new Densa(21, "sigmoid"),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 
-		modelo.compilar("adam", "entropia-cruzada");
+		modelo.compilar("sgd", "entropia-cruzada");
 		
 		return modelo;
 	}

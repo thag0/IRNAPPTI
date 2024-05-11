@@ -6,7 +6,7 @@ import jnn.core.tensor.Variavel;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
 
-public class AnaliseModelo{
+public class AnaliseModelo {
 	static final String CAMINHO_MODELO = "./modelos/jnn/";
 	static final String CAMINHO_IMAGEM = "./mnist/teste/";
 
@@ -27,7 +27,7 @@ public class AnaliseModelo{
 
 		final int digito = 8;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
-		amostra.unsqueeze(0);
+		amostra.unsqueeze(0);//2d -> 3d
 		
 		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
 		// Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
@@ -92,7 +92,7 @@ public class AnaliseModelo{
 	static void testarPrevisao(Sequencial modelo, String caminhoImagem, boolean prob) {
 		String extensao = ".jpg";
 		Tensor amostra = new Tensor(f.carregarImagemCinza("./mnist/teste/" + caminhoImagem + extensao));
-		amostra.unsqueeze(0);
+		amostra.unsqueeze(0);//2d -> 3d
 
 		Tensor p = modelo.forward(amostra);
 		double[] prev = p.paraArrayDouble();
@@ -126,18 +126,16 @@ public class AnaliseModelo{
 			for (int amostra = 0; amostra < amostras; amostra++) {
 				String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
 				Tensor img = new Tensor(f.carregarImagemCinza(caminhoImagem));
-				img.unsqueeze(0);
+				img.unsqueeze(0);//2d -> 3d
 
 				modelo.forward(img);
 				Variavel[] previsoes = modelo.saidaParaArray();
-				if (f.maiorIndice(previsoes) == digito) {
-					acertos++;
-				}
+				if (f.maiorIndice(previsoes) == digito) acertos++;
 			}
 			double porcentagem = acertos / (double)amostras;
 
 			media += porcentagem;
-			System.out.println("Acertos " + digito + " -> " + porcentagem);
+			System.out.println("Acertos " + digito + " -> " + porcentagem + "%");
 		}
 		System.out.println("média acertos: " + String.format("%.2f", (media/digitos)*100) + "%");
 	}

@@ -49,7 +49,7 @@ public class JanelaDesenho extends JFrame {
 		}
 
 		Tensor amostra = new Tensor(entrada);
-		amostra.unsqueeze(0);
+		amostra.unsqueeze(0);//2d -> 3d
 		Tensor prev = modelo.forward(amostra);
 
 		double max = prev.maximo().item();
