@@ -325,7 +325,8 @@ public class Funcional {
 		final int largSaida = shape[2];
 		for (int i = 0; i < digitos; i++) {
 			String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_0.jpg";
-			var amostra = carregarImagemCinza(caminhoAmostra);
+			Tensor amostra = new Tensor(carregarImagemCinza(caminhoAmostra));
+			amostra.unsqueeze(0);
 			modelo.forward(amostra);
 
 			Tensor[] somatorios = new Tensor[canais];
@@ -385,11 +386,11 @@ public class Funcional {
 
 		int[] shapeFiltro = filtros.shape();
 		int numFiltros = shapeFiltro[0];
-		int altFiltro = shapeFiltro[1];
-		int largFiltro = shapeFiltro[2];
+		int altFiltro = shapeFiltro[2];
+		int largFiltro = shapeFiltro[3];
 		Tensor[] arrFiltros = new Tensor[numFiltros];
 		for (int i = 0; i < numFiltros; i++) {
-			Tensor slice = filtros.slice(new int[]{i, 0, 0}, new int[]{i+1, altFiltro, largFiltro});
+			Tensor slice = filtros.slice(new int[]{i, 0, 0, 0}, new int[]{i+1, 1, altFiltro, largFiltro});
 			slice.squeeze(0).squeeze(0);// 4d -> 2d
 
 			Tensor temp = new Tensor(slice);
