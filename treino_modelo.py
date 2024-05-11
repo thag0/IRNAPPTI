@@ -67,15 +67,20 @@ if __name__ == '__main__':
 	dl_treino, dl_teste = preparar_dataset('mnist')
 	epocas = 1
 
+	# add amostras do dataset
 	batch_samples, batch_labels = get_sample_batch(dl_teste)
-	samples_grid = batch_samples[:10]
+	samples_grid = batch_samples[:8]
 	add_img_grid(writer, samples_grid, 'Amostras de teste')
 
+	# add grafico do modelo
 	example_input = torch.rand(1, 1, 28, 28).to(device)
 	writer.add_graph(modelo, example_input)
 
-	exit()
 	hist = modelo.treinar(dl_treino, epocas)
+
+	# add perdas do treino
+	for i, loss in enumerate(hist):
+		writer.add_scalar('Training Loss', loss, global_step=i)
 
 	metricas_treino = modelo.avaliar(dl_treino)
 	metricas_teste = modelo.avaliar(dl_teste)
