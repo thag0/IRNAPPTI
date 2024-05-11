@@ -57,7 +57,7 @@ def add_img_grid(writer: SummaryWriter, imgs, titulo: str):
 if __name__ == '__main__':
 	os.system('cls')
 
-	writer = SummaryWriter('runs/mnist')
+	writer = SummaryWriter('/runs/mnist')
 
 	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 	modelo = ConvMnist(device=device)
@@ -67,10 +67,14 @@ if __name__ == '__main__':
 	dl_treino, dl_teste = preparar_dataset('mnist')
 	epocas = 1
 
-	sample, label = get_sample_batch(dl_teste)
-	samples_grid = sample[:10]
+	batch_samples, batch_labels = get_sample_batch(dl_teste)
+	samples_grid = batch_samples[:10]
 	add_img_grid(writer, samples_grid, 'Amostras de teste')
 
+	example_input = torch.rand(1, 1, 28, 28).to(device)
+	writer.add_graph(modelo, example_input)
+
+	exit()
 	hist = modelo.treinar(dl_treino, epocas)
 
 	metricas_treino = modelo.avaliar(dl_treino)
