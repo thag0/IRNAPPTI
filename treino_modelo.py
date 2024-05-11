@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import torch
+import torch.utils
+import torch.utils.tensorboard
 from modelos import (ConvMnist, ConvCifar10)
 import torchvision
 import torchvision.transforms as transforms
@@ -6,6 +10,8 @@ from torch.utils.data import DataLoader
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+
+from torch.utils.tensorboard import SummaryWriter
 
 def plotar_historico(historico: list):
 	plt.plot(historico, label='Perda de Treinamento')
@@ -39,8 +45,19 @@ def preparar_dataset(nome: str) -> tuple[DataLoader]:
 
 	return (train_loader, test_loader)
 
+def get_sample_batch(dl: DataLoader):
+    batch = next(iter(dl))
+    input_data, target = batch
+    return input_data, target
+
+def add_img_grid(writer: SummaryWriter, imgs, titulo: str):
+	grid = torchvision.utils.make_grid(imgs, nrow=4, pad_value=2)
+	writer.add_image(titulo, grid)
+
 if __name__ == '__main__':
 	os.system('cls')
+
+	writer = SummaryWriter('runs/mnist')
 
 	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 	modelo = ConvMnist(device=device)
@@ -48,7 +65,11 @@ if __name__ == '__main__':
 	print(f"Modelo em: {modelo.device}")
 
 	dl_treino, dl_teste = preparar_dataset('mnist')
-	epocas = 3
+	epocas = 1
+
+	sample, label = get_sample_batch(dl_teste)
+	samples_grid = sample[:10]
+	add_img_grid(writer, samples_grid, 'Amostras de teste')
 
 	hist = modelo.treinar(dl_treino, epocas)
 
@@ -61,3 +82,5 @@ if __name__ == '__main__':
 	plotar_historico(hist)
 
 	modelo.salvar("./modelos/pytorch/conv-pytorch-mnist.pt")
+
+	writer.close()
