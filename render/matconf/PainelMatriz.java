@@ -9,6 +9,8 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
+import jnn.core.tensor.Tensor;
+
 public class PainelMatriz extends JPanel {
 	
     /**
@@ -33,13 +35,29 @@ public class PainelMatriz extends JPanel {
      * Inicializa um novo painel que desenha uma matriz de confusão.
      * @param altura altura desejada do painel.
      * @param largura largura desejada do painel.
-     * @param m matriz que será desenhada.
+     * @param mc matriz que será desenhada.
      */
-	public PainelMatriz(int altura, int largura, int[][] m) {
+	public PainelMatriz(int altura, int largura, Tensor mc) {
 		setPreferredSize(new Dimension(largura, altura));
 		setBackground(corFundo);
+
+		if (mc.numDim() != 2) {
+			throw new IllegalArgumentException(
+				"\nTensor deve ser 2D."
+			);
+		}
 		
-        this.matriz = m;
+        int[] shape = mc.shape();
+        int alt = shape[0];
+        int larg = shape[1];
+        matriz = new int[shape[0]][shape[1]];
+
+        for (int i = 0; i < alt; i++) {
+            for (int j = 0; j < larg; j++) {
+                matriz[i][j] = (int)mc.get(i, j);
+            }
+        }
+
 	}
 
 	@Override

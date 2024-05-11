@@ -8,9 +8,10 @@ import render.matconf.JanelaMatriz;
 import render.realtime.JanelaDesenho;
 import jnn.camadas.Camada;
 import jnn.camadas.Convolucional;
-import jnn.core.Mat;
-import jnn.core.tensor.Tensor4D;
+import jnn.core.tensor.Tensor;
+import jnn.core.tensor.Variavel;
 import jnn.modelos.Sequencial;
+import jnn.core.Utils;
 
 /**
  * Interface funcional.
@@ -26,6 +27,11 @@ public class Funcional {
 	 * Gerenciador de imagens.
 	 */
 	private Geim geim = new Geim();
+
+	/**
+	 * Utilitário.
+	 */
+	private Utils utils = new Utils();
 
 	/**
 	 * Interface funcional.
@@ -45,10 +51,17 @@ public class Funcional {
 	 * @param prevs previsões do modelo.
 	 * @return valor de entropia condicional com base nas previsões.
 	 */
-	public double entropiaCondicional(double[] prevs) {
+	public double entropiaCondicional(Tensor prevs) {
+		if (prevs.numDim() != 1) {
+			throw new IllegalArgumentException(
+				"\nTensor de previsões deve ser 1D."
+			);
+		}
+
 		double ec = 0;
-		for (double prev : prevs) {
-			ec += prev * Math.log(prev);
+		for (int i = 0; i < prevs.tamanho(); i++) {
+			double p = prevs.get(i);
+			ec += p * Math.log(p);
 		}
 
 		return -ec;
@@ -61,11 +74,10 @@ public class Funcional {
 	 * @param rotulo rótulo desejado.
 	 * @return {@code Tensor} contendo o mapa de calor calculado.
 	 */
-	public Tensor4D gradCAM(Sequencial modelo, Tensor4D entrada, double[] rotulo) {
+	public Tensor gradCAM(Sequencial modelo, Tensor entrada, Tensor rotulo) {
 		//passo de backpropagation para ter os gradientes calculados
-		Tensor4D prev = modelo.forward(entrada);
-		double[] derivadas = modelo.perda().derivada(prev.paraArray(), rotulo);
-		Tensor4D grad = new Tensor4D(derivadas);
+		Tensor prev = modelo.forward(entrada);
+		Tensor grad = modelo.perda().derivada(prev, rotulo); 
 		for (int i = modelo.numCamadas()-1; i >= 0; i--) {
 			grad = modelo.camada(i).backward(grad);
 		}
@@ -85,19 +97,21 @@ public class Funcional {
 		Convolucional conv = (Convolucional) modelo.camada(idConv);
 		
 		//calcular mapa de calor
-		Tensor4D convAtv = conv._saida.clone();
-		Tensor4D convGrad = conv._gradSaida.clone();
-		int canais  = convGrad.dim2();
-		int altura  = convGrad.dim3();
-		int largura = convGrad.dim4();
+		Tensor convAtv = conv._saida.clone();
+		Tensor convGrad = conv._gradSaida.clone();
+		int canais  = convGrad.shape()[0];
+		int altura  = convGrad.shape()[1];
+		int largura = convGrad.shape()[2];
 	
-		Tensor4D heatmap = new Tensor4D(altura, largura);
+		Tensor heatmap = new Tensor(altura, largura);
 
 		for (int c = 0; c < canais; c++) {
-			double alfa = convGrad.subTensor2D(0, c).media();
+			Tensor gSlice = convGrad.slice(new int[]{c, 0, 0}, new int[]{c+1, altura, largura});
+			double alfa = gSlice.media().item();
+
+			Tensor aSlice = convAtv.slice(new int[]{c, 0, 0}, new int[]{c+1, altura, largura});
 			heatmap.add(
-				convAtv.subTensor2D(0, c)
-				.map(x -> x*alfa)
+				aSlice.squeeze(0).map(x -> x*alfa)
 			);
 		} 
 
@@ -106,10 +120,11 @@ public class Funcional {
 		.normalizar(0, 1); // ajudar na visualização
 
 		// redimensionar o mapa de calor para as dimensões da imagem de entrada
-		heatmap = new Tensor4D(
+		int altEntrada = entrada.shape()[1];
+		int largEntrada = entrada.shape()[2];
+		heatmap = new Tensor(
 			ampliarMatriz(
-				heatmap.array2D(0, 0),
-				entrada.dim3(), entrada.dim4()
+				heatmap, altEntrada, largEntrada
 			)
 		);
 
@@ -147,10 +162,12 @@ public class Funcional {
 	public void matrizConfusao(Sequencial modelo, int amostras) {
 		System.out.println("Calculando Matriz de Confusão");
 		int digitos = 10;
-		Tensor4D entradas = new Tensor4D(carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos));
-		double[][] rotulos = criarRotulosMNIST(amostras, digitos);
+		double[][][][] mnist = carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos);
+		double[][] classes = criarRotulosMNIST(amostras, digitos);
+		Tensor[] samples = utils.array4DParaTensors(mnist);
+		Tensor[] labels = utils.array2DParaTensors(classes);
 		
-		int[][] m = modelo.avaliador().matrizConfusao(entradas, rotulos);
+		Tensor m = modelo.avaliador().matrizConfusao(samples, labels);
 
 		new Thread(() -> {
 			JanelaMatriz jm = new JanelaMatriz(500, 500, m);
@@ -171,7 +188,7 @@ public class Funcional {
 		for (int dig = 0; dig < digitos; dig++) {
 			for (int ams = 0; ams < amostras; ams++) {
 				String caminhoCompleto = caminho + dig + "/img_" + ams + ".jpg";
-				double[][] imagem = carregarImagemCinza(caminhoCompleto).array2D(0, 0);
+				double[][] imagem = carregarImagemCinza(caminhoCompleto);
 				entradas[id++][0] = imagem;
 			}
 		}
@@ -209,7 +226,7 @@ public class Funcional {
 	 * @param norm normaliza os valores entre 0 e 1 para evitar artefatos
 	 * na janela gráfica.
 	 */
-	public void desenharSaidas(Camada conv, Tensor4D amostra, int escala, boolean norm) {
+	public void desenharSaidas(Camada conv, Tensor amostra, int escala, boolean norm) {
 		Convolucional camada = null;
 
 		try {
@@ -218,12 +235,15 @@ public class Funcional {
 			System.out.println("\nCamada fornecida não é do tipo convolucional.");
 		}
 
-		Tensor4D prev = camada.forward(amostra);
+		Tensor prev = camada.forward(amostra);
 		int filtros = camada.numFiltros();
-		Tensor4D[] arr = new Tensor4D[filtros];
+		Tensor[] arr = new Tensor[filtros];
 
+		int[] shape = prev.shape();
+		int alt = shape[1];
+		int larg = shape[2];
 		for (int i = 0; i < arr.length; i++) {
-			arr[i] = prev.subTensor2D(0, i);
+			arr[i] = prev.slice(new int[]{i, 0, 0}, new int[]{i+1, alt, larg}).squeeze(0);
 		}
 		
 		desenharImagens(arr, escala, norm, "Saidas Conv");
@@ -236,9 +256,20 @@ public class Funcional {
 	 * @param norm normalizar os valores do tensor entre 0 e 1
 	 * @param titulo nome da janela.
 	 */
-	public void desenharImagem(Tensor4D tensor, int escala, boolean norm, String titulo) {
+	public void desenharImagem(Tensor tensor, int escala, boolean norm, String titulo) {
+		if (tensor.numDim() != 2 && tensor.numDim() != 3) {
+			throw new IllegalArgumentException(
+				"\nTensor deve ser 2D ou 3D, mas é " + tensor.numDim() + "D."
+			);
+		}
+
 		if (norm) tensor.normalizar(0, 1);
-		Janela janela = new Janela(tensor.dim3(), tensor.dim4(), escala, titulo);
+
+		int[] shape = tensor.shape();
+
+		int altura  = shape[shape.length-2];
+		int largura = shape[shape.length-1];
+		Janela janela = new Janela(altura, largura, escala, titulo);
 		janela.desenharImagem(tensor);
 	}
 
@@ -248,16 +279,17 @@ public class Funcional {
 	 * @param escala escala de ampliação da janela.
 	 * @param norm normalizar os valores entre 0 e 1.
 	 */
-	public void desenharImagens(Tensor4D[] arr, int escala, boolean norm, String titulo) {
+	public void desenharImagens(Tensor[] arr, int escala, boolean norm, String titulo) {
+		int[] shape = arr[0].shape();
 		int[] dim = {
-			arr[0].dim3(), 
-			arr[0].dim4()
+			shape[shape.length-2],// altura
+			shape[shape.length-1] // largura
 		};
 
 		Janela janela = new Janela(dim[0], dim[1], escala, titulo);
 
 		if (norm) {
-			for (Tensor4D t : arr) {
+			for (Tensor t : arr) {
 				t.normalizar(0, 1);
 			}
 		}
@@ -287,25 +319,32 @@ public class Funcional {
 		String diretorioCamada = "conv" + ((idConv == 0) ? "1" : "2");
 
 		final int digitos = 10;
+		int[] shape = camada.saida().shape();
+		final int canais = shape[0];
+		final int altSaida = shape[1];
+		final int largSaida = shape[2];
 		for (int i = 0; i < digitos; i++) {
 			String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_0.jpg";
 			var amostra = carregarImagemCinza(caminhoAmostra);
 			modelo.forward(amostra);
 
-			Mat[] somatorios = new Mat[camada._somatorio.dim2()];
-			Mat[] saidas = new Mat[camada.saida().dim2()];
+			Tensor[] somatorios = new Tensor[canais];
+			Tensor[] saidas = new Tensor[canais];
 
 			for (int j = 0; j < saidas.length; j++) {
-				Tensor4D tempSaida = new Tensor4D(camada.saida().array2D(0, j));
-				Tensor4D tempSomatorio = new Tensor4D(camada._somatorio.array2D(0, j));
+				Tensor sliceSaida = camada.saida().slice(new int[]{j, 0, 0}, new int[]{j+1, altSaida, largSaida});
+				Tensor tempSaida = new Tensor(sliceSaida.squeeze(0));
+
+				Tensor sliceSomatorio = camada._somatorio.slice(new int[]{j, 0, 0}, new int[]{j+1, altSaida, largSaida});
+				Tensor tempSomatorio = new Tensor(sliceSomatorio.squeeze(0));
 				
 				if (norm) {
 					tempSaida.normalizar(0, 1);
 					tempSomatorio.normalizar(0, 1);
 				}
 				
-				saidas[j] = new Mat(tempSaida.array2D(0, 0));
-				somatorios[j] = new Mat(tempSomatorio.array2D(0, 0));
+				saidas[j]     = new Tensor(sliceSaida);
+				somatorios[j] = new Tensor(sliceSomatorio);
 			}
 
 			String caminhoSomatorio = "./resultados/pre-ativacoes/" + diretorioCamada + "/" + i + "/";
@@ -341,16 +380,21 @@ public class Funcional {
 		String diretorioCamada = "conv" + ((idConv == 0) ? "1" : "2");
 		String caminho = "./resultados/filtros/" + diretorioCamada + "/";
 
-		Tensor4D filtros = camada._filtros;
+		Tensor filtros = camada._filtros;
 		limparDiretorio(caminho);
 
-		int numFiltros = filtros.dim1();
-		Mat[] arrFiltros = new Mat[numFiltros];
+		int[] shapeFiltro = filtros.shape();
+		int numFiltros = shapeFiltro[0];
+		int altFiltro = shapeFiltro[1];
+		int largFiltro = shapeFiltro[2];
+		Tensor[] arrFiltros = new Tensor[numFiltros];
 		for (int i = 0; i < numFiltros; i++) {
-			Tensor4D temp = new Tensor4D(filtros.array2D(i, 0));
+			Tensor slice = filtros.slice(new int[]{i, 0, 0}, new int[]{i+1, altFiltro, largFiltro});
+			slice.squeeze(0).squeeze(0);// 4d -> 2d
 
+			Tensor temp = new Tensor(slice);
 			if (norm) temp.normalizar(0, 1);
-			arrFiltros[i] = new Mat(temp.array2D(0, 0));
+			arrFiltros[i] = temp;
 		}
 
 		exportarMatrizes(arrFiltros, escala, caminho);
@@ -363,7 +407,7 @@ public class Funcional {
 	 * @param arr array de matrizes.
 	 * @param caminho diretório onde os arquivos serão salvos.
 	 */
-	public void exportarMatrizes(Mat[] arr, int escala, String caminho) {
+	public void exportarMatrizes(Tensor[] arr, int escala, String caminho) {
 		if (arr == null) {
 			throw new IllegalArgumentException(
 				"\nArray fornecido é nulo."
@@ -385,13 +429,20 @@ public class Funcional {
 
 	/**
 	 * Salva a matriz num arquivo de imagem externo.
-	 * @param mat matriz desejada.
+	 * @param img matriz desejada.
 	 * @param caminho diretório de destino.
 	 * @param escala escala de tratamento da imagem final.
 	 */
-	public void exportarImagem(Mat mat, String caminho, double escala) {
-		int altura =  (int) (mat.lin() * escala);
-		int largura = (int) (mat.col() * escala);
+	public void exportarImagem(Tensor img, String caminho, double escala) {
+		if (img.numDim() != 2) {
+			throw new IllegalArgumentException(
+				"\nTensor deve ser 2D"
+			);
+		}
+
+		int[] shape = img.shape();
+		int altura =  (int) (shape[0] * escala);
+		int largura = (int) (shape[1] * escala);
 		Pixel[][] estrutura = new Pixel[altura][largura];
   
 		for (int y = 0; y < altura; y++) {
@@ -399,7 +450,7 @@ public class Funcional {
 				int originalY = (int) (y / escala);
 				int originalX = (int) (x / escala);
 
-				double cinza = mat.elemento(originalY, originalX);
+				double cinza = img.get(originalY, originalX);
 				int c = (int) (cinza * 255);
 				estrutura[y][x] = new Pixel(c, c, c);
 			}
@@ -412,47 +463,16 @@ public class Funcional {
 	}
 
 	/**
-	 * Normaliza os valores dentro da matriz.
-	 * @param mat matriz base.
-	 */
-	public void normalizar(Mat mat) {
-		if (mat == null) {
-			throw new IllegalArgumentException(
-				"\nMatriz fornecida é nula."
-			);
-		}
-
-		int linhas = mat.lin();
-		int colunas = mat.col();
-		double min = mat.elemento(0, 0); 
-		double max = mat.elemento(0, 0);
-
-		for (int i = 0; i < linhas; i++) {
-			for (int j = 0; j < colunas; j++) {
-				double valor = mat.elemento(i, j);
-				if (valor < min) min = valor;
-				if (valor > max) max = valor;
-			}
-		}
-
-		final double minimo = min, maximo = max;
-
-		mat.map((x) -> {
-			return (x - minimo) / (maximo - minimo);
-		});
-	}
-
-	/**
 	 * Carrega a imagem a partir de um arquivo.
 	 * @param caminho caminho da imagem.
 	 * @return {@code Tensor} contendo os dados da imagem no
 	 * padrão RGB.
 	 */
-	public Tensor4D carregarImagemRGB(String caminho) {
+	public Tensor carregarImagemRGB(String caminho) {
 		BufferedImage img = geim.lerImagem(caminho);
 		int altura = img.getHeight(), largura = img.getWidth();
 
-		Tensor4D imagem = new Tensor4D(3, altura, largura);
+		Tensor imagem = new Tensor(3, altura, largura);
 
 		int[][] r = geim.obterVermelho(img);
 		int[][] g = geim.obterVerde(img);
@@ -460,9 +480,9 @@ public class Funcional {
 
 		for (int y = 0; y < altura; y++) {
 			for (int x = 0; x < largura; x++) {
-				imagem.set((double)(r[y][x]) / 255, 0, 0, y, x);
-				imagem.set((double)(g[y][x]) / 255, 0, 1, y, x);
-				imagem.set((double)(b[y][x]) / 255, 0, 2, y, x);
+				imagem.set(((double)(r[y][x]) / 255), 0, y, x);
+				imagem.set(((double)(g[y][x]) / 255), 1, y, x);
+				imagem.set(((double)(b[y][x]) / 255), 2, y, x);
 			}
 		}
 
@@ -475,17 +495,17 @@ public class Funcional {
 	 * @return {@code Tensor} contendo os dados da imagem em
 	 * escala de cinza.
 	 */
-	public Tensor4D carregarImagemCinza(String caminho) {
+	public double[][] carregarImagemCinza(String caminho) {
 		BufferedImage img = geim.lerImagem(caminho);
 		int altura = img.getHeight(), largura = img.getWidth();
-		Tensor4D imagem = new Tensor4D(altura, largura);
+		double[][] imagem = new double[altura][largura];
 
 		int[][] cinza = geim.obterCinza(img);   
 
 		for (int y = 0; y < altura; y++) {
 			for (int x = 0; x < largura; x++) {
 				double c = (double)(cinza[y][x]) / 255;
-				imagem.set(c, 0, 0, y, x);
+				imagem[y][x] = c;
 			}  
 		}
 
@@ -533,6 +553,25 @@ public class Funcional {
 	}
 
 	/**
+	 * Calcula o índice que contém o maior valor no array.
+	 * @param arr array base.
+	 * @return índice com o maior valor.
+	 */
+	public int maiorIndice(Variavel[] arr) {
+		int id = 0;
+		double maior = arr[0].get();
+
+		for (int i = 1; i < arr.length; i++) {
+			if (arr[i].get() > maior) {
+				id = i;
+				maior = arr[i].get();
+			}
+		}
+
+		return id;
+	}
+
+	/**
 	 * Auxiliar para gerar um dítigo baseado no conjunto de dados do MNIST.
 	 * <p>
 	 *    Exemplo: 
@@ -562,10 +601,14 @@ public class Funcional {
 	 * @param novaLarg novo valor de largura da matriz.
 	 * @return matriz reescalada.
 	 */
-	public double[][] ampliarMatriz(double[][] m, int novaAlt, int novaLarg) {
-		int alt = m.length;
-		int larg = m[0].length;
-		
+	public double[][] ampliarMatriz(Tensor m, int novaAlt, int novaLarg) {
+		if (m.numDim() != 2) {
+			throw new IllegalArgumentException("\nTensor deve ser 2D.");
+		}
+
+		int alt  = m.shape()[0];
+		int larg = m.shape()[1];
+
 		double[][] mat = new double[novaAlt][novaLarg];
 		
 		for (int i = 0; i < novaAlt; i++) {
@@ -582,10 +625,10 @@ public class Funcional {
 				double dy = ampAlt - y0;
 				
 				double valorInterpolado = 
-					(1 - dx) * (1 - dy) * m[y0][x0] +
-					dx * (1 - dy) * m[y0][x1] +
-					(1 - dx) * dy * m[y1][x0] +
-					dx * dy * m[y1][x1];
+					(1 - dx) * (1 - dy) * m.get(y0, x0) +
+					dx * (1 - dy) * m.get(y0, x1) +
+					(1 - dx) * dy * m.get(y1, x0) +
+					dx * dy * m.get(y1, x1);
 				
 				mat[i][j] = valorInterpolado;
 			}

@@ -13,7 +13,7 @@ import jnn.camadas.Densa;
 import jnn.camadas.Entrada;
 import jnn.camadas.Flatten;
 import jnn.camadas.MaxPooling;
-import jnn.core.tensor.Tensor4D;
+import jnn.core.Utils;
 import jnn.modelos.Modelo;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
@@ -21,14 +21,15 @@ import jnn.serializacao.Serializador;
 public class TreinoModelo{
 	static Ged ged = new Ged();
 	static Geim geim = new Geim();
+	static Utils utils = new Utils();
 
 	// dados de controle
 	static final int NUM_DIGITOS_TREINO = 10;
 	static final int NUM_DIGITOS_TESTE  = NUM_DIGITOS_TREINO;
-	static final int NUM_AMOSTRAS_TREINO = 400;
-	static final int NUM_AMOSTRAS_TESTE  = 100;
+	static final int NUM_AMOSTRAS_TREINO = 100;//max 400
+	static final int NUM_AMOSTRAS_TESTE  = 100;//max 100
 	static final int TREINO_EPOCAS = 12;
-	static final int TREINO_LOTE = 16;
+	static final int TREINO_LOTE = 8;
 	static final boolean TREINO_LOGS = true;
 
 	// caminhos de arquivos externos
@@ -40,13 +41,12 @@ public class TreinoModelo{
 	public static void main(String[] args) {
 		ged.limparConsole();
 		
-		final var treinoX = new Tensor4D(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
-		final var treinoY = criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO);
+		final var treinoX = utils.array4DParaTensors(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
+		final var treinoY = utils.array2DParaTensors(criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
 
-		// Sequencial modelo = modeloConv();
 		Sequencial modelo = modeloMlp();
 		modelo.setHistorico(true);
-		modelo.info();
+		modelo.print();
 
 		System.out.println("Treinando.");
 		long tempo = System.nanoTime();
@@ -59,15 +59,16 @@ public class TreinoModelo{
 		long segundos = segundosTotais % 60;
 
 		System.out.println("\nTempo de treino: " + horas + "h " + minutos + "min " + segundos + "s");
-		System.out.print("Treino -> perda: " + modelo.avaliar(treinoX, treinoY) + " - ");
-		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(treinoX, treinoY) * 100), 4) + "%");
+		System.out.print("Treino -> perda: " + modelo.avaliar(treinoX, treinoY).item() + " - ");
+		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(treinoX, treinoY).item() * 100), 4) + "%");
 
 		System.out.println("\nCarregando dados de teste.");
-		final var testeX = carregarDadosMNIST(CAMINHO_TESTE, NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE);
-		final var testeY = criarRotulosMNIST(NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE);
-		System.out.print("Teste -> perda: " + modelo.avaliar(testeX, testeY) + " - ");
-		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(testeX, testeY) * 100), 4) + "%");
+		final var testeX = utils.array4DParaTensors(carregarDadosMNIST(CAMINHO_TESTE, NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE));
+		final var testeY = utils.array2DParaTensors(criarRotulosMNIST(NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE));
+		System.out.print("Teste -> perda: " + modelo.avaliar(testeX, testeY).item() + " - ");
+		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(testeX, testeY).item() * 100), 4) + "%");
 
+		exportarHistorico(modelo, CAMINHO_HISTORICO);
 		salvarModelo(modelo, CAMINHO_SAIDA_MODELO);
 	}
 
@@ -139,23 +140,6 @@ public class TreinoModelo{
   
 		return imagem;
   	}
-
-	/**
-	 * Testa as previsões do modelo no formato de probabilidade.
-	 * @param modelo modelo sequencial de camadas.
-	 * @param caminhoImg nome da imagem que deve estar no diretório /minst/teste/
-	 */
-	static void testarPorbabilidade(Sequencial modelo, String caminhoImg) {
-		System.out.println("\nTestando: " + caminhoImg);
-		double[][][] teste1 = new double[1][][];
-		teste1[0] = imagemParaMatriz("/dados/mnist/teste/" + caminhoImg + ".jpg");
-		modelo.forward(teste1);
-		double[] previsao = modelo.saidaParaArray();
-
-		for (int i = 0; i < previsao.length; i++) {
-			System.out.println("Prob: " + i + ": " + (int)(previsao[i]*100) + "%");
-		}
-	}
 
 	/**
 	 * Carrega as imagens do conjunto de dados {@code MNIST}.

@@ -7,7 +7,7 @@ import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
-import jnn.core.tensor.Tensor4D;
+import jnn.core.tensor.Tensor;
 
 public class Painel extends JPanel{
 
@@ -15,7 +15,7 @@ public class Painel extends JPanel{
 	public final int altura;
 	public final int largura;
 
-	Tensor4D tensor;
+	Tensor img;
 
 	/**
 	 * Cria um novo painel com base nos valores dados.
@@ -36,13 +36,21 @@ public class Painel extends JPanel{
 	 * Desenha o conteúdo 2D do tensor.
 	 * @param tensor tensor desejado.
 	 */
-	public void desenharImagem(Tensor4D tensor){
+	public void desenharImagem(Tensor tensor){
 		if(tensor == null){
 			throw new IllegalArgumentException(
 				"\nMatriz não pode ser nula."
 			);
 		}
-		this.tensor = tensor;
+
+		if (tensor.numDim() != 2 && tensor.numDim() != 3) {
+			throw new IllegalArgumentException(
+				"\nTensor deve ser 2D ou 3D, mas é " + tensor.numDim() + "D."
+			);
+		}
+		
+		img = tensor;
+		
 		repaint();
 	}
 
@@ -51,21 +59,21 @@ public class Painel extends JPanel{
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 
-		int alt = tensor.dim3();
-		int larg = tensor.dim4();
+		boolean rgb = img.numDim() == 3;
+		int[] shape = img.shape();
+
+		int alt  = rgb ? shape[1] : shape[0];
+		int larg = rgb ? shape[2] : shape[1];
 
 		int largPixel = largura / larg;
 		int altPixel  = altura / alt;
 
-		boolean rgb = tensor.dim2() == 3;
-
 		for(int i = 0; i < alt; i++){
 			for(int j = 0; j < larg; j++){
-
-				if(rgb){
-					double valR = tensor.get(0, 0, i, j);
-					double valG = tensor.get(0, 1, i, j);
-					double valB = tensor.get(0, 2, i, j);
+				if (rgb) {
+					double valR = img.get(0, i, j);
+					double valG = img.get(1, i, j);
+					double valB = img.get(2, i, j);
 					
 					int corR = (int)(valR * 255);
 					if(corR > 255) corR = 255;
@@ -80,11 +88,12 @@ public class Painel extends JPanel{
 					if(corB < 0) corR = 0;
 					
 					g2.setColor(new Color(corR, corG, corB));
-				}else{
-					double valCinza = tensor.get(0, 0, i, j);
+				
+				} else {
+					double valCinza = img.get(i, j);
 					int cinza = (int)(valCinza * 255);
-					if(cinza > 255) cinza = 255;
-					if(cinza < 0) cinza = 0;
+					if (cinza > 255) cinza = 255;
+					if (cinza < 0) cinza = 0;
 					g2.setColor(new Color(cinza, cinza, cinza));
 				}
 

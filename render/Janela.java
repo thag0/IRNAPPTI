@@ -5,9 +5,9 @@ import java.awt.event.KeyListener;
 
 import javax.swing.JFrame;
 
-import jnn.core.tensor.Tensor4D;
+import jnn.core.tensor.Tensor;
 
-public class Janela extends JFrame{
+public class Janela extends JFrame {
 	
 	Painel painel;
 	LeitorTeclado leitorTeclado;
@@ -42,14 +42,14 @@ public class Janela extends JFrame{
 		this(altura, largura, 1, "Janela");
 	}
 
-	public void desenharImagem(Tensor4D tensor){
+	public void desenharImagem(Tensor tensor){
 		desenharImagem(tensor, getTitle());
 	}
 
-	public void desenharImagem(Tensor4D tensor, String titulo){
+	public void desenharImagem(Tensor tensor, String titulo){
 		if(tensor == null){
 			throw new IllegalArgumentException(
-				"\nMatriz não pode ser nula."
+				"\nTensor não pode ser nulo."
 			);
 		}
 		
@@ -62,7 +62,7 @@ public class Janela extends JFrame{
 	 * Desenha as imagens contidas no array.
 	 * @param arr array de tensores.
 	 */
-	public void desenharImagens(Tensor4D[] arr){
+	public void desenharImagens(Tensor[] arr){
 		new Thread(() -> {
 			int indice = 0;
 			int tamanho = arr.length;

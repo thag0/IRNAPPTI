@@ -4,10 +4,10 @@ import java.awt.GridLayout;
 
 import javax.swing.JFrame;
 
-import jnn.core.tensor.Tensor4D;
+import jnn.core.tensor.Tensor;
 import jnn.modelos.Sequencial;
 
-public class JanelaDesenho extends JFrame{
+public class JanelaDesenho extends JFrame {
 
 	PainelDesenho pd;
 	PainelPrevisoes pp;
@@ -48,11 +48,12 @@ public class JanelaDesenho extends JFrame{
 			}
 		}
 
-		Tensor4D amostra = new Tensor4D(entrada);
-		Tensor4D prev = modelo.forward(amostra);
+		Tensor amostra = new Tensor(entrada);
+		amostra.unsqueeze(0);
+		Tensor prev = modelo.forward(amostra);
 
-		double max = prev.maximo();
-		double[] arr = prev.paraArray();
+		double max = prev.maximo().item();
+		double[] arr = prev.paraArrayDouble();
 		int idMaior = 0, idSegMaior = 0;
 
 		for (int i = 1; i < arr.length; i++) {
