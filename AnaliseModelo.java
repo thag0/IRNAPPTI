@@ -19,12 +19,12 @@ public class AnaliseModelo {
 	public static void main(String[] args) {
 		ged.limparConsole();
 
-		// String nomeModelo = "modelo-treinado";
-		String nomeModelo = "conv-mnist-95-2";
+		String nomeModelo = "modelo-treinado";
+		// String nomeModelo = "conv-mnist-95-2";
 		// String nomeModelo = "mlp-mnist-89";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 3;
+		final int digito = 9;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
@@ -55,7 +55,6 @@ public class AnaliseModelo {
 
 		// prev.reshape(10, 1).print();
 		// System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
-
 
 		// new Thread(() -> {
 		// 	boolean normalizar = true;

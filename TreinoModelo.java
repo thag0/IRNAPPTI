@@ -18,7 +18,7 @@ import jnn.modelos.Modelo;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
 
-public class TreinoModelo{
+public class TreinoModelo {
 	static Ged ged = new Ged();
 	static Geim geim = new Geim();
 	static Utils utils = new Utils();
@@ -82,11 +82,11 @@ public class TreinoModelo{
 			new Convolucional(new int[]{3, 3}, 20, "relu"),
 			new MaxPooling(new int[]{2, 2}),
 			new Flatten(),
-			new Densa(128, "sigmoid"),
+			new Densa(100, "sigmoid"),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 
-		modelo.compilar("sgd", "entropia-cruzada");
+		modelo.compilar("adam", "entropia-cruzada");
 		
 		return modelo;
 	}
