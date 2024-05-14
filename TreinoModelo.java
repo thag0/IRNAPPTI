@@ -8,12 +8,12 @@ import java.util.concurrent.ExecutorService;
 import ged.Dados;
 import ged.Ged;
 import geim.Geim;
-import jnn.camadas.Convolucional;
+import jnn.Funcional;
+import jnn.camadas.Conv2D;
 import jnn.camadas.Densa;
 import jnn.camadas.Entrada;
 import jnn.camadas.Flatten;
-import jnn.camadas.MaxPooling;
-import jnn.core.Utils;
+import jnn.camadas.MaxPool2D;
 import jnn.modelos.Modelo;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
@@ -21,7 +21,7 @@ import jnn.serializacao.Serializador;
 public class TreinoModelo {
 	static Ged ged = new Ged();
 	static Geim geim = new Geim();
-	static Utils utils = new Utils();
+	static Funcional jnn = new Funcional();
 
 	// dados de controle
 	static final int NUM_DIGITOS_TREINO = 10;
@@ -41,8 +41,8 @@ public class TreinoModelo {
 	public static void main(String[] args) {
 		ged.limparConsole();
 		
-		final var treinoX = utils.array4DParaTensors(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
-		final var treinoY = utils.array2DParaTensors(criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
+		final var treinoX = jnn.arrayParaTensores(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
+		final var treinoY = jnn.arrayParaTensores(criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
 
 		Sequencial modelo = modeloConv();
 		modelo.setHistorico(true);
@@ -63,8 +63,8 @@ public class TreinoModelo {
 		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(treinoX, treinoY).item() * 100), 4) + "%");
 
 		System.out.println("\nCarregando dados de teste.");
-		final var testeX = utils.array4DParaTensors(carregarDadosMNIST(CAMINHO_TESTE, NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE));
-		final var testeY = utils.array2DParaTensors(criarRotulosMNIST(NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE));
+		final var testeX = jnn.arrayParaTensores(carregarDadosMNIST(CAMINHO_TESTE, NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE));
+		final var testeY = jnn.arrayParaTensores(criarRotulosMNIST(NUM_AMOSTRAS_TESTE, NUM_DIGITOS_TESTE));
 		System.out.print("Teste -> perda: " + modelo.avaliar(testeX, testeY).item() + " - ");
 		System.out.println("acurácia: " + formatarDecimal((modelo.avaliador().acuracia(testeX, testeY).item() * 100), 4) + "%");
 
@@ -77,10 +77,10 @@ public class TreinoModelo {
 	static Sequencial modeloConv() {
 		Sequencial modelo = new Sequencial(
 			new Entrada(28, 28),
-			new Convolucional(new int[]{3, 3}, 16, "relu"),
-			new MaxPooling(new int[]{2, 2}),
-			new Convolucional(new int[]{3, 3}, 20, "relu"),
-			new MaxPooling(new int[]{2, 2}),
+			new Conv2D(new int[]{3, 3}, 16, "relu"),
+			new MaxPool2D(new int[]{2, 2}),
+			new Conv2D(new int[]{3, 3}, 20, "relu"),
+			new MaxPool2D(new int[]{2, 2}),
 			new Flatten(),
 			new Densa(100, "sigmoid"),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")

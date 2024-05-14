@@ -7,7 +7,7 @@ import render.Janela;
 import render.matconf.JanelaMatriz;
 import render.realtime.JanelaDesenho;
 import jnn.camadas.Camada;
-import jnn.camadas.Convolucional;
+import jnn.camadas.Conv2D;
 import jnn.core.tensor.Tensor;
 import jnn.core.tensor.Variavel;
 import jnn.modelos.Sequencial;
@@ -85,7 +85,7 @@ public class Funcional {
 		//pegar índice da última camada convolucional do modelo
 		int idConv = -1;
 		for (int i = 0; i < modelo.numCamadas(); i++) {
-			if (modelo.camada(i) instanceof Convolucional) idConv = i;
+			if (modelo.camada(i) instanceof Conv2D) idConv = i;
 		}
 
 		if (idConv == -1) {
@@ -94,7 +94,7 @@ public class Funcional {
 			);
 		}
 
-		Convolucional conv = (Convolucional) modelo.camada(idConv);
+		Conv2D conv = (Conv2D) modelo.camada(idConv);
 		
 		//calcular mapa de calor
 		Tensor convAtv = conv._saida.clone();
@@ -227,10 +227,10 @@ public class Funcional {
 	 * na janela gráfica.
 	 */
 	public void desenharSaidas(Camada conv, Tensor amostra, int escala, boolean norm) {
-		Convolucional camada = null;
+		Conv2D camada = null;
 
 		try {
-			camada = (Convolucional) conv;
+			camada = (Conv2D) conv;
 		} catch (Exception e) {
 			System.out.println("\nCamada fornecida não é do tipo convolucional.");
 		}
@@ -306,9 +306,9 @@ public class Funcional {
 	 * @param norm normaliza os valores entre 0 e 1.
 	 */
 	public void exportarAtivacoes(Sequencial modelo, int idConv, boolean norm, int escala) {
-		Convolucional camada;
+		Conv2D camada;
 		try {
-			camada = (Convolucional) modelo.camada(idConv);
+			camada = (Conv2D) modelo.camada(idConv);
 		} catch (Exception e) {
 			throw new IllegalArgumentException(
 				"\nCamada com id " + idConv + " não é do tipo Convolucional e sim " + 
@@ -368,9 +368,9 @@ public class Funcional {
 	 * @param norm normaliza os valores entre 0 e 1.
 	 */
 	public void exportarFiltros(Sequencial modelo, int idConv, boolean norm, int escala) {
-		Convolucional camada;
+		Conv2D camada;
 		try {
-			camada = (Convolucional) modelo.camada(idConv);
+			camada = (Conv2D) modelo.camada(idConv);
 		} catch (Exception e) {
 			throw new IllegalArgumentException(
 				"\nCamada com id " + idConv + " não é do tipo Convolucional e sim " + 
