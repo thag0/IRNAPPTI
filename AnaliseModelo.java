@@ -2,7 +2,6 @@ import ged.Ged;
 import geim.Geim;
 import jnn.core.tensor.OpTensor;
 import jnn.core.tensor.Tensor;
-import jnn.core.tensor.Variavel;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
 
@@ -49,9 +48,9 @@ public class AnaliseModelo {
 
 		// f.desenharSaidas(modelo.camada(0), amostra, 20, true);
 
-		// Tensor prev = modelo.forward(amostra);
-		// double ec = f.entropiaCondicional(prev);
-		// System.out.println("Entropia condicional: " + String.format("%.2f", (100 - (ec * 100))));
+		Tensor prev = modelo.forward(amostra);
+		double ec = f.entropiaCondicional(prev);
+		System.out.println("Entropia condicional: " + String.format("%.2f", (1-ec)*100));
 
 		// prev.reshape(10, 1).print();
 		// System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
@@ -127,9 +126,8 @@ public class AnaliseModelo {
 				Tensor img = new Tensor(f.carregarImagemCinza(caminhoImagem));
 				img.unsqueeze(0);//2d -> 3d
 
-				modelo.forward(img);
-				Variavel[] previsoes = modelo.saidaParaArray();
-				if (f.maiorIndice(previsoes) == digito) acertos++;
+				Tensor prev = modelo.forward(img);
+				if (f.maiorIndice(prev.paraArrayDouble()) == digito) acertos++;
 			}
 			double porcentagem = acertos / (double)amostras;
 

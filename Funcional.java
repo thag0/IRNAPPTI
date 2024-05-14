@@ -48,7 +48,7 @@ public class Funcional {
 	 *    Valores mais baixos indicam menor incerteza do modelo, que significa
 	 *    que o modelo tem bastante "confiança" na previsão feita.
 	 * </p>
-	 * @param prevs previsões do modelo.
+	 * @param prevs previsões do modelo no formato de distribuição de probabilidade.
 	 * @return valor de entropia condicional com base nas previsões.
 	 */
 	public double entropiaCondicional(Tensor prevs) {
@@ -58,8 +58,9 @@ public class Funcional {
 			);
 		}
 
+		int n = prevs.shape()[0];
 		double ec = 0;
-		for (int i = 0; i < prevs.tamanho(); i++) {
+		for (int i = 0; i < n; i++) {
 			double p = prevs.get(i);
 			ec += p * Math.log(p);
 		}
@@ -250,7 +251,7 @@ public class Funcional {
 	}
 
 	/**
-	 * Desenha o conteúdo 2d do tensor em uma janela gráfica.
+	 * Desenha o conteúdo do tensor em forma de imagem com uma janela gráfica.
 	 * @param tensor tensor com os dados desejados.
 	 * @param escala escala de ampliação da janela.
 	 * @param norm normalizar os valores do tensor entre 0 e 1
@@ -274,7 +275,7 @@ public class Funcional {
 	}
 
 	/**
-	 * Desenha matriz por matriz dentro do array.
+	 * Desenha o conteúdo dos tensores em forma de imagem, com uma janela gráfica.
 	 * @param arr array de tensores.
 	 * @param escala escala de ampliação da janela.
 	 * @param norm normalizar os valores entre 0 e 1.
@@ -558,7 +559,7 @@ public class Funcional {
 	 * @param arr array base.
 	 * @return índice com o maior valor.
 	 */
-	public int maiorIndice(Variavel[] arr) {
+	public int maiorIndicea(Variavel[] arr) {
 		int id = 0;
 		double maior = arr[0].get();
 
