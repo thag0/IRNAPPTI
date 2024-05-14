@@ -19,25 +19,25 @@ public class AnaliseModelo {
 	public static void main(String[] args) {
 		ged.limparConsole();
 
-		String nomeModelo = "modelo-treinado";
-		// String nomeModelo = "conv-mnist-95-2";
-		// String nomeModelo = "mlp-mnist-89";
+		// String nomeModelo = "modelo-treinado";
+		String nomeModelo = "conv-mnist-95-8";
+		// String nomeModelo = "mlp-mnist-89-1";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 9;
+		final int digito = 4;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
-		Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+		Tensor rotulo = new Tensor(f.gerarRotuloMnist(4), 10);
 		Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
 		Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
 		Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
 
 		amostraRGB.aplicar(x -> x*0.95);
-		int[] shapeHeatmap = heatmap.shape();
-		heatpmapRGB.slice(new int[]{0, 0, 0}, new int[]{1, shapeHeatmap[0], shapeHeatmap[1]}).aplicar(x -> x*0.6);//r
-		heatpmapRGB.slice(new int[]{1, 0, 0}, new int[]{2, shapeHeatmap[0], shapeHeatmap[1]}).aplicar(x -> x*0.2);//g
-		heatpmapRGB.slice(new int[]{2, 0, 0}, new int[]{3, shapeHeatmap[0], shapeHeatmap[1]}).aplicar(x -> x*0.9);//b
+		int[] shapeHm = heatmap.shape();
+		heatpmapRGB.slice(new int[]{0, 0, 0}, new int[]{1, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.6);//r
+		heatpmapRGB.slice(new int[]{1, 0, 0}, new int[]{2, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.2);//g
+		heatpmapRGB.slice(new int[]{2, 0, 0}, new int[]{3, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.9);//b
 
 		f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
 		f.desenharImagem(amostraRGB, 10, false, "Amostra");

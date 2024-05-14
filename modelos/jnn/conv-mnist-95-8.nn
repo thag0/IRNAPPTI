@@ -1,7 +1,7 @@
 7
 Adam
 EntropiaCruzada
-Convolucional
+Conv2D
 1 28 28 
 16 26 26 
 3 3 
@@ -167,12 +167,12 @@ true
 -0.05715233
 -0.1294104
 0.07175141
-MaxPooling
+MaxPool2D
 16 26 26 
 16 13 13 
 2 2 
 2 2 
-Convolucional
+Conv2D
 16 13 13 
 20 11 11 
 3 3 
@@ -3078,7 +3078,7 @@ true
 3.7224032E-4
 -0.027609078
 -0.035598032
-MaxPooling
+MaxPool2D
 20 11 11 
 20 5 5 
 2 2 
