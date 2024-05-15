@@ -14,6 +14,7 @@ import jnn.camadas.Densa;
 import jnn.camadas.Entrada;
 import jnn.camadas.Flatten;
 import jnn.camadas.MaxPool2D;
+import jnn.core.tensor.Tensor;
 import jnn.modelos.Modelo;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
@@ -41,8 +42,8 @@ public class TreinoModelo {
 	public static void main(String[] args) {
 		ged.limparConsole();
 		
-		final var treinoX = jnn.arrayParaTensores(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
-		final var treinoY = jnn.arrayParaTensores(criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
+		final Tensor[] treinoX = jnn.arrayParaTensores(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
+		final Tensor[] treinoY = jnn.arrayParaTensores(criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
 
 		Sequencial modelo = modeloConv();
 		modelo.setHistorico(true);
