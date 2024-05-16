@@ -19,34 +19,34 @@ public class AnaliseModelo {
 		ged.limparConsole();
 
 		// String nomeModelo = "modelo-treinado";
-		String nomeModelo = "conv-mnist-97-1";
+		String nomeModelo = "conv-mnist-97-4";
 		// String nomeModelo = "mlp-mnist-89-1";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		// final int digito = 3;
-		// Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
-		// amostra.unsqueeze(0);//2d -> 3d
+		final int digito = 2;
+		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+		amostra.unsqueeze(0);//2d -> 3d
 		
-		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(4), 10);
-		// Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
-		// Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
-		// Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
+		Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+		Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
+		Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
+		Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
 
-		// amostraRGB.aplicar(x -> x*0.95);
-		// int[] shapeHm = heatmap.shape();
-		// heatpmapRGB.slice(new int[]{0, 0, 0}, new int[]{1, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.6);//r
-		// heatpmapRGB.slice(new int[]{1, 0, 0}, new int[]{2, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.2);//g
-		// heatpmapRGB.slice(new int[]{2, 0, 0}, new int[]{3, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.9);//b
+		amostraRGB.aplicar(x -> x*0.95);
+		int[] shapeHm = heatmap.shape();
+		heatpmapRGB.slice(new int[]{0, 0, 0}, new int[]{1, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.6);//r
+		heatpmapRGB.slice(new int[]{1, 0, 0}, new int[]{2, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.2);//g
+		heatpmapRGB.slice(new int[]{2, 0, 0}, new int[]{3, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.9);//b
 
-		// f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
-		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
-		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
+		f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
 		// f.desenharMnist(modelo);
 
-		f.matrizConfusao(modelo, 100);
+		// f.matrizConfusao(modelo, 100);
 
-		// f.desenharSaidas(modelo.camada(0), amostra, 20, true);
+		// f.desenharSaidas(modelo.camada(0), amostra, 15, true);
 
 		// testarAcertosMNIST(modelo);
 
