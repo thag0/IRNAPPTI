@@ -19,11 +19,11 @@ public class AnaliseModelo {
 		ged.limparConsole();
 
 		// String nomeModelo = "modelo-treinado";
-		String nomeModelo = "conv-mnist-97-4";
+		String nomeModelo = "conv-mnist-97-1";
 		// String nomeModelo = "mlp-mnist-89-1";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 2;
+		final int digito = 8;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
@@ -33,10 +33,7 @@ public class AnaliseModelo {
 		Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
 
 		amostraRGB.aplicar(x -> x*0.95);
-		int[] shapeHm = heatmap.shape();
-		heatpmapRGB.slice(new int[]{0, 0, 0}, new int[]{1, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.6);//r
-		heatpmapRGB.slice(new int[]{1, 0, 0}, new int[]{2, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.2);//g
-		heatpmapRGB.slice(new int[]{2, 0, 0}, new int[]{3, shapeHm[0], shapeHm[1]}).aplicar(x -> x*0.9);//b
+		coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
 
 		f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
 		f.desenharImagem(amostraRGB, 10, false, "Amostra");
@@ -175,4 +172,31 @@ public class AnaliseModelo {
 		return rgb;
 	}
 
+	/**
+	 * Ajusta o nível de cor do tensor.
+	 * <p>
+	 * 		Valores devem estar no intervalo [0, 1]
+	 * </p>
+	 * @param t {@code Tensor} desejado.
+	 * @param r intensidade de cor {@code VERMELHA} desejada.
+	 * @param g intensidade de cor {@code VERDE} desejada.
+	 * @param b intensidade de cor {@code AZUL} desejada.
+	 */
+	static void coresTensor(Tensor t, double r, double g, double b) {
+		if (t.numDim() != 3) {
+			throw new IllegalArgumentException(
+				"\nTensor deve ser 3D (RGB)."
+			);
+		}
+
+		int[] shape = t.shape();
+
+		final double R = Math.clamp(r, 0.0, 1.0);
+		final double G = Math.clamp(g, 0.0, 1.0);
+		final double B = Math.clamp(b, 0.0, 1.0);
+
+		t.slice(new int[]{0, 0, 0}, new int[]{1, shape[1], shape[2]}).aplicar(x -> x*R);//r
+		t.slice(new int[]{1, 0, 0}, new int[]{2, shape[1], shape[2]}).aplicar(x -> x*G);//g
+		t.slice(new int[]{2, 0, 0}, new int[]{3, shape[1], shape[2]}).aplicar(x -> x*B);//b
+	}
 }
