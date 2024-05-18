@@ -11,6 +11,7 @@ import geim.Geim;
 import jnn.Funcional;
 import jnn.camadas.Conv2D;
 import jnn.camadas.Densa;
+import jnn.camadas.Dropout;
 import jnn.camadas.Entrada;
 import jnn.camadas.Flatten;
 import jnn.camadas.MaxPool2D;
@@ -83,7 +84,8 @@ public class TreinoModelo {
 			new Conv2D(new int[]{3, 3}, 20, "relu"),
 			new MaxPool2D(new int[]{2, 2}),
 			new Flatten(),
-			new Densa(100, "sigmoid"),
+			new Densa(120, "tanh"),
+			new Dropout(0.25),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 

@@ -19,11 +19,12 @@ public class AnaliseModelo {
 		ged.limparConsole();
 
 		// String nomeModelo = "modelo-treinado";
-		String nomeModelo = "conv-mnist-97-1";
+		String nomeModelo = "conv-mnist-dropout";
+		// String nomeModelo = "conv-mnist-97-1";
 		// String nomeModelo = "mlp-mnist-89-1";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 8;
+		final int digito = 3;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
