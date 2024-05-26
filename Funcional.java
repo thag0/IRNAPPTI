@@ -559,6 +559,25 @@ public class Funcional {
 	 * @param arr array base.
 	 * @return índice com o maior valor.
 	 */
+	public int maiorIndice(Variavel[] arr) {
+		int id = 0;
+		double maior = arr[0].get();
+
+		for (int i = 1; i < arr.length; i++) {
+			if (arr[i].get() > maior) {
+				id = i;
+				maior = arr[i].get();
+			}
+		}
+
+		return id;
+	}
+
+	/**
+	 * Calcula o índice que contém o maior valor no array.
+	 * @param arr array base.
+	 * @return índice com o maior valor.
+	 */
 	public int maiorIndicea(Variavel[] arr) {
 		int id = 0;
 		double maior = arr[0].get();

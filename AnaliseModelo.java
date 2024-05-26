@@ -19,26 +19,26 @@ public class AnaliseModelo {
 		ged.limparConsole();
 
 		// String nomeModelo = "modelo-treinado";
-		String nomeModelo = "conv-mnist-dropout";
-		// String nomeModelo = "conv-mnist-97-1";
-		// String nomeModelo = "mlp-mnist-89-1";
+		// String nomeModelo = "conv-mnist-dropout";
+		String nomeModelo = "conv-mnist-97-1";
+		// String nomeModelo = "mlp-mnist-90";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 
-		final int digito = 3;
-		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
-		amostra.unsqueeze(0);//2d -> 3d
+		// final int digito = 1;
+		// Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+		// amostra.unsqueeze(0);//2d -> 3d
 		
-		Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
-		Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
-		Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
-		Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
+		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+		// Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
+		// Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
+		// Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
 
-		amostraRGB.aplicar(x -> x*0.95);
-		coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
+		// amostraRGB.aplicar(x -> x*0.95);
+		// coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
 
-		f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
-		f.desenharImagem(amostraRGB, 10, false, "Amostra");
-		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		// f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
+		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
 		// f.desenharMnist(modelo);
 
@@ -46,7 +46,7 @@ public class AnaliseModelo {
 
 		// f.desenharSaidas(modelo.camada(0), amostra, 15, true);
 
-		// testarAcertosMNIST(modelo);
+		testarAcertosMNIST(modelo);
 
 		// Tensor prev = modelo.forward(amostra);
 		// double ec = f.entropiaCondicional(prev);

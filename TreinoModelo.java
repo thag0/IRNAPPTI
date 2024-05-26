@@ -46,7 +46,7 @@ public class TreinoModelo {
 		final Tensor[] treinoX = jnn.arrayParaTensores(carregarDadosMNIST(CAMINHO_TREINO, NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
 		final Tensor[] treinoY = jnn.arrayParaTensores(criarRotulosMNIST(NUM_AMOSTRAS_TREINO, NUM_DIGITOS_TREINO));
 
-		Sequencial modelo = modeloConv();
+		Sequencial modelo = modeloMlp();
 		modelo.setHistorico(true);
 		modelo.print();
 
@@ -79,9 +79,9 @@ public class TreinoModelo {
 	static Sequencial modeloConv() {
 		Sequencial modelo = new Sequencial(
 			new Entrada(1, 28, 28),
-			new Conv2D(new int[]{3, 3}, 16, "relu"),
+			new Conv2D(16, new int[]{3, 3}, "relu"),
 			new MaxPool2D(new int[]{2, 2}),
-			new Conv2D(new int[]{3, 3}, 20, "relu"),
+			new Conv2D(20, new int[]{3, 3}, "relu"),
 			new MaxPool2D(new int[]{2, 2}),
 			new Flatten(),
 			new Densa(120, "tanh"),
@@ -99,14 +99,14 @@ public class TreinoModelo {
 	 */
 	static Sequencial modeloMlp() {
 		Sequencial modelo = new Sequencial(
-			new Entrada(28, 28),
+			new Entrada(1, 28, 28),
 			new Flatten(),
-			new Densa(21, "sigmoid"),
-			new Densa(21, "sigmoid"),
+			new Densa(12, "relu"),
+			new Densa(12, "relu"),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 
-		modelo.compilar("sgd", "entropia-cruzada");
+		modelo.compilar("adam", "entropia-cruzada");
 		
 		return modelo;
 	}
