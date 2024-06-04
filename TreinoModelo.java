@@ -31,7 +31,7 @@ public class TreinoModelo {
 	static final int NUM_AMOSTRAS_TREINO = 400;//max 400
 	static final int NUM_AMOSTRAS_TESTE  = 100;//max 100
 	static final int TREINO_EPOCAS = 11;
-	static final int TREINO_LOTE = 10;
+	static final int TREINO_LOTE = 12;
 	static final boolean TREINO_LOGS = true;
 
 	// caminhos de arquivos externos
@@ -84,8 +84,8 @@ public class TreinoModelo {
 			new Conv2D(20, new int[]{3, 3}, "relu"),
 			new MaxPool2D(new int[]{2, 2}),
 			new Flatten(),
-			new Densa(110, "relu"),
-			new Dropout(0.25),
+			new Densa(128, "relu"),
+			new Dropout(0.3),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
 

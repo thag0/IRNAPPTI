@@ -34,7 +34,6 @@ def carregar_imagem(caminho: str) -> torch.Tensor:
 		transforms.ToTensor()
 	])
 	
-	# Aplicar as transformações na imagem
 	tensor_img = preprocess(img).unsqueeze(0)  # Adicionar uma dimensão extra para o lote (batch)
 	
 	return tensor_img
@@ -115,29 +114,25 @@ def testar_previsao(modelo: ConvCifar10, amostra: torch.Tensor):
 	val = prev.argmax(dim=1).item()
 	print(f'Previsto = {val}')
 
-def matriz_confusao(modelo, dataloader):
+def matriz_confusao(modelo, amostras_teste: DataLoader):
 	modelo.eval()
 
 	prev = []
 	real = []
 
 	with torch.no_grad():
-		for imagens, rotulos in dataloader:
-			# Mover imagens e rótulos para o dispositivo (GPU ou CPU)
+		for imagens, rotulos in amostras_teste:
 			imagens = imagens.to(device)
 			rotulos = rotulos.to(device)
 
-			# Fazer previsões
 			saidas = modelo.forward(imagens)
 			_, previsao = torch.max(saidas, 1)
 
-			# Adicionar previsões e rótulos verdadeiros às listas
 			prev.extend(previsao.cpu().numpy())
 			real.extend(rotulos.cpu().numpy())
 
 	matriz_confusao = confusion_matrix(real, prev)
 
-	# Plotar a matriz de confusão como um mapa de calor
 	plt.figure(figsize=(8, 6))
 	sns.heatmap(matriz_confusao, annot=True, fmt="d")
 	plt.xlabel('Predito')
@@ -146,6 +141,10 @@ def matriz_confusao(modelo, dataloader):
 	plt.show()
 
 def grad_cam(modelo, dl_teste: DataLoader):
+	"""
+		Ainda não funcionando
+	"""
+	
 	lote = next(iter(dl_teste))
 	imgs, classes = lote
 
@@ -167,14 +166,13 @@ def grad_cam(modelo, dl_teste: DataLoader):
 
 	plt.subplot(1, 2, 2)
 	plt.title('GradCAM')
-	# Soma dos gradientes ao longo do canal
+	
 	gradcam_sum = gradcam.sum(dim=1, keepdim=True)
 	gradcam_sum = gradcam_sum.squeeze().cpu().numpy()
 	plt.imshow(gradcam_sum, cmap='hot', interpolation='nearest')
 	plt.axis('off')
 
 	plt.show()
-
 
 if __name__ == '__main__':
 	os.system('cls')
@@ -184,17 +182,17 @@ if __name__ == '__main__':
 	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
 	dl_treino, dl_teste = preparar_dataset('mnist')
 
-	# matriz_confusao(modelo, dl_teste)
+	matriz_confusao(modelo, dl_teste)
 
 	# grad_cam(modelo, dl_teste)
 
-	amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
+	# amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
 
 	# testar_previsao(modelo, amostra)
 
-	conv_ids = []
-	for i in range(len(modelo.get_camadas())):
-		if isinstance(modelo.get_camadas()[i], Conv2d):
-			conv_ids.append(i)
-	plotar_ativacoes(modelo, amostra, conv_ids[1])
+	# conv_ids = []
+	# for i in range(len(modelo.get_camadas())):
+	# 	if isinstance(modelo.get_camadas()[i], Conv2d):
+	# 		conv_ids.append(i)
+	# plotar_ativacoes(modelo, amostra, conv_ids[1])
 	
