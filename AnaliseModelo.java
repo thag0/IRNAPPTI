@@ -5,6 +5,7 @@ import jnn.core.tensor.Tensor;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
 
+
 public class AnaliseModelo {
 	static final String CAMINHO_MODELO = "./modelos/jnn/";
 	static final String CAMINHO_IMAGEM = "./mnist/teste/";
@@ -25,8 +26,8 @@ public class AnaliseModelo {
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 		// modelo.print();
 
-		final int digito = 2;
-		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+		final int digito = 7;
+		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
 		Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
@@ -41,11 +42,11 @@ public class AnaliseModelo {
 		f.desenharImagem(amostraRGB, 10, false, "Amostra");
 		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
-		// f.desenharMnist(modelo);
+		//df.desenharMnist(modelo);
 
-		// f.matrizConfusao(modelo, 100);
+		f.matrizConfusao(modelo, 100);
 
-		// f.desenharSaidas(modelo.camada(0), amostra, 15, true);
+		f.desenharSaidas(modelo.camada(0), amostra, 15, true);
 
 		// testarAcertosMNIST(modelo);
 
@@ -194,9 +195,10 @@ public class AnaliseModelo {
 
 		int[] shape = t.shape();
 
-		final double R = Math.clamp(r, 0.0, 1.0);
-		final double G = Math.clamp(g, 0.0, 1.0);
-		final double B = Math.clamp(b, 0.0, 1.0);
+		
+		final double R = Math.min(1.0, Math.max(r, 0.0));
+		final double G = Math.min(1.0, Math.max(g, 0.0));
+		final double B = Math.min(1.0, Math.max(b, 0.0));
 
 		t.slice(new int[]{0, 0, 0}, new int[]{1, shape[1], shape[2]}).aplicar(x -> x*R);//r
 		t.slice(new int[]{1, 0, 0}, new int[]{2, shape[1], shape[2]}).aplicar(x -> x*G);//g

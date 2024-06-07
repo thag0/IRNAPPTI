@@ -18,14 +18,12 @@ import torchvision.utils
 def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
 	modelo = ConvMnist('cpu')
 	modelo.load_state_dict(torch.load(caminho))
-	modelo.to(device)
-	return modelo
+	return modelo.to(device)
 
 def carregar_modelo_cifar(device: torch.device, caminho: str) -> ConvCifar10:
 	modelo = ConvCifar10('cpu')
 	modelo.load_state_dict(torch.load(caminho))
-	modelo.to(device)
-	return modelo
+	return modelo.to(device)
 
 def carregar_imagem(caminho: str) -> torch.Tensor:
 	img = Image.open(caminho)
@@ -110,6 +108,7 @@ def plotar_ativacoes(modelo: ConvCifar10, entrada: torch.Tensor, id_camada: int)
 	plt.show()
 
 def testar_previsao(modelo: ConvCifar10, amostra: torch.Tensor):
+	amostra=amostra.to(modelo.device)
 	prev = modelo.forward(amostra)
 	val = prev.argmax(dim=1).item()
 	print(f'Previsto = {val}')
@@ -177,18 +176,20 @@ def grad_cam(modelo, dl_teste: DataLoader):
 if __name__ == '__main__':
 	os.system('cls')
 
-	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+	#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+	device= 'cpu'
+	
 	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
 	dl_treino, dl_teste = preparar_dataset('mnist')
 
-	matriz_confusao(modelo, dl_teste)
+	# matriz_confusao(modelo, dl_teste)
 
 	# grad_cam(modelo, dl_teste)
 
-	# amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
+	amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
+	
 
-	# testar_previsao(modelo, amostra)
+	testar_previsao(modelo, amostra)
 
 	# conv_ids = []
 	# for i in range(len(modelo.get_camadas())):
