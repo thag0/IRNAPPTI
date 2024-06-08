@@ -30,21 +30,21 @@ public class AnaliseModelo {
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
-		Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
-		Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
-		Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
-		Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
+		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+		// Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
+		// Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
+		// Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
 
-		amostraRGB.aplicar(x -> x*0.95);
-		coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
+		// amostraRGB.aplicar(x -> x*0.95);
+		// coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
 
-		f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
-		f.desenharImagem(amostraRGB, 10, false, "Amostra");
-		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		// f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
+		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
-		//df.desenharMnist(modelo);
+		f.desenharMnist(modelo);
 
-		f.matrizConfusao(modelo, 100);
+		// f.matrizConfusao(modelo, 100);
 
 		f.desenharSaidas(modelo.camada(0), amostra, 15, true);
 
