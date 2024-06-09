@@ -42,7 +42,7 @@ public class AnaliseModelo {
 		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
 		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
-		f.desenharMnist(modelo);
+		// f.desenharMnist(modelo);
 
 		// f.matrizConfusao(modelo, 100);
 

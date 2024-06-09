@@ -1,61 +1,47 @@
-package render;
+package render.widgets;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import javax.swing.JPanel;
-
 import jnn.core.tensor.Tensor;
 
-public class Painel extends JPanel{
-
-	final int escala;
-	public final int altura;
-	public final int largura;
-
-	Tensor img;
+public class TensorImg extends Widget {
 
 	/**
-	 * Cria um novo painel com base nos valores dados.
-	 * @param altura altura do painel.
-	 * @param largura largura do painel.
-	 * @param escala escala de ampliação (altura e largura).
+	 * Tensor usado como imagem para desenho (2D ou 3D).
 	 */
-	public Painel(int altura, int largura, int escala){
-		this.escala = escala;
-		this.altura =  escala * altura;
-		this.largura = escala * largura;
+    Tensor img;
 
-		setPreferredSize(new Dimension(this.largura, this.altura));
-		setBackground(Color.black);
-	}
-	
-	/**
-	 * Desenha o conteúdo 2D do tensor.
-	 * @param tensor tensor desejado.
-	 */
-	public void desenharImagem(Tensor tensor){
-		if(tensor == null){
-			throw new IllegalArgumentException(
-				"\nMatriz não pode ser nula."
-			);
-		}
+    public TensorImg(int altura, int largura, Tensor img) {
+        super(altura, largura);
+        update(img);
+    }
 
-		if (tensor.numDim() != 2 && tensor.numDim() != 3) {
-			throw new IllegalArgumentException(
-				"\nTensor deve ser 2D ou 3D, mas é " + tensor.numDim() + "D."
-			);
-		}
-		
-		img = tensor;
-		
+    public TensorImg(int altura, int largura) {
+        super(altura, largura);
+    }
+
+    public void update(Tensor img) {
+        if (img == null) {
+            throw new IllegalArgumentException(
+                "\nTensor nulo."
+            );
+        }
+
+        int n = img.numDim();
+        if (n != 2 && n != 3) {
+            throw new IllegalArgumentException(
+                "\nTensor deve ser 2D ou 3D, recebido " + n + "D"
+            );
+        }
+
+        this.img = img.clone();
 		repaint();
 	}
 
 	@Override
-	protected void paintComponent(Graphics g){
+	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 
@@ -68,8 +54,8 @@ public class Painel extends JPanel{
 		int largPixel = largura / larg;
 		int altPixel  = altura / alt;
 
-		for(int i = 0; i < alt; i++){
-			for(int j = 0; j < larg; j++){
+		for (int i = 0; i < alt; i++) {
+			for (int j = 0; j < larg; j++) {
 				if (rgb) {
 					double valR = img.get(0, i, j);
 					double valG = img.get(1, i, j);
@@ -104,5 +90,5 @@ public class Painel extends JPanel{
 			}
 		}
 	}
-
+    
 }

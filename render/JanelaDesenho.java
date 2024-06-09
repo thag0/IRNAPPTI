@@ -1,4 +1,4 @@
-package render.realtime;
+package render;
 
 import java.awt.GridLayout;
 
@@ -6,11 +6,13 @@ import javax.swing.JFrame;
 
 import jnn.core.tensor.Tensor;
 import jnn.modelos.Sequencial;
+import render.widgets.DesenhoGrade;
+import render.widgets.Previsoes;
 
 public class JanelaDesenho extends JFrame {
 
-	PainelDesenho pd;
-	PainelPrevisoes pp;
+	DesenhoGrade pd;
+	Previsoes pp;
 	Sequencial modelo;
 	
 	/**
@@ -21,8 +23,8 @@ public class JanelaDesenho extends JFrame {
 	 * @param modelo modelo treinado.
 	 */
 	public JanelaDesenho(int altura, int largura, Sequencial modelo) {
-		pd = new PainelDesenho(altura, largura/2);
-		pp = new PainelPrevisoes(altura, largura/2);
+		pd = new DesenhoGrade(altura, largura/2, 28);
+		pp = new Previsoes(altura, largura/2);
 
 		this.modelo = modelo;
 
@@ -40,7 +42,7 @@ public class JanelaDesenho extends JFrame {
 		setVisible(true);
 	}
 
-	public void atualizar() {
+	public void update() {
 		double[][] entrada = new double[pd.tamBloco][pd.tamBloco];
 		for (int i = 0; i < entrada.length; i++) {
 			for (int j = 0; j < entrada[i].length; j++) {
@@ -66,9 +68,10 @@ public class JanelaDesenho extends JFrame {
 			}
 		}
 
-		pp.txt1 = Integer.toString(idMaior) + " (" + ((int)(arr[idMaior] * 100)) + "%)";
-		pp.txt2 = Integer.toString(idSegMaior) + " (" + ((int)(arr[idSegMaior] * 100)) + "%)";
-		pp.repaint();
+		pp.update(
+			Integer.toString(idMaior) + " (" + ((int)(arr[idMaior] * 100)) + "%)",
+			Integer.toString(idSegMaior) + " (" + ((int)(arr[idSegMaior] * 100)) + "%)"
+		);
 	}
 	
 }

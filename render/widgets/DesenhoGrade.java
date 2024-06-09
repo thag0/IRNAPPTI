@@ -1,21 +1,44 @@
-package render.realtime;
+package render.widgets;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.JPanel;
 
-public class PainelDesenho extends JPanel {
+/**
+ * Painel de desenho com grades usando o mouse.
+ */
+public class DesenhoGrade extends Widget {
 
-	public final int tamBloco = 28;
-	public boolean[][] blocos = new boolean[tamBloco][tamBloco];
+	/**
+	 * Quantidade de blocos horizontais e verticais.
+	 */
+	public final int tamBloco;
 
-	public PainelDesenho(int altura, int largura) {
-		setPreferredSize(new Dimension(largura, altura));
+	/**
+	 * Grade de desenho do painel.
+	 */
+	public boolean[][] blocos;
+
+	/**
+	 * Inicializa o painel de desenho em grade.
+	 * @param altura altura desejada do painel.
+	 * @param largura largura desejada do painel.
+	 * @param tam quantidade de grades (horizontais e verticais).
+	 */
+	public DesenhoGrade(int altura, int largura, int tam) {
+		super(largura, altura);
+
+		if (tam < 1) {
+			throw new IllegalArgumentException(
+				"\nTamanho da grade deve ser maior que zero."
+			);
+		}
+		tamBloco = tam;
+		blocos = new boolean[tamBloco][tamBloco];
+
 		setBackground(Color.BLACK);
 
 		addMouseListener(new MouseAdapter() {

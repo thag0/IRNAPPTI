@@ -1,8 +1,9 @@
-package render.matconf;
+package render;
 
 import javax.swing.JFrame;
 
 import jnn.core.tensor.Tensor;
+import render.widgets.MatrizConfusao;
 
 public class JanelaMatriz extends JFrame {
 	
@@ -10,7 +11,7 @@ public class JanelaMatriz extends JFrame {
 		setTitle("Matriz de Confusão");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		PainelMatriz painel = new PainelMatriz(altura, largura, mc);
+		MatrizConfusao painel = new MatrizConfusao(altura, largura, mc);
 		setResizable(false);
 		add(painel);
 		pack();

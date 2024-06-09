@@ -6,17 +6,18 @@ import java.awt.event.KeyListener;
 import javax.swing.JFrame;
 
 import jnn.core.tensor.Tensor;
+import render.widgets.TensorImg;
 
-public class Janela extends JFrame {
+public class JanelaImagem extends JFrame {
 	
-	Painel painel;
+	TensorImg painel;
 	LeitorTeclado leitorTeclado;
 
-	public Janela(int altura, int largura, int escala, String titulo){
+	public JanelaImagem(int altura, int largura, int escala, String titulo) {
 		if(titulo == null) titulo = "Janela";
 		else setTitle(titulo);
 
-		this.painel = new Painel(altura, largura, escala);
+		this.painel = new TensorImg(altura*escala, largura*escala);
 		add(painel);
 		pack();
 
@@ -30,15 +31,15 @@ public class Janela extends JFrame {
 		setFocusable(true);
 	}
 
-	public Janela(int altura, int largura, String titulo){
+	public JanelaImagem(int altura, int largura, String titulo){
 		this(altura, largura, 1, titulo);
 	}
 
-	public Janela(int altura, int largura, int escala){
+	public JanelaImagem(int altura, int largura, int escala){
 		this(altura, largura, escala, "Janela");
 	}
 
-	public Janela(int altura, int largura){
+	public JanelaImagem(int altura, int largura){
 		this(altura, largura, 1, "Janela");
 	}
 
@@ -55,7 +56,9 @@ public class Janela extends JFrame {
 		
 		setTitle(titulo);
 
-		new Thread(() -> painel.desenharImagem(tensor)).start();
+		new Thread(() -> {
+			painel.update(tensor);
+		}).start();
 	}
 
 	/**
@@ -80,7 +83,7 @@ public class Janela extends JFrame {
 				}
 	
 				setTitle("Img " + indice);
-				painel.desenharImagem(arr[indice]);
+				painel.update(arr[indice]);
 	
 				try{
 					Thread.sleep(50);

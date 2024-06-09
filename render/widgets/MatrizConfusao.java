@@ -1,17 +1,14 @@
-package render.matconf;
+package render.widgets;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-import javax.swing.JPanel;
-
 import jnn.core.tensor.Tensor;
 
-public class PainelMatriz extends JPanel {
+public class MatrizConfusao extends Widget {
 	
     /**
      * Matriz que será desenhada
@@ -35,12 +32,28 @@ public class PainelMatriz extends JPanel {
      * Inicializa um novo painel que desenha uma matriz de confusão.
      * @param altura altura desejada do painel.
      * @param largura largura desejada do painel.
-     * @param mc matriz que será desenhada.
      */
-	public PainelMatriz(int altura, int largura, Tensor mc) {
-		setPreferredSize(new Dimension(largura, altura));
-		setBackground(corFundo);
+	public MatrizConfusao(int altura, int largura) {
+        super(altura, largura);
+        setBackground(corFundo);
+	}
 
+    /**
+     * Inicializa um novo painel que desenha uma matriz de confusão.
+     * @param altura altura desejada do painel.
+     * @param largura largura desejada do painel.
+     * @param mc {@code Tensor} contendo a matriz de confusão.
+     */
+	public MatrizConfusao(int altura, int largura, Tensor mc) {
+        this(altura, largura);
+        update(mc);
+	}
+
+    /**
+     * Atualiza a matriz de confusão do painel.
+     * @param mc {@code Tensor} contendo a matriz de confusão.
+     */
+    public void update(Tensor mc) {
 		if (mc.numDim() != 2) {
 			throw new IllegalArgumentException(
 				"\nTensor deve ser 2D."
@@ -54,11 +67,10 @@ public class PainelMatriz extends JPanel {
 
         for (int i = 0; i < alt; i++) {
             for (int j = 0; j < larg; j++) {
-                matriz[i][j] = (int)mc.get(i, j);
+                matriz[i][j] = (int) mc.get(i, j);
             }
         }
-
-	}
+    }
 
 	@Override
     protected void paintComponent(Graphics g) {

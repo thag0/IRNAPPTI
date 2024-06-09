@@ -3,9 +3,9 @@ import java.io.File;
 
 import geim.Geim;
 import geim.Pixel;
-import render.Janela;
-import render.matconf.JanelaMatriz;
-import render.realtime.JanelaDesenho;
+import render.JanelaImagem;
+import render.JanelaDesenho;
+import render.JanelaMatriz;
 import jnn.camadas.Camada;
 import jnn.camadas.Conv2D;
 import jnn.core.tensor.Tensor;
@@ -145,7 +145,7 @@ public class Funcional {
 			JanelaDesenho jd = new JanelaDesenho(fator*escala, fator*(escala*2), modelo);
 
 			while (jd.isVisible()) {
-				jd.atualizar();
+				jd.update();
 	
 				try {
 					Thread.sleep(90);
@@ -270,7 +270,7 @@ public class Funcional {
 
 		int altura  = shape[shape.length-2];
 		int largura = shape[shape.length-1];
-		Janela janela = new Janela(altura, largura, escala, titulo);
+		JanelaImagem janela = new JanelaImagem(altura, largura, escala, titulo);
 		janela.desenharImagem(tensor);
 	}
 
@@ -287,7 +287,7 @@ public class Funcional {
 			shape[shape.length-1] // largura
 		};
 
-		Janela janela = new Janela(dim[0], dim[1], escala, titulo);
+		JanelaImagem janela = new JanelaImagem(dim[0], dim[1], escala, titulo);
 
 		if (norm) {
 			for (Tensor t : arr) {
