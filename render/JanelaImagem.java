@@ -55,10 +55,7 @@ public class JanelaImagem extends JFrame {
 		}
 		
 		setTitle(titulo);
-
-		new Thread(() -> {
-			painel.update(tensor);
-		}).start();
+		painel.update(tensor);
 	}
 
 	/**

@@ -11,7 +11,7 @@ public class TensorImg extends Widget {
 	/**
 	 * Tensor usado como imagem para desenho (2D ou 3D).
 	 */
-    Tensor img;
+    Tensor img = new Tensor(1, 1);
 
     public TensorImg(int altura, int largura, Tensor img) {
         super(altura, largura);
