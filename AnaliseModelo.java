@@ -19,14 +19,14 @@ public class AnaliseModelo {
 	public static void main(String[] args) {
 		ged.limparConsole();
 
-		String nomeModelo = "conv-mnist-dropout";
-		// String nomeModelo = "conv-mnist-97-1";
+		// String nomeModelo = "conv-mnist-dropout";
+		String nomeModelo = "conv-mnist-97-3";
 		// String nomeModelo = "mlp-mnist-90";
 		// String nomeModelo = "modelo-treinado";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 		// modelo.print();
 
-		final int digito = 7;
+		final int digito = 4;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
@@ -46,9 +46,9 @@ public class AnaliseModelo {
 
 		// f.matrizConfusao(modelo, 100);
 
-		f.desenharSaidas(modelo.camada(0), amostra, 15, true);
+		// f.desenharSaidas(modelo.camada(0), amostra, 15, true);
 
-		// testarAcertosMNIST(modelo);
+		testarAcertosMNIST(modelo);
 
 		// Tensor prev = modelo.forward(amostra);
 		// double ec = f.entropiaCondicional(prev);
