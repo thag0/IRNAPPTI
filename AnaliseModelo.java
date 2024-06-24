@@ -118,7 +118,7 @@ public class AnaliseModelo {
 	 * Testa os acertos do modelo usando os dados de teste do MNIST.
 	 * @param modelo modelo treinado.
 	 */
-	static void testarAcertosMNIST(Sequencial modelo){
+	static void testarAcertosMNIST(Sequencial modelo) {
 		final String caminho = "./mnist/teste/";
 		
 		final int digitos = 10;
@@ -145,16 +145,13 @@ public class AnaliseModelo {
 
 			double acertos = 0;
 			Tensor[] prevs = modelo.forwards(imagens);
-			for(Tensor t : prevs) {
-				double[] previsoes = t.paraArrayDouble();
-				if(f.maiorIndice(previsoes) == d){
-					acertos++;
-				}
+			for (Tensor t : prevs) {
+				if (f.maiorIndice(t.paraArray()) == digito) acertos++;
 			}
 
 			double porcentagem = acertos / (double)amostras;
-			media += porcentagem;
 			System.out.println("Acertos " + d + " -> " + porcentagem + "%");
+			media += porcentagem;
 		}
 
 		System.out.println("média acertos: " + String.format("%.2f", (media/digitos)*100) + "%");
@@ -189,7 +186,7 @@ public class AnaliseModelo {
 	/**
 	 * Ajusta o nível de cor do tensor.
 	 * <p>
-	 * 		Valores devem estar no intervalo [0, 1]
+	 * 		Valores devem estar no intervalo {@code [0, 1]}
 	 * </p>
 	 * @param t {@code Tensor} desejado.
 	 * @param r intensidade de cor {@code VERMELHA} desejada.
