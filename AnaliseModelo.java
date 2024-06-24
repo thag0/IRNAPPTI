@@ -1,3 +1,6 @@
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import ged.Ged;
 import geim.Geim;
 import jnn.core.tensor.OpTensor;
@@ -121,30 +124,37 @@ public class AnaliseModelo {
 		final int digitos = 10;
 		final int amostras = 100;
 		double media = 0;
-		for(int digito = 0; digito < digitos; digito++){
+		for (int d = 0; d < digitos; d++) {
+			final int digito = d;
 
 			Tensor[] imagens = new Tensor[amostras];
 
-			for(int amostra = 0; amostra < amostras; amostra++){
-				String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
-				// Tensor img = new Tensor(f.imagemParaMatriz(caminhoImagem));
-				Tensor img = new Tensor(f.carregarImagemCinza(caminhoImagem));
-				img.unsqueeze(0);// 2d -> 3d
-				imagens[amostra] = img;
+			int numThreads = Runtime.getRuntime().availableProcessors();
+			if (numThreads > amostras) numThreads = amostras;
+			try (ExecutorService exec = Executors.newFixedThreadPool(numThreads)) {
+				for (int a = 0; a < amostras; a++) {
+					final int amostra = a;
+					exec.submit(() -> {
+						String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
+						Tensor img = new Tensor(f.carregarImagemCinza(caminhoImagem));
+						img.unsqueeze(0);// 2d -> 3d
+						imagens[amostra] = img;
+					});
+				}
 			}
 
 			double acertos = 0;
 			Tensor[] prevs = modelo.forwards(imagens);
 			for(Tensor t : prevs) {
 				double[] previsoes = t.paraArrayDouble();
-				if(f.maiorIndice(previsoes) == digito){
+				if(f.maiorIndice(previsoes) == d){
 					acertos++;
 				}
 			}
 
 			double porcentagem = acertos / (double)amostras;
 			media += porcentagem;
-			System.out.println("Acertos " + digito + " -> " + porcentagem + "%");
+			System.out.println("Acertos " + d + " -> " + porcentagem + "%");
 		}
 
 		System.out.println("média acertos: " + String.format("%.2f", (media/digitos)*100) + "%");
