@@ -1,3 +1,6 @@
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import ged.Ged;
 import geim.Geim;
 import jnn.core.tensor.OpTensor;
@@ -19,36 +22,36 @@ public class AnaliseModelo {
 	public static void main(String[] args) {
 		ged.limparConsole();
 
-		String nomeModelo = "conv-mnist-dropout";
-		// String nomeModelo = "conv-mnist-97-1";
+		// String nomeModelo = "conv-mnist-dropout";
+		String nomeModelo = "conv-mnist-97-3";
 		// String nomeModelo = "mlp-mnist-90";
 		// String nomeModelo = "modelo-treinado";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 		// modelo.print();
 
-		final int digito = 7;
+		final int digito = 4;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
-		Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
-		Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
-		Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
-		Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
+		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+		// Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
+		// Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
+		// Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
 
-		amostraRGB.aplicar(x -> x*0.95);
-		coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
+		// amostraRGB.aplicar(x -> x*0.95);
+		// coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
 
-		f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
-		f.desenharImagem(amostraRGB, 10, false, "Amostra");
-		f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		// f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
+		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		
-		//df.desenharMnist(modelo);
+		// f.desenharMnist(modelo);
 
-		f.matrizConfusao(modelo, 100);
+		// f.matrizConfusao(modelo, 100);
 
-		f.desenharSaidas(modelo.camada(0), amostra, 15, true);
+		// f.desenharSaidas(modelo.camada(0), amostra, 15, true);
 
-		// testarAcertosMNIST(modelo);
+		testarAcertosMNIST(modelo);
 
 		// Tensor prev = modelo.forward(amostra);
 		// double ec = f.entropiaCondicional(prev);
@@ -115,36 +118,40 @@ public class AnaliseModelo {
 	 * Testa os acertos do modelo usando os dados de teste do MNIST.
 	 * @param modelo modelo treinado.
 	 */
-	static void testarAcertosMNIST(Sequencial modelo){
+	static void testarAcertosMNIST(Sequencial modelo) {
 		final String caminho = "./mnist/teste/";
 		
 		final int digitos = 10;
 		final int amostras = 100;
 		double media = 0;
-		for(int digito = 0; digito < digitos; digito++){
+		for (int d = 0; d < digitos; d++) {
+			final int digito = d;
 
 			Tensor[] imagens = new Tensor[amostras];
 
-			for(int amostra = 0; amostra < amostras; amostra++){
-				String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
-				// Tensor img = new Tensor(f.imagemParaMatriz(caminhoImagem));
-				Tensor img = new Tensor(f.carregarImagemCinza(caminhoImagem));
-				img.unsqueeze(0);// 2d -> 3d
-				imagens[amostra] = img;
+			int numThreads = Runtime.getRuntime().availableProcessors();
+			if (numThreads > amostras) numThreads = amostras;
+			try (ExecutorService exec = Executors.newFixedThreadPool(numThreads)) {
+				for (int a = 0; a < amostras; a++) {
+					final int amostra = a;
+					exec.submit(() -> {
+						String caminhoImagem = caminho + digito + "/img_" + amostra + ".jpg";
+						Tensor img = new Tensor(f.carregarImagemCinza(caminhoImagem));
+						img.unsqueeze(0);// 2d -> 3d
+						imagens[amostra] = img;
+					});
+				}
 			}
 
 			double acertos = 0;
 			Tensor[] prevs = modelo.forwards(imagens);
-			for(Tensor t : prevs) {
-				double[] previsoes = t.paraArrayDouble();
-				if(f.maiorIndice(previsoes) == digito){
-					acertos++;
-				}
+			for (Tensor t : prevs) {
+				if (f.maiorIndice(t.paraArray()) == digito) acertos++;
 			}
 
 			double porcentagem = acertos / (double)amostras;
+			System.out.println("Acertos " + d + " -> " + porcentagem + "%");
 			media += porcentagem;
-			System.out.println("Acertos " + digito + " -> " + porcentagem + "%");
 		}
 
 		System.out.println("média acertos: " + String.format("%.2f", (media/digitos)*100) + "%");
@@ -179,7 +186,7 @@ public class AnaliseModelo {
 	/**
 	 * Ajusta o nível de cor do tensor.
 	 * <p>
-	 * 		Valores devem estar no intervalo [0, 1]
+	 * 		Valores devem estar no intervalo {@code [0, 1]}
 	 * </p>
 	 * @param t {@code Tensor} desejado.
 	 * @param r intensidade de cor {@code VERMELHA} desejada.
