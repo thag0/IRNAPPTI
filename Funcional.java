@@ -382,7 +382,7 @@ public class Funcional {
 		String diretorioCamada = "conv" + ((idConv == 0) ? "1" : "2");
 		String caminho = "./resultados/filtros/" + diretorioCamada + "/";
 
-		Tensor filtros = camada._filtros;
+		Tensor filtros = camada._kernel;
 		limparDiretorio(caminho);
 
 		int[] shapeFiltro = filtros.shape();
