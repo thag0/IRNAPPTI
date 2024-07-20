@@ -163,12 +163,12 @@ public class Funcional {
 	public void matrizConfusao(Sequencial modelo, int amostras) {
 		System.out.println("Calculando Matriz de Confusão");
 		int digitos = 10;
-		double[][][][] mnist = carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos);
+		double[][][][] dados = carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos);
 		double[][] classes = criarRotulosMNIST(amostras, digitos);
-		Tensor[] samples = utils.array4DParaTensors(mnist);
-		Tensor[] labels = utils.array2DParaTensors(classes);
+		Tensor[] x = utils.arrayParaTensores(dados);
+		Tensor[] y = utils.arrayParaTensores(classes);
 		
-		Tensor m = modelo.avaliador().matrizConfusao(samples, labels);
+		Tensor m = modelo.avaliador().matrizConfusao(x, y);
 
 		new Thread(() -> {
 			JanelaMatriz jm = new JanelaMatriz(500, 500, m);
