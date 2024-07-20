@@ -23,14 +23,14 @@ public class AnaliseModelo {
 		ged.limparConsole();
 
 		// String nomeModelo = "conv-mnist-dropout";
-		String nomeModelo = "conv-mnist-97-3";
+		String nomeModelo = "conv-mnist-97-4";
 		// String nomeModelo = "mlp-mnist-90";
 		// String nomeModelo = "modelo-treinado";
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 		// modelo.print();
 
-		final int digito = 4;
-		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_1.jpg"));
+		final int digito = 3;
+		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
 		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
@@ -47,17 +47,16 @@ public class AnaliseModelo {
 		
 		// f.desenharMnist(modelo);
 
-		// f.matrizConfusao(modelo, 100);
+		f.matrizConfusao(modelo, 100);
 
 		// f.desenharSaidas(modelo.camada(0), amostra, 15, true);
 
-		testarAcertosMNIST(modelo);
+		// testarAcertosMNIST(modelo);
 
 		// Tensor prev = modelo.forward(amostra);
 		// double ec = f.entropiaCondicional(prev);
 		// System.out.println("Entropia condicional: " + String.format("%.2f", (1-ec)*100));
-
-		// prev.reshape(10, 1).print();
+		// prev.view(10, 1).print();
 		// System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
 		// new Thread(() -> {

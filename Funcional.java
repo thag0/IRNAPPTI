@@ -1,5 +1,7 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import geim.Geim;
 import geim.Pixel;
@@ -183,18 +185,37 @@ public class Funcional {
 	 * @return dados carregados.
 	 */
 	double[][][][] carregarDadosMNIST(String caminho, int amostras, int digitos) {
-		double[][][][] entradas = new double[digitos * amostras][1][][];
+		final double[][][][] imagens = new double[digitos * amostras][1][][];
+		final int numThreads = Runtime.getRuntime().availableProcessors() / 2;
+  
+		try (ExecutorService exec = Executors.newFixedThreadPool(numThreads)) {
+			int id = 0;
+			for (int i = 0; i < digitos; i++) {
+				for (int j = 0; j < amostras; j++) {
+					final String caminhoCompleto = caminho + i + "/img_" + j + ".jpg";
+					final int indice = id;
+					
+					exec.submit(() -> {
+						try {
+							double[][] imagem = carregarImagemCinza(caminhoCompleto);
+							imagens[indice][0] = imagem;
+						} catch (Exception e) {
+							System.out.println(e.getMessage());
+							System.exit(1);
+						}
+					});
 
-		int id = 0;
-		for (int dig = 0; dig < digitos; dig++) {
-			for (int ams = 0; ams < amostras; ams++) {
-				String caminhoCompleto = caminho + dig + "/img_" + ams + ".jpg";
-				double[][] imagem = carregarImagemCinza(caminhoCompleto);
-				entradas[id++][0] = imagem;
+					id++;
+				}
 			}
+  
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
-
-		return entradas;
+  
+		System.out.println("Imagens carregadas (" + imagens.length + ").");
+  
+		return imagens;
 	}
 
 	/**
