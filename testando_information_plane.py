@@ -3,9 +3,7 @@ import random
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.callbacks import LambdaCallback
+import keras.api.layers
 
 # Binarização e Ruído Gaussiano
 def g(x):
@@ -47,7 +45,7 @@ EPOCHS = 100
 BATCH_SIZE = 180
 
 model = Sequential([
-    tf.keras.Input(shape=(10,)),
+    Input(shape=(10,)),
     Dense(layers[0], activation='tanh'),
     Dense(layers[1], activation='tanh'),
     Dense(layers[2], activation='sigmoid')

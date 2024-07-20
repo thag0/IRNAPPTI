@@ -177,7 +177,7 @@ if __name__ == '__main__':
 	os.system('cls')
 
 	#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-	device= 'cpu'
+	device = 'cpu'
 	
 	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
 	dl_treino, dl_teste = preparar_dataset('mnist')
