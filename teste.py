@@ -12,12 +12,15 @@ def calculate_mutual_information(X, Y):
     X_flattened = X.flatten()
     Y_flattened = Y.flatten()
     
+    # Verificar se os vetores têm o mesmo comprimento
     if len(X_flattened) != len(Y_flattened):
         min_len = min(len(X_flattened), len(Y_flattened))
         X_flattened = X_flattened[:min_len]
         Y_flattened = Y_flattened[:min_len]
     
+    # Calcular a informação mútua
     mi = mutual_info_regression(X_flattened.reshape(-1, 1), Y_flattened)
+    return mi[0]  # Retornar o valor da informação mútua
 
 def plot_mutual_information(layers, mi_values):
     plt.figure(figsize=(10, 6))
