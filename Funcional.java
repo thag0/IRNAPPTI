@@ -120,7 +120,7 @@ public class Funcional {
 
 		heatmap
 		.relu() // preservar características que tem influência positiva na classe de interesse
-		.normalizar(0, 1); // ajudar na visualização
+		.norm(0, 1); // ajudar na visualização
 
 		// redimensionar o mapa de calor para as dimensões da imagem de entrada
 		int altEntrada = entrada.shape()[1];
@@ -285,7 +285,7 @@ public class Funcional {
 			);
 		}
 
-		if (norm) tensor.normalizar(0, 1);
+		if (norm) tensor.norm(0, 1);
 
 		int[] shape = tensor.shape();
 
@@ -312,7 +312,7 @@ public class Funcional {
 
 		if (norm) {
 			for (Tensor t : arr) {
-				t.normalizar(0, 1);
+				t.norm(0, 1);
 			}
 		}
 
@@ -362,8 +362,8 @@ public class Funcional {
 				Tensor tempSomatorio = new Tensor(sliceSomatorio.squeeze(0));
 				
 				if (norm) {
-					tempSaida.normalizar(0, 1);
-					tempSomatorio.normalizar(0, 1);
+					tempSaida.norm(0, 1);
+					tempSomatorio.norm(0, 1);
 				}
 				
 				saidas[j]     = new Tensor(sliceSaida);
@@ -416,7 +416,7 @@ public class Funcional {
 			slice.squeeze(0).squeeze(0);// 4d -> 2d
 
 			Tensor temp = new Tensor(slice);
-			if (norm) temp.normalizar(0, 1);
+			if (norm) temp.norm(0, 1);
 			arrFiltros[i] = temp;
 		}
 

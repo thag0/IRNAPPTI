@@ -54,7 +54,7 @@ public class JanelaDesenho extends JFrame {
 		amostra.unsqueeze(0);//2d -> 3d
 		Tensor prev = modelo.forward(amostra);
 
-		double max = prev.maximo().item();
+		double max = prev.max().item();
 		double[] arr = prev.paraArrayDouble();
 		int idMaior = 0, idSegMaior = 0;
 
