@@ -30,7 +30,7 @@ public class TreinoModelo {
 	static final int NUM_DIGITOS_TESTE  = NUM_DIGITOS_TREINO;
 	static final int NUM_AMOSTRAS_TREINO = 400;//max 400
 	static final int NUM_AMOSTRAS_TESTE  = 100;//max 100
-	static final int TREINO_EPOCAS = 12;
+	static final int TREINO_EPOCAS = 10;
 	static final int TREINO_LOTE = 12;
 	static final boolean TREINO_LOGS = true;
 
@@ -245,7 +245,7 @@ public class TreinoModelo {
 	 */
 	static void exportarHistorico(Modelo modelo, String caminho) {
 		System.out.println("Exportando histórico de perda");
-		double[] perdas = modelo.historico();
+		double[] perdas = modelo.hist();
 		double[][] dadosPerdas = new double[perdas.length][1];
 
 		for (int i = 0; i < dadosPerdas.length; i++) {
