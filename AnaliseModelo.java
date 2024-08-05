@@ -144,7 +144,7 @@ public class AnaliseModelo {
 			}
 
 			double acertos = 0;
-			Tensor[] prevs = modelo.forwards(imagens);
+			Tensor[] prevs = modelo.forward(imagens);
 			for (Tensor t : prevs) {
 				if (f.maiorIndice(t.paraArray()) == digito) acertos++;
 			}
