@@ -3,7 +3,7 @@ import java.util.concurrent.Executors;
 
 import ged.Ged;
 import geim.Geim;
-import jnn.core.tensor.OpTensor;
+import jnn.core.OpTensor;
 import jnn.core.tensor.Tensor;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
