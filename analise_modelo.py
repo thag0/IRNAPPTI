@@ -8,12 +8,13 @@ from torch.nn.modules import (Conv2d, MaxPool2d)
 import torchvision
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
-from modelos import ConvMnist, ConvCifar10
+from modelos import (MlpMnist, ConvMnist, ConvCifar10)
 from PIL import Image
 import torch.nn.functional as F
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import torchvision.utils
+from mi import MIHook
 
 def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
 	modelo = ConvMnist('cpu')
@@ -139,6 +140,47 @@ def matriz_confusao(modelo, amostras_teste: DataLoader):
 	plt.title('Matriz de confusão')
 	plt.show()
 
+def plano_informacao(modelo: MlpMnist, dl_treino: DataLoader, epochs: int):
+	mi_hook = MIHook(modelo)
+	mi_results_history = []
+
+	for epoch in range(epochs):
+		modelo.train()
+		for lote in dl_treino:
+			x, y = lote
+			x, y = x.to(modelo.device), y.to(modelo.device)
+
+			_ = modelo(x)
+
+		print(f'Época {epoch}/{epochs}')
+		layers_of_interest = ['r1', 'r2', 'r3']
+		mi_results = mi_hook.calculate_mi(layers_of_interest)
+		mi_results_history.append(mi_results)
+
+	fig, ax = plt.subplots()
+	epochs_range = range(epochs)
+
+	if not mi_results_history:
+		print("Nenhum resultado disponível para plotagem.")
+		return
+
+	for (layer1, layer2), mi_values in mi_results_history[0].items():
+		mi_values_per_epoch = [mi_results.get((layer1, layer2), 0) for mi_results in mi_results_history]
+
+		# Verifique os valores de mi_values_per_epoch
+		print(f'{layer1} vs {layer2} MI Values per Epoch: {mi_values_per_epoch}')
+
+		# Converta cada valor para um número, se necessário
+		mi_values_per_epoch = [float(value) for value in mi_values_per_epoch]
+		
+		ax.plot(epochs_range, mi_values_per_epoch, label=f'{layer1} vs {layer2}')
+
+	ax.set_xlabel('Epoch')
+	ax.set_ylabel('Information Mutual')
+	ax.set_title('Plano da Informação Mútua por Época')
+	ax.legend()
+	plt.show()
+
 def grad_cam(modelo, dl_teste: DataLoader):
 	"""
 		Ainda não funcionando
@@ -179,17 +221,17 @@ if __name__ == '__main__':
 	#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	device = 'cpu'
 	
-	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
+	# modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
+	modelo = MlpMnist(device)
 	dl_treino, dl_teste = preparar_dataset('mnist')
 
 	# matriz_confusao(modelo, dl_teste)
 
 	# grad_cam(modelo, dl_teste)
 
-	amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-	
+	# amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
 
-	testar_previsao(modelo, amostra)
+	# testar_previsao(modelo, amostra)
 
 	# conv_ids = []
 	# for i in range(len(modelo.get_camadas())):
@@ -197,3 +239,4 @@ if __name__ == '__main__':
 	# 		conv_ids.append(i)
 	# plotar_ativacoes(modelo, amostra, conv_ids[1])
 	
+	plano_informacao(modelo, dl_treino, 4)

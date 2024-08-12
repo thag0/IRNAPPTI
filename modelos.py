@@ -4,6 +4,39 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 
+class MlpMnist(nn.Module):
+	def __init__(self, device: torch.device = None):
+		super(MlpMnist, self).__init__()
+
+		self.device = device if device is not None else 'cpu'
+
+		self.d1 = nn.Linear(28*28, 20)
+		self.r1 = nn.ReLU()
+		self.d2 = nn.Linear(20, 20)
+		self.r2 = nn.ReLU()
+		self.d3 = nn.Linear(20, 20)
+		self.r3 = nn.ReLU()
+		self.d4 = nn.Linear(20, 10)
+		self.r4 = nn.ReLU()
+
+		self.to(self.device)
+
+		self.otimizador = optim.Adam(self.parameters(), lr=0.001)
+		self.perda = nn.CrossEntropyLoss()
+
+	def forward(self, x: torch.Tensor) -> torch.Tensor:
+		x = x.view(x.size(0), -1)
+		x = self.d1(x)
+		x = self.r1(x)
+		x = self.d2(x)
+		x = self.r2(x)
+		x = self.d3(x)
+		x = self.r3(x)
+		x = self.d4(x)
+		x = self.r4(x)
+
+		return x
+
 class ConvMnist(nn.Module):
 	def __init__(self, device: torch.device = None):
 		"""
