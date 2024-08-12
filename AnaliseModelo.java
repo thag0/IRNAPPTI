@@ -24,27 +24,29 @@ public class AnaliseModelo {
 
 		// String nomeModelo = "conv-mnist-dropout";
 		// String nomeModelo = "conv-mnist-97-4";
-		String nomeModelo = "mlp-mnist-90";
-		// String nomeModelo = "modelo-treinado";
+		// String nomeModelo = "mlp-mnist-90";
+		String nomeModelo = "modelo-treinado";
 		
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
-		modelo.print();
+		// modelo.print();
 		
-		final int digito = 3;
-		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+		final int digito = 8;
+		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM + digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
-		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
-		// Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
-		// Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
-		// Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
-
-		// amostraRGB.aplicar(x -> x*0.95);
-		// coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
-
-		// f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
-		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
-		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		{// gradcam
+			Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+			Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
+			Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
+			Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
+			
+			amostraRGB.aplicar(x -> x*0.96);
+			coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
+			
+			f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
+			f.desenharImagem(amostraRGB, 10, false, "Amostra");
+			f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		}
 		
 		// f.desenharMnist(modelo);
 

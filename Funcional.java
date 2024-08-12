@@ -78,13 +78,6 @@ public class Funcional {
 	 * @return {@code Tensor} contendo o mapa de calor calculado.
 	 */
 	public Tensor gradCAM(Sequencial modelo, Tensor entrada, Tensor rotulo) {
-		//passo de backpropagation para ter os gradientes calculados
-		Tensor prev = modelo.forward(entrada);
-		Tensor grad = modelo.perda().derivada(prev, rotulo); 
-		for (int i = modelo.numCamadas()-1; i >= 0; i--) {
-			grad = modelo.camada(i).backward(grad);
-		}
-
 		//pegar índice da última camada convolucional do modelo
 		int idConv = -1;
 		for (int i = 0; i < modelo.numCamadas(); i++) {
@@ -98,9 +91,16 @@ public class Funcional {
 		}
 
 		Conv2D conv = (Conv2D) modelo.camada(idConv);
+
+		//passo de backpropagation para ter os gradientes calculados
+		Tensor prev = modelo.forward(entrada);
+		Tensor grad = modelo.perda().derivada(prev, rotulo); 
+		for (int i = modelo.numCamadas()-1; i >= 0; i--) {
+			grad = modelo.camada(i).backward(grad);
+		}
 		
 		//calcular mapa de calor
-		Tensor convAtv = conv._saida.clone();
+		Tensor convRes  = conv._somatorio.clone();// saída "bruta" da camada
 		Tensor convGrad = conv._gradSaida.clone();
 		int canais  = convGrad.shape()[0];
 		int altura  = convGrad.shape()[1];
@@ -108,30 +108,25 @@ public class Funcional {
 	
 		Tensor heatmap = new Tensor(altura, largura);
 
-		for (int c = 0; c < canais; c++) {
-			Tensor gSlice = convGrad.slice(new int[]{c, 0, 0}, new int[]{c+1, altura, largura});
-			double alfa = gSlice.media().item();
-
-			Tensor aSlice = convAtv.slice(new int[]{c, 0, 0}, new int[]{c+1, altura, largura});
+		for (int i = 0; i < canais; i++) {
+			double alfa = convGrad.subTensor(i).media().item();
 			heatmap.add(
-				aSlice.squeeze(0).map(x -> x*alfa)
+				convRes.subTensor(i).map(x -> x*alfa)
 			);
-		} 
+		}
 
-		heatmap
-		.relu() // preservar características que tem influência positiva na classe de interesse
-		.norm(0, 1); // ajudar na visualização
+		heatmap.relu();// preservar características que tem influência positiva na classe de interesse
+		heatmap.norm(0.0, 1.0);// ajudar na visualização
 
 		// redimensionar o mapa de calor para as dimensões da imagem de entrada
 		int altEntrada = entrada.shape()[1];
 		int largEntrada = entrada.shape()[2];
-		heatmap = new Tensor(
+
+		return new Tensor(
 			ampliarMatriz(
 				heatmap, altEntrada, largEntrada
 			)
 		);
-
-		return heatmap;
 	}
 
 	/**
