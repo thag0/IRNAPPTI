@@ -1,9 +1,46 @@
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 
-def entropia(x: torch.Tensor):
+import torch
+import numpy as np
+import matplotlib.pyplot as plt
+
+class MIHook:
+    def __init__(self, model):
+        self.model = model
+        self.activations = {}
+        self.hooks = []
+        self.register_hooks()
+
+    def register_hooks(self):
+        def hook_fn(name):
+            def hook(module, input, output):
+                self.activations[name] = output.detach()  # Use detach() para evitar rastreamento de gradientes
+            return hook
+
+        for name, module in self.model.named_modules():
+            if isinstance(module, torch.nn.Module):
+                self.hooks.append(module.register_forward_hook(hook_fn(name)))
+
+    def remove_hooks(self):
+        for hook in self.hooks:
+            hook.remove()
+
+    def calculate_mi(self, input_data, target_data, target_layers):
+        mi_results = {}
+        for layer in target_layers:
+            if layer in self.activations:
+                T = self.activations[layer]
+                IXT = informacao_mutua(input_data, T)
+                ITY = informacao_mutua(T, target_data)
+                mi_results[layer] = (IXT, ITY)
+        return mi_results
+
+def entropia(x: torch.Tensor) -> float:
     x = x.view(-1)
-    return torch.sum(-x * torch.log(x + 1e-10))
+    prob_dist = torch.softmax(x, dim=0)  # Normaliza para obter uma distribuição de probabilidade
+    return torch.sum(-prob_dist * torch.log(prob_dist + 1e-10)).item()  # Adicione .item() para retornar um float
 
 def entropia_condicional(X: torch.Tensor, Y: torch.Tensor) -> float:
     X_np = X.detach().cpu().numpy()
@@ -20,48 +57,39 @@ def entropia_condicional(X: torch.Tensor, Y: torch.Tensor) -> float:
         
         if mask.any():
             X_filtered = X_np[mask]
-            ec += entropia(torch.tensor(X_filtered)).item() * (mask.sum() / len(Y_np))
+            ec += entropia(torch.tensor(X_filtered)) * (mask.sum() / len(Y_np))
 
     return ec
 
-def informacao_mutua(x: torch.Tensor, y: torch.Tensor):
+def informacao_mutua(x: torch.Tensor, y: torch.Tensor) -> float:
     return entropia(x) - entropia_condicional(x, y) 
 
-class MIHook:
-    def __init__(self, model):
-        self.model = model
-        self.activations = {}
-        self.hooks = []
-        self.register_hooks()
+def plano_informacao(modelo, dl_treino, epochs):
+    mi_hook = MIHook(modelo)
+    mi_results_history = []
 
-    def register_hooks(self):
-        def hook_fn(name):
-            def hook(module, input, output):
-                self.activations[name] = output.detach()
-                # print(f'Hook para \'{name}\' ativado com shape: {output.shape}')
-            return hook
+    for epoch in range(epochs):
+        modelo.train()
+        for lote in dl_treino:
+            x, y = lote
+            x, y = x.to(modelo.device), y.to(modelo.device)
 
-        for name, module in self.model.named_modules():
-            if isinstance(module, torch.nn.Module):
-                self.hooks.append(module.register_forward_hook(hook_fn(name)))
-                print(f'hook adicionado para \'{name}\'')
+            _ = modelo(x)
 
-    def remove_hooks(self):
-        for hook in self.hooks:
-            hook.remove()
+        print(f'Época {epoch}/{epochs}')
+        layers_of_interest = ['r1', 'r2', 'r3']
+        mi_results = mi_hook.calculate_mi(x, y, layers_of_interest)
+        mi_results_history.append(mi_results)
 
-    def calculate_mi(self, target_layers):
-        mi_results = {}
-        for i, layer1 in enumerate(target_layers):
-            for layer2 in target_layers[i+1:]:
-                if layer1 in self.activations and layer2 in self.activations:
-                    x = self.activations[layer1]
-                    y = self.activations[layer2]
-                    # print(f"Calculando MI para {layer1} e {layer2} com shapes x: {x.shape} e y: {y.shape}")
-                    mi = informacao_mutua(x, y)
-                    mi_results[(layer1, layer2)] = mi
-                else:
-                    print(f"Ativações para {layer1} ou {layer2} não encontradas.")
+    mi_hook.remove_hooks()
 
-        return mi_results
+    fig, ax = plt.subplots()
 
+    for epoch_mi in mi_results_history:
+        for layer, (i_xt, i_ty) in epoch_mi.items():
+            ax.scatter(i_xt, i_ty, label=f'{layer} (Epoch)')
+
+    ax.set_xlabel('I(X; T)')
+    ax.set_ylabel('I(T; Y)')
+    ax.set_title('Plano da Informação')
+    plt.show()

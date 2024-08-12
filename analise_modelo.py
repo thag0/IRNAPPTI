@@ -14,7 +14,7 @@ import torch.nn.functional as F
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import torchvision.utils
-from mi import MIHook
+from mi import plano_informacao
 
 def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
 	modelo = ConvMnist('cpu')
@@ -140,43 +140,6 @@ def matriz_confusao(modelo, amostras_teste: DataLoader):
 	plt.title('Matriz de confusão')
 	plt.show()
 
-def plano_informacao(modelo: MlpMnist, dl_treino: DataLoader, epochs: int):
-	mi_hook = MIHook(modelo)
-	mi_results_history = []
-
-	for epoch in range(epochs):
-		modelo.train()
-		for lote in dl_treino:
-			x, y = lote
-			x, y = x.to(modelo.device), y.to(modelo.device)
-
-			_ = modelo(x)
-
-		print(f'Época {epoch+1}/{epochs}')
-		layers_of_interest = ['r1', 'r2', 'r3', 'r4']
-		mi_results = mi_hook.calculate_mi(layers_of_interest)
-		mi_results_history.append(mi_results)
-
-	fig, ax = plt.subplots()
-	epochs_range = range(epochs)
-
-	if not mi_results_history:
-		print("Nenhum resultado disponível para plotagem.")
-		return
-
-	for (layer1, layer2), mi_values in mi_results_history[0].items():
-		mi_values_per_epoch = [mi_results.get((layer1, layer2), 0) for mi_results in mi_results_history]
-		# print(f'{layer1} vs {layer2} MI Values per Epoch: {mi_values_per_epoch}')
-		mi_values_per_epoch = [float(value) for value in mi_values_per_epoch]
-		
-		ax.plot(epochs_range, mi_values_per_epoch, label=f'{layer1} vs {layer2}')
-
-	ax.set_xlabel('Epoch')
-	ax.set_ylabel('Informação Mutua')
-	ax.set_title('Plano da Informação')
-	ax.legend()
-	plt.show()
-
 def grad_cam(modelo, dl_teste: DataLoader):
 	"""
 		Ainda não funcionando
@@ -220,6 +183,7 @@ if __name__ == '__main__':
 	# modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
 	modelo = MlpMnist(device)
 	dl_treino, dl_teste = preparar_dataset('mnist')
+	plano_informacao(modelo, dl_treino, 10)
 
 	# matriz_confusao(modelo, dl_teste)
 
@@ -235,4 +199,3 @@ if __name__ == '__main__':
 	# 		conv_ids.append(i)
 	# plotar_ativacoes(modelo, amostra, conv_ids[1])
 	
-	plano_informacao(modelo, dl_treino, 10)
