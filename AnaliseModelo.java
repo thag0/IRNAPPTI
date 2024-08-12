@@ -30,7 +30,7 @@ public class AnaliseModelo {
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 		// modelo.print();
 		
-		final int digito = 4;
+		final int digito = 9;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM + digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
@@ -56,11 +56,11 @@ public class AnaliseModelo {
 
 		// testarAcertosMNIST(modelo);
 
-		// Tensor prev = modelo.forward(amostra);
-		// double ec = f.entropiaCondicional(prev);
-		// System.out.println("Entropia condicional: " + String.format("%.2f", (1-ec)*100));
+		Tensor prev = modelo.forward(amostra);
+		double ec = f.entropiaShannon(prev).item();
+		System.out.println("Entropia de Shannon: " + ec);
 		// prev.view(10, 1).print();
-		// System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
+		System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
 		// new Thread(() -> {
 		// 	boolean normalizar = true;

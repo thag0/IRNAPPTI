@@ -41,33 +41,28 @@ public class Funcional {
 	public Funcional() {}
 
 	/**
-	 * Calcula o valor da Entropia Condicional com base nas previsões do modelo.
+	 * Calcula a entropia de Shannon com os dados do tensor.
 	 * <p>
-	 *    A entropia condicional é uma medida de incerteza associada às previsões 
-	 *    do modelo.
+	 *		A Entropia de Shannon é uma medida matemática da quantidade de 
+	 *		informação ou surpresa associada a um evento ou sistema.
 	 * </p>
 	 * <p>
-	 *    Valores mais baixos indicam menor incerteza do modelo, que significa
-	 *    que o modelo tem bastante "confiança" na previsão feita.
+	 *		Essa medida quantifica o grau de incerteza ou surpresa associado 
+	 *		ao sistema. Quanto maior a entropia, maior a incerteza. A entropia é 
+	 *		máxima quando todos os eventos são igualmente prováveis.
 	 * </p>
-	 * @param prevs previsões do modelo no formato de distribuição de probabilidade.
-	 * @return valor de entropia condicional com base nas previsões.
+	 * @param x {@code Tensor} base, com dados em formato de distribuição
+	 * de probabilidade.
+	 * @return {@code Tensor} resultado.
 	 */
-	public double entropiaCondicional(Tensor prevs) {
-		if (prevs.numDim() != 1) {
-			throw new IllegalArgumentException(
-				"\nTensor de previsões deve ser 1D."
-			);
-		}
+	public Tensor entropiaShannon(Tensor x) {
+		Tensor res = x.clone();
 
-		int n = prevs.shape()[0];
-		double ec = 0;
-		for (int i = 0; i < n; i++) {
-			double p = prevs.get(i);
-			ec += p * Math.log(p);
-		}
+		if (x.numDim() > 1) res.flatten();
 
-		return -ec;
+		return res.map(v -> (v == 0) ? 0 : v * Math.log(v))
+			.reduce(0.0, (x1, x2) -> x1 + x2)
+			.mul(-1.0);
 	}
 
 	/**
@@ -90,16 +85,17 @@ public class Funcional {
 			);
 		}
 
+		//camada de interesse da análise
 		Conv2D conv = (Conv2D) modelo.camada(idConv);
 
-		//passo de backpropagation para ter os gradientes calculados
+		// passo de backpropagation para ter os gradientes calculados
 		Tensor prev = modelo.forward(entrada);
 		Tensor grad = modelo.perda().derivada(prev, rotulo); 
 		for (int i = modelo.numCamadas()-1; i >= 0; i--) {
 			grad = modelo.camada(i).backward(grad);
 		}
 		
-		//calcular mapa de calor
+		// calcular mapa de calor
 		Tensor convRes  = conv._somatorio.clone();// saída "bruta" da camada
 		Tensor convGrad = conv._gradSaida.clone();
 		int canais  = convGrad.shape()[0];
@@ -115,17 +111,16 @@ public class Funcional {
 			);
 		}
 
-		heatmap.relu();// preservar características que tem influência positiva na classe de interesse
-		heatmap.norm(0.0, 1.0);// ajudar na visualização
+		heatmap
+		.relu()// preservar características que tem influência positiva na classe de interesse
+		.norm(0.0, 1.0);// ajudar na visualização
 
 		// redimensionar o mapa de calor para as dimensões da imagem de entrada
-		int altEntrada = entrada.shape()[1];
+		int altEntrada  = entrada.shape()[1];
 		int largEntrada = entrada.shape()[2];
 
-		return new Tensor(
-			ampliarMatriz(
-				heatmap, altEntrada, largEntrada
-			)
+		return redim2D(
+			heatmap, altEntrada, largEntrada
 		);
 	}
 
@@ -160,10 +155,8 @@ public class Funcional {
 	public void matrizConfusao(Sequencial modelo, int amostras) {
 		System.out.println("Calculando Matriz de Confusão");
 		int digitos = 10;
-		double[][][][] dados = carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos);
-		double[][] classes = criarRotulosMNIST(amostras, digitos);
-		Tensor[] x = utils.arrayParaTensores(dados);
-		Tensor[] y = utils.arrayParaTensores(classes);
+		Tensor[] x = utils.arrayParaTensores(carregarDadosMNIST(CAMINHO_IMAGEM, amostras, digitos));
+		Tensor[] y = utils.arrayParaTensores(criarRotulosMNIST(amostras, digitos));
 		
 		Tensor m = modelo.avaliador().matrizConfusao(x, y);
 
@@ -249,18 +242,17 @@ public class Funcional {
 		try {
 			camada = (Conv2D) conv;
 		} catch (Exception e) {
-			System.out.println("\nCamada fornecida não é do tipo convolucional.");
+			throw new IllegalArgumentException(
+				"\nCamada não é do tipo Convolucional e sim " + 
+				camada.getClass().getSimpleName() + ", escolha uma camada Conv2D."
+			);
 		}
 
 		Tensor prev = camada.forward(amostra);
 		int filtros = camada.numFiltros();
 		Tensor[] arr = new Tensor[filtros];
-
-		int[] shape = prev.shape();
-		int alt = shape[1];
-		int larg = shape[2];
 		for (int i = 0; i < arr.length; i++) {
-			arr[i] = prev.slice(new int[]{i, 0, 0}, new int[]{i+1, alt, larg}).squeeze(0);
+			arr[i] = prev.subTensor(i);
 		}
 		
 		desenharImagens(arr, escala, norm, "Saidas Conv");
@@ -280,14 +272,18 @@ public class Funcional {
 			);
 		}
 
-		if (norm) tensor.norm(0, 1);
-
 		int[] shape = tensor.shape();
-
 		int altura  = shape[shape.length-2];
 		int largura = shape[shape.length-1];
 		JanelaImagem janela = new JanelaImagem(altura, largura, escala, titulo);
-		janela.desenharImagem(tensor);
+
+		if (norm) {
+			Tensor clone = tensor.clone().norm(0.0, 1.0);
+			janela.desenharImagem(clone);
+
+		} else {
+			janela.desenharImagem(tensor);
+		}	
 	}
 
 	/**
@@ -306,13 +302,18 @@ public class Funcional {
 		JanelaImagem janela = new JanelaImagem(dim[0], dim[1], escala, titulo);
 
 		if (norm) {
-			for (Tensor t : arr) {
-				t.norm(0, 1);
+			//não alterar dados recebidos
+			Tensor[] clones = new Tensor[arr.length];
+			for (int i = 0; i < clones.length; i++) {
+				clones[i] = arr[i].clone().norm(0.0, 1.0);
 			}
+
+			janela.desenharImagens(clones);
+		
+		} else {
+			janela.desenharImagens(arr);
 		}
 
-		janela.desenharImagens(arr);
-		
 	}
 
 	/**
@@ -338,31 +339,26 @@ public class Funcional {
 		final int digitos = 10;
 		int[] shape = camada.saida().shape();
 		final int canais = shape[0];
-		final int altSaida = shape[1];
-		final int largSaida = shape[2];
 		for (int i = 0; i < digitos; i++) {
 			String caminhoAmostra = CAMINHO_IMAGEM + i + "/img_0.jpg";
 			Tensor amostra = new Tensor(carregarImagemCinza(caminhoAmostra));
-			amostra.unsqueeze(0);
+			amostra.unsqueeze(0);// 2D -> 3D
 			modelo.forward(amostra);
 
 			Tensor[] somatorios = new Tensor[canais];
 			Tensor[] saidas = new Tensor[canais];
 
 			for (int j = 0; j < saidas.length; j++) {
-				Tensor sliceSaida = camada.saida().slice(new int[]{j, 0, 0}, new int[]{j+1, altSaida, largSaida});
-				Tensor tempSaida = new Tensor(sliceSaida.squeeze(0));
-
-				Tensor sliceSomatorio = camada._somatorio.slice(new int[]{j, 0, 0}, new int[]{j+1, altSaida, largSaida});
-				Tensor tempSomatorio = new Tensor(sliceSomatorio.squeeze(0));
+				Tensor tempSaida = new Tensor(camada.saida().subTensor(j));
+				Tensor tempSomatorio = new Tensor(camada._somatorio.subTensor(j));
 				
 				if (norm) {
 					tempSaida.norm(0, 1);
 					tempSomatorio.norm(0, 1);
 				}
 				
-				saidas[j]     = new Tensor(sliceSaida);
-				somatorios[j] = new Tensor(sliceSomatorio);
+				saidas[j]     = new Tensor(tempSaida);
+				somatorios[j] = new Tensor(tempSomatorio);
 			}
 
 			String caminhoSomatorio = "./resultados/pre-ativacoes/" + diretorioCamada + "/" + i + "/";
@@ -371,8 +367,8 @@ public class Funcional {
 			limparDiretorio(caminhoSomatorio);
 			limparDiretorio(caminhoSaida);
 
-			exportarMatrizes(saidas, escala, caminhoSaida);
-			exportarMatrizes(somatorios, escala, caminhoSomatorio);
+			exportarImagens(saidas, escala, caminhoSaida);
+			exportarImagens(somatorios, escala, caminhoSomatorio);
 		}
 
 		System.out.println("Ativações exportadas para a camada " + idConv);
@@ -415,7 +411,7 @@ public class Funcional {
 			arrFiltros[i] = temp;
 		}
 
-		exportarMatrizes(arrFiltros, escala, caminho);
+		exportarImagens(arrFiltros, escala, caminho);
 
 		System.out.println("Filtros exportados para a camada " + idConv);
 	}
@@ -425,7 +421,7 @@ public class Funcional {
 	 * @param arr array de matrizes.
 	 * @param caminho diretório onde os arquivos serão salvos.
 	 */
-	public void exportarMatrizes(Tensor[] arr, int escala, String caminho) {
+	public void exportarImagens(Tensor[] arr, int escala, String caminho) {
 		if (arr == null) {
 			throw new IllegalArgumentException(
 				"\nArray fornecido é nulo."
@@ -510,24 +506,23 @@ public class Funcional {
 	/**
 	 * Carrega a imagem a partir de um arquivo.
 	 * @param caminho caminho da imagem.
-	 * @return {@code Tensor} contendo os dados da imagem em
+	 * @return matriz contendo os dados da imagem em
 	 * escala de cinza.
 	 */
 	public double[][] carregarImagemCinza(String caminho) {
-		BufferedImage img = geim.lerImagem(caminho);
-		int altura = img.getHeight(), largura = img.getWidth();
-		double[][] imagem = new double[altura][largura];
-
-		int[][] cinza = geim.obterCinza(img);   
-
+		BufferedImage bImg = geim.lerImagem(caminho);
+		int altura = bImg.getHeight(), largura = bImg.getWidth();
+		
+		int[][] cinza = geim.obterCinza(bImg);   
+		
+		double[][] img = new double[altura][largura];
 		for (int y = 0; y < altura; y++) {
 			for (int x = 0; x < largura; x++) {
-				double c = (double)(cinza[y][x]) / 255;
-				imagem[y][x] = c;
-			}  
+				img[y][x] = ((double) cinza[y][x]) / 255.0;
+			}
 		}
 
-		return imagem;
+		return img;
 	}
 
 	/**
@@ -614,20 +609,20 @@ public class Funcional {
 
 	/**
 	 * Interpola os valores da matriz para o novo tamanho.
-	 * @param m matriz desejada.
+	 * @param tensor matriz desejada.
 	 * @param novaAlt novo valor de altura da matriz.
 	 * @param novaLarg novo valor de largura da matriz.
-	 * @return matriz reescalada.
+	 * @return {@code Tensor} redimensionado.
 	 */
-	public double[][] ampliarMatriz(Tensor m, int novaAlt, int novaLarg) {
-		if (m.numDim() != 2) {
+	public Tensor redim2D(Tensor tensor, int novaAlt, int novaLarg) {
+		if (tensor.numDim() != 2) {
 			throw new IllegalArgumentException("\nTensor deve ser 2D.");
 		}
 
-		int alt  = m.shape()[0];
-		int larg = m.shape()[1];
+		int alt  = tensor.shape()[0];
+		int larg = tensor.shape()[1];
 
-		double[][] mat = new double[novaAlt][novaLarg];
+		Tensor redim = new Tensor(novaAlt, novaLarg);
 		
 		for (int i = 0; i < novaAlt; i++) {
 			for (int j = 0; j < novaLarg; j++) {
@@ -642,16 +637,17 @@ public class Funcional {
 				double dx = ampLarg - x0;
 				double dy = ampAlt - y0;
 				
-				double valorInterpolado = 
-					(1 - dx) * (1 - dy) * m.get(y0, x0) +
-					dx * (1 - dy) * m.get(y0, x1) +
-					(1 - dx) * dy * m.get(y1, x0) +
-					dx * dy * m.get(y1, x1);
+				double val = (
+					(1 - dx) * (1 - dy) * tensor.get(y0, x0) +
+					dx * (1 - dy) * tensor.get(y0, x1) +
+					(1 - dx) * dy * tensor.get(y1, x0) +
+					dx * dy * tensor.get(y1, x1)
+				);
 				
-				mat[i][j] = valorInterpolado;
+				redim.set(val, i, j);
 			}
 		}
 		
-		return mat;
+		return redim;
 	}
 }
