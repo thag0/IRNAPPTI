@@ -10,13 +10,13 @@ class MlpMnist(nn.Module):
 
 		self.device = device if device is not None else 'cpu'
 
-		self.d1 = nn.Linear(28*28, 20)
+		self.d1 = nn.Linear(28*28, 64)
 		self.r1 = nn.ReLU()
-		self.d2 = nn.Linear(20, 20)
+		self.d2 = nn.Linear(64, 32)
 		self.r2 = nn.ReLU()
-		self.d3 = nn.Linear(20, 20)
+		self.d3 = nn.Linear(32, 16)
 		self.r3 = nn.ReLU()
-		self.d4 = nn.Linear(20, 10)
+		self.d4 = nn.Linear(16, 10)
 		self.r4 = nn.ReLU()
 
 		self.to(self.device)

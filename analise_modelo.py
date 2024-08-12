@@ -54,7 +54,7 @@ def preparar_dataset(nome: str) -> tuple[DataLoader]:
 	test_dataset = dataset(root='./data', train=False, download=True, transform=transform)
 
 	# Criar DataLoaders para carregamento em lote
-	tam_lote: int = 128
+	tam_lote: int = 32
 	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=tam_lote, shuffle=True)
 	test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=tam_lote, shuffle=False)
 
@@ -152,8 +152,8 @@ def plano_informacao(modelo: MlpMnist, dl_treino: DataLoader, epochs: int):
 
 			_ = modelo(x)
 
-		print(f'Época {epoch}/{epochs}')
-		layers_of_interest = ['r1', 'r2', 'r3']
+		print(f'Época {epoch+1}/{epochs}')
+		layers_of_interest = ['r1', 'r2', 'r3', 'r4']
 		mi_results = mi_hook.calculate_mi(layers_of_interest)
 		mi_results_history.append(mi_results)
 
@@ -166,18 +166,14 @@ def plano_informacao(modelo: MlpMnist, dl_treino: DataLoader, epochs: int):
 
 	for (layer1, layer2), mi_values in mi_results_history[0].items():
 		mi_values_per_epoch = [mi_results.get((layer1, layer2), 0) for mi_results in mi_results_history]
-
-		# Verifique os valores de mi_values_per_epoch
-		print(f'{layer1} vs {layer2} MI Values per Epoch: {mi_values_per_epoch}')
-
-		# Converta cada valor para um número, se necessário
+		# print(f'{layer1} vs {layer2} MI Values per Epoch: {mi_values_per_epoch}')
 		mi_values_per_epoch = [float(value) for value in mi_values_per_epoch]
 		
 		ax.plot(epochs_range, mi_values_per_epoch, label=f'{layer1} vs {layer2}')
 
 	ax.set_xlabel('Epoch')
-	ax.set_ylabel('Information Mutual')
-	ax.set_title('Plano da Informação Mútua por Época')
+	ax.set_ylabel('Informação Mutua')
+	ax.set_title('Plano da Informação')
 	ax.legend()
 	plt.show()
 
@@ -239,4 +235,4 @@ if __name__ == '__main__':
 	# 		conv_ids.append(i)
 	# plotar_ativacoes(modelo, amostra, conv_ids[1])
 	
-	plano_informacao(modelo, dl_treino, 4)
+	plano_informacao(modelo, dl_treino, 10)
