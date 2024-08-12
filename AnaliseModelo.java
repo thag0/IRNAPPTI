@@ -30,7 +30,7 @@ public class AnaliseModelo {
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 		// modelo.print();
 		
-		final int digito = 8;
+		final int digito = 4;
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM + digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
