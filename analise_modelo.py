@@ -8,12 +8,13 @@ from torch.nn.modules import (Conv2d, MaxPool2d)
 import torchvision
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
-from modelos import ConvMnist, ConvCifar10
+from modelos import (MlpMnist, ConvMnist, ConvCifar10)
 from PIL import Image
 import torch.nn.functional as F
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import torchvision.utils
+from mi import plano_informacao
 
 def carregar_modelo_mnist(device: torch.device, caminho: str) -> ConvMnist:
 	modelo = ConvMnist('cpu')
@@ -53,7 +54,7 @@ def preparar_dataset(nome: str) -> tuple[DataLoader]:
 	test_dataset = dataset(root='./data', train=False, download=True, transform=transform)
 
 	# Criar DataLoaders para carregamento em lote
-	tam_lote: int = 128
+	tam_lote: int = 32
 	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=tam_lote, shuffle=True)
 	test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=tam_lote, shuffle=False)
 
@@ -179,17 +180,18 @@ if __name__ == '__main__':
 	#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	device = 'cpu'
 	
-	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
+	# modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
+	modelo = MlpMnist(device)
 	dl_treino, dl_teste = preparar_dataset('mnist')
+	plano_informacao(modelo, dl_treino, 10)
 
 	# matriz_confusao(modelo, dl_teste)
 
 	# grad_cam(modelo, dl_teste)
 
-	amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
-	
+	# amostra = carregar_imagem('./mnist/teste/4/img_0.jpg')
 
-	testar_previsao(modelo, amostra)
+	# testar_previsao(modelo, amostra)
 
 	# conv_ids = []
 	# for i in range(len(modelo.get_camadas())):

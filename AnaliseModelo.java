@@ -3,7 +3,7 @@ import java.util.concurrent.Executors;
 
 import ged.Ged;
 import geim.Geim;
-import jnn.core.tensor.OpTensor;
+import jnn.core.OpTensor;
 import jnn.core.tensor.Tensor;
 import jnn.modelos.Sequencial;
 import jnn.serializacao.Serializador;
@@ -24,27 +24,29 @@ public class AnaliseModelo {
 
 		// String nomeModelo = "conv-mnist-dropout";
 		// String nomeModelo = "conv-mnist-97-4";
-		String nomeModelo = "mlp-mnist-90";
-		// String nomeModelo = "modelo-treinado";
+		// String nomeModelo = "mlp-mnist-90";
+		String nomeModelo = "modelo-treinado";
 		
 		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
-		modelo.print();
+		// modelo.print();
 		
 		final int digito = 3;
-		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM +  digito + "/img_0.jpg"));
+		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM + digito + "/img_0.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
-		// Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
-		// Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
-		// Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
-		// Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
-
-		// amostraRGB.aplicar(x -> x*0.95);
-		// coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
-
-		// f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
-		// f.desenharImagem(amostraRGB, 10, false, "Amostra");
-		// f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		// {// gradcam
+		// 	Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+		// 	Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
+		// 	Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
+		// 	Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
+			
+		// 	amostraRGB.aplicar(x -> x*0.96);
+		// 	coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
+			
+		// 	f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
+		// 	f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		// 	f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		// }
 		
 		// f.desenharMnist(modelo);
 
@@ -55,9 +57,9 @@ public class AnaliseModelo {
 		// testarAcertosMNIST(modelo);
 
 		// Tensor prev = modelo.forward(amostra);
-		// double ec = f.entropiaCondicional(prev);
-		// System.out.println("Entropia condicional: " + String.format("%.2f", (1-ec)*100));
-		// prev.view(10, 1).print();
+		// double ec = f.entropiaShannon(prev).item();
+		// System.out.println("Entropia de Shannon: " + ec);
+		// // prev.view(10, 1).print();
 		// System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
 		// new Thread(() -> {
@@ -144,7 +146,7 @@ public class AnaliseModelo {
 			}
 
 			double acertos = 0;
-			Tensor[] prevs = modelo.forwards(imagens);
+			Tensor[] prevs = modelo.forward(imagens);
 			for (Tensor t : prevs) {
 				if (f.maiorIndice(t.paraArray()) == digito) acertos++;
 			}
