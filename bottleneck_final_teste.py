@@ -190,8 +190,8 @@ import matplotlib.pyplot as plt
 
 def plot_information_plane_custom(IXT_array, ITY_array, num_epochs, every_n):
     fig, ax = plt.subplots(figsize=(8, 8))
-    ax.set_xlabel('MI_X,T')
-    ax.set_ylabel('MI_T,Y')
+    ax.set_xlabel(r'$I(X;T)$')
+    ax.set_ylabel(r'$I(T;Y)$')
     ax.set_title('Information Plane')
 
     # Cores para cada camada
@@ -211,3 +211,26 @@ def plot_information_plane_custom(IXT_array, ITY_array, num_epochs, every_n):
     return fig
 
 plot_information_plane_custom(information_plane_values[0], information_plane_values[1], num_epochs=EPOCHS, every_n=1)
+
+def plot_logs(train_logs, test_logs, size=(10, 6)):
+    plt.figure(1, figsize=size)
+
+    # Ordena e separa os dados dos logs de treinamento
+    train_epochs, train_accuracies = zip(*sorted(train_logs.items()))
+    plt.plot(train_epochs, train_accuracies, label='Treino', color='blue')
+
+    # Ordena e separa os dados dos logs de teste
+    test_epochs, test_accuracies = zip(*sorted(test_logs.items()))
+    plt.plot(test_epochs, test_accuracies, label='Teste', color='green')
+
+    plt.ylabel('Precisao')
+    plt.xlabel('Numero da Epoca')
+    plt.legend()
+    plt.title('Precisao vs. Numero da Epoca')
+    plt.show()
+
+# Exemplo de como usar a função
+train_logs = {1: 0.8, 2: 0.85, 3: 0.87, 4: 0.9}
+test_logs = {1: 0.75, 2: 0.8, 3: 0.83, 4: 0.85}
+
+plot_logs(train_logs, test_logs)
