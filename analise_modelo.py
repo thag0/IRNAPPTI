@@ -180,12 +180,12 @@ if __name__ == '__main__':
 	#device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	device = 'cpu'
 	
-	# modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
-	modelo = MlpMnist(device)
+	modelo = carregar_modelo_mnist(device, './modelos/pytorch/conv-pytorch-mnist.pt')
+	# modelo = MlpMnist(device)
 	dl_treino, dl_teste = preparar_dataset('mnist')
-	plano_informacao(modelo, dl_treino, 10)
+	# plano_informacao(modelo, dl_treino, 10)
 
-	# matriz_confusao(modelo, dl_teste)
+	matriz_confusao(modelo, dl_teste)
 
 	# grad_cam(modelo, dl_teste)
 

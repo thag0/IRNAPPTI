@@ -1,5 +1,9 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,9 +45,9 @@ public class Funcional {
 	public Funcional() {}
 
 	/**
-	 * Calcula a entropia de Shannon com os dados do tensor.
+	 * Calcula a entropia com os dados do tensor.
 	 * <p>
-	 *		A Entropia de Shannon é uma medida matemática da quantidade de 
+	 *		A Entropia é uma medida matemática da quantidade de 
 	 *		informação ou surpresa associada a um evento ou sistema.
 	 * </p>
 	 * <p>
@@ -55,14 +59,50 @@ public class Funcional {
 	 * de probabilidade.
 	 * @return {@code Tensor} resultado.
 	 */
-	public Tensor entropiaShannon(Tensor x) {
+	public Tensor entropia(Tensor x) {
 		Tensor res = x.clone();
 
 		if (x.numDim() > 1) res.flatten();
 
-		return res.map(v -> (v == 0) ? 0 : v * Math.log(v))
+		return res.map(v -> (v == 0) ? 0 : v * Math.log(v)/Math.log(2))
 			.reduce(0.0, (x1, x2) -> x1 + x2)
 			.mul(-1.0);
+	}
+
+	public Tensor entropiaCondicional(Tensor x, Tensor y) {
+		Map<Double, List<Double>> conditionalDistributions = new HashMap<>();
+		for (int i = 0; i < x.tam(); i++) {
+			double xi = x.get(i);
+			double yi = y.get(i);
+			conditionalDistributions
+				.computeIfAbsent(xi, k -> new ArrayList<>())
+				.add(yi);
+		}
+
+		double total = x.tam();
+		double conditionalEntropy = 0.0;
+		for (Map.Entry<Double, List<Double>> entry : conditionalDistributions.entrySet()) {
+			List<Double> yValues = entry.getValue();
+			Map<Double, Integer> histogram = new HashMap<>();
+			for (double yi : yValues) {
+				histogram.put(yi, histogram.getOrDefault(yi, 0) + 1);
+			}
+
+			double subTotal = yValues.size();
+			double entropy = 0.0;
+			for (Map.Entry<Double, Integer> histEntry : histogram.entrySet()) {
+				double prob = (double) histEntry.getValue() / subTotal;
+				entropy += prob * Math.log(prob) / Math.log(2);
+			}
+
+			conditionalEntropy += (subTotal / total) * -entropy;
+		}
+
+		return new Tensor(new double[]{ conditionalEntropy }, 1);
+	}
+
+	public Tensor informacao_mutua(Tensor x, Tensor y) {
+		return entropia(x).sub(entropiaCondicional(x, y));
 	}
 
 	/**
@@ -255,7 +295,7 @@ public class Funcional {
 			arr[i] = prev.subTensor(i);
 		}
 		
-		desenharImagens(arr, escala, norm, "Saidas Conv");
+		desenharImagens(arr, escala, norm, true, "Saidas Conv");
 	}
 
 	/**
@@ -292,7 +332,7 @@ public class Funcional {
 	 * @param escala escala de ampliação da janela.
 	 * @param norm normalizar os valores entre 0 e 1.
 	 */
-	public void desenharImagens(Tensor[] arr, int escala, boolean norm, String titulo) {
+	public void desenharImagens(Tensor[] arr, int escala, boolean norm, boolean inplace, String titulo) {
 		int[] shape = arr[0].shape();
 		int[] dim = {
 			shape[shape.length-2],// altura
@@ -302,13 +342,19 @@ public class Funcional {
 		JanelaImagem janela = new JanelaImagem(dim[0], dim[1], escala, titulo);
 
 		if (norm) {
-			//não alterar dados recebidos
-			Tensor[] clones = new Tensor[arr.length];
-			for (int i = 0; i < clones.length; i++) {
-				clones[i] = arr[i].clone().norm(0.0, 1.0);
+			Tensor[] ts = new Tensor[arr.length];
+			if (inplace) {
+				for (int i = 0; i < arr.length; i++) {
+					ts[i] = arr[i].norm(1.0, 0.0);
+				}
+
+			} else {//não alterar dados recebidos
+				for (int i = 0; i < arr.length; i++) {
+					ts[i] = arr[i].clone().norm(1.0, 0.0);
+				}
 			}
 
-			janela.desenharImagens(clones);
+			janela.desenharImagens(arr);
 		
 		} else {
 			janela.desenharImagens(arr);

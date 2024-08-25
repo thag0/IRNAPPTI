@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from torchmetrics.clustering import mutual_info_score
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -65,7 +66,7 @@ if __name__ == '__main__':
 	print(f"Modelo em: {modelo.device}")
 
 	dl_treino, dl_teste = preparar_dataset('mnist')
-	epocas = 1
+	epocas = 6
 
 	# add amostras do dataset
 	batch_samples, batch_labels = get_sample_batch(dl_teste)
@@ -78,9 +79,10 @@ if __name__ == '__main__':
 
 	hist = modelo.treinar(dl_treino, epocas)
 
-	# add perdas do treino
-	for i, loss in enumerate(hist):
-		writer.add_scalar('Training Loss', loss, global_step=i)
+	# resultado de perda
+	for i, registro in enumerate(hist):
+		writer.add_scalar('Training Loss', registro['loss'], global_step=i)
+		writer.add_scalar('Training Accuracy', registro['accuracy'], global_step=i)
 
 	metricas_treino = modelo.avaliar(dl_treino)
 	metricas_teste = modelo.avaliar(dl_teste)

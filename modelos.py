@@ -91,7 +91,7 @@ class ConvMnist(nn.Module):
 
 		return self.model.forward(x)
 
-	def treinar(self, treino: DataLoader, epocas: int) -> list:
+	def treinar(self, treino: DataLoader, epocas: int) -> list[dict]:
 		"""
 			Treina o modelo usando o conjunto de dados especificado.
 
@@ -112,14 +112,21 @@ class ConvMnist(nn.Module):
 				x, y = batch
 				x, y = x.to(self.device), y.to(self.device)
 				prev = self.forward(x)
+
 				val_perda =  self.perda.forward(prev, y)
+
+				_, preds = prev.max(1)
+				acuracia = (preds == y).float().mean().item()
 
 				#backpropagation
 				self.otimizador.zero_grad()
 				val_perda.backward()
 				self.otimizador.step()
 
-				historico.append(val_perda.item())
+				historico.append({
+					'loss': val_perda.item(),
+					'accuracy': acuracia
+				})
 
 		self.train(False)
 

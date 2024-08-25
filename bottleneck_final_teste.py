@@ -73,6 +73,31 @@ class ConvMnist(nn.Module):
                 activations.append(current_input.clone().detach().cpu().numpy())
         return activations
 
+def distribution_from_bins(bins):
+    # bins in N^(n times l)
+    _, counts = np.unique(bins, axis=0, return_counts=True)
+    # counts in N^n
+    return counts/sum(counts)
+
+def entropy(X):
+    dX = distribution_from_bins(X)
+    return -np.sum(dX * np.log2(dX))
+
+def conditional_entropy(X,Y):
+    ys, ycnt = np.unique(Y, return_counts=True)
+    cond_entropy = 0
+    for y,cnt in zip(ys,ycnt):
+        cond_entropy += entropy(X[Y==y])*(cnt/len(Y))
+    return cond_entropy
+
+def Mutual_Info(Y, X):
+    return entropy(X)-conditional_entropy(X,Y)
+
+a = torch.tensor([0.1, 0.2, 0.1, 0.4, 0.2])
+b = torch.tensor([0.2, 0.2, 0.3, 0.2, 0.1])
+
+print(Mutual_Info(a, b))
+
 # Dataset MNIST
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
 train_data = datasets.MNIST(root='mnist_data', train=True, download=True, transform=transform)
@@ -138,25 +163,7 @@ def discretization(activations_list, bins, batch_size=16):
     return discretized_activations
 
 
-
 discretized_activations=discretization(activations_list, bins=30)
-
-def entropy(Y):
-    unique, count = np.unique(Y, return_counts=True, axis=0)
-    prob = count / len(Y)
-    return np.sum(-prob * np.log2(prob + 1e-10))
-
-def Mutual_Info(Y, X):
-    # Verifique se `Y` tem mais de uma dimensão e achate-o se necessário
-    if Y.ndim > 1:
-        Y = Y.reshape(-1, 1)
-    
-    # Ajuste `X` para ter o mesmo número de amostras que `Y`
-    num_samples = min(Y.shape[0], X.shape[0])
-    X = X[:num_samples].reshape(num_samples, -1)
-    Y = Y[:num_samples]
-
-    return entropy(Y) - entropy(np.c_[Y, X])
 
 # Verificando o conteúdo de discretized_activations
 if len(discretized_activations) == 0:

@@ -25,9 +25,9 @@ public class AnaliseModelo {
 		// String nomeModelo = "conv-mnist-dropout";
 		// String nomeModelo = "conv-mnist-97-4";
 		// String nomeModelo = "mlp-mnist-90";
-		String nomeModelo = "modelo-treinado";
+		// String nomeModelo = "modelo-treinado";
 		
-		Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
+		// Sequencial modelo = serializador.lerSequencial(CAMINHO_MODELO + nomeModelo + ".nn");
 		// modelo.print();
 		
 		final int digito = 3;
@@ -47,6 +47,15 @@ public class AnaliseModelo {
 		// 	f.desenharImagem(amostraRGB, 10, false, "Amostra");
 		// 	f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
 		// }
+
+		{
+			// teste
+			double[] arr1 = {0.1, 0.2, 0.1, 0.4, 0.2};
+			double[] arr2 = {0.2, 0.2, 0.3, 0.2, 0.1};
+			Tensor x = new Tensor(arr1, arr1.length);
+			Tensor y = new Tensor(arr2, arr2.length);
+			System.out.println(f.informacao_mutua(x, y));
+		}
 		
 		// f.desenharMnist(modelo);
 
