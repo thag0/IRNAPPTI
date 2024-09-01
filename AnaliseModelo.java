@@ -34,19 +34,19 @@ public class AnaliseModelo {
 		Tensor amostra = new Tensor(f.carregarImagemCinza(CAMINHO_IMAGEM + digito + "/img_10.jpg"));
 		amostra.unsqueeze(0);//2d -> 3d
 		
-		{// gradcam
-			Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
-			Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
-			Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
-			Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
+		// {// gradcam
+		// 	Tensor rotulo = new Tensor(f.gerarRotuloMnist(digito), 10);
+		// 	Tensor heatmap = f.gradCAM(modelo, amostra, rotulo);
+		// 	Tensor heatpmapRGB = tensorCinzaParaRGB(heatmap);
+		// 	Tensor amostraRGB = tensorCinzaParaRGB(amostra.clone().squeeze(0));
 			
-			amostraRGB.aplicar(x -> x*0.96);
-			coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
+		// 	amostraRGB.aplicar(x -> x*0.96);
+		// 	coresTensor(heatpmapRGB, 0.6, 0.2, 0.9);
 			
-			f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
-			f.desenharImagem(amostraRGB, 10, false, "Amostra");
-			f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
-		}
+		// 	f.desenharImagem(heatpmapRGB, 10, false, "Heatmap");
+		// 	f.desenharImagem(amostraRGB, 10, false, "Amostra");
+		// 	f.desenharImagem(amostraRGB.clone().add(heatpmapRGB), 10, false, "Heatmap + Amostra");
+		// }
 
 		// {
 		// 	// teste
@@ -65,11 +65,11 @@ public class AnaliseModelo {
 
 		// testarAcertosMNIST(modelo);
 
-		// Tensor prev = modelo.forward(amostra);
-		// double ec = f.entropiaShannon(prev).item();
-		// System.out.println("Entropia de Shannon: " + ec);
-		// // prev.view(10, 1).print();
-		// System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
+		Tensor prev = modelo.forward(amostra);
+		double ec = f.entropia(prev).item();
+		System.out.println("Entropia: " + ec);
+		prev.view(10, 1).print();
+		System.out.println("Dígito: " + digito + " -> Previsto: " + f.maiorIndice(prev.paraArray()));
 
 		// new Thread(() -> {
 		// 	boolean normalizar = true;

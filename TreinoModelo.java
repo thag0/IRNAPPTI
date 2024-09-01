@@ -81,10 +81,10 @@ public class TreinoModelo {
 			new Entrada(1, 28, 28),
 			new Conv2D(18, new int[]{3, 3}, "relu"),
 			new MaxPool2D(new int[]{2, 2}),
-			new Conv2D(20, new int[]{3, 3}, "relu"),
+			new Conv2D(22, new int[]{3, 3}, "relu"),
 			new MaxPool2D(new int[]{2, 2}),
 			new Flatten(),
-			new Densa(100, "relu"),
+			new Densa(90, "relu"),
 			new Dropout(0.3),
 			new Densa(NUM_DIGITOS_TREINO, "softmax")
 		);
