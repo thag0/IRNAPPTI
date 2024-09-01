@@ -130,13 +130,13 @@ public class Funcional {
 
 		// passo de backpropagation para ter os gradientes calculados
 		Tensor prev = modelo.forward(entrada);
-		Tensor grad = modelo.perda().derivada(prev, rotulo); 
+		Tensor grad = modelo.perda().backward(prev, rotulo); 
 		for (int i = modelo.numCamadas()-1; i >= 0; i--) {
 			grad = modelo.camada(i).backward(grad);
 		}
 		
 		// calcular mapa de calor
-		Tensor convRes  = conv._somatorio.clone();// saída "bruta" da camada
+		Tensor convRes  = conv._buffer.clone();// saída "bruta" da camada
 		Tensor convGrad = conv._gradSaida.clone();
 		int canais  = convGrad.shape()[0];
 		int altura  = convGrad.shape()[1];
@@ -396,7 +396,7 @@ public class Funcional {
 
 			for (int j = 0; j < saidas.length; j++) {
 				Tensor tempSaida = new Tensor(camada.saida().subTensor(j));
-				Tensor tempSomatorio = new Tensor(camada._somatorio.subTensor(j));
+				Tensor tempSomatorio = new Tensor(camada._buffer.subTensor(j));
 				
 				if (norm) {
 					tempSaida.norm(0, 1);
